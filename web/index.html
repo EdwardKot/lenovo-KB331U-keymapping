@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lenovo KB331U 网页改键工具 (WebHID)</title>
+  <title>KB331U 全键盘改键</title>
   <style>
     :root {
       --bg: #0f1117;
@@ -19,6 +19,7 @@
       --danger: #ef4444;
       --key-bg: #232836;
       --key-active: #273759;
+      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
     }
     * { box-sizing: border-box; }
     body {
@@ -28,368 +29,194 @@
       color: var(--text);
       line-height: 1.5;
     }
-    .container {
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 24px 20px 48px;
-    }
+    code { font-family: var(--mono); font-size: 0.92em; }
+    .container { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
     header {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 18px 22px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      margin-bottom: 20px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 16px; padding: 18px 22px; background: var(--panel);
+      border: 1px solid var(--border); border-radius: 14px; margin-bottom: 18px;
     }
-    .brand h1 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .brand h1 { margin: 0; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .badge {
-      font-size: 12px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: rgba(79, 140, 255, 0.16);
-      color: var(--accent);
-      border: 1px solid rgba(79, 140, 255, 0.35);
+      font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+      background: rgba(79,140,255,0.16); color: var(--accent); border: 1px solid rgba(79,140,255,0.35);
     }
-    .brand p {
-      margin: 4px 0 0;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+    .brand p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+    .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 12px;
-      border-radius: 999px;
-      font-size: 13px;
-      background: var(--panel-2);
-      border: 1px solid var(--border);
+      display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px;
+      font-size: 13px; background: var(--panel-2); border: 1px solid var(--border);
     }
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--muted);
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+    .dot.connected { background: var(--success); box-shadow: 0 0 8px rgba(34,197,94,0.7); }
+    button, .btn-label {
+      cursor: pointer; border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+      padding: 8px 14px; border-radius: 9px; font-size: 13px; font-weight: 600;
+      transition: all 0.15s ease; font-family: inherit; display: inline-flex; align-items: center; gap: 6px;
     }
-    .dot.connected { background: var(--success); box-shadow: 0 0 8px rgba(34, 197, 94, 0.7); }
-    button {
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: var(--panel-2);
-      color: var(--text);
-      padding: 9px 15px;
-      border-radius: 9px;
-      font-size: 13px;
-      font-weight: 600;
-      transition: all 0.15s ease;
-    }
-    button:hover:not(:disabled) { border-color: #49536d; background: #262b3a; }
+    button:hover:not(:disabled), .btn-label:hover { border-color: #49536d; background: #262b3a; }
     button:disabled { opacity: 0.45; cursor: not-allowed; }
-    button.primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
     button.primary:hover:not(:disabled) { background: var(--accent-hover); }
-    button.success {
-      background: #16a34a;
-      border-color: #16a34a;
-      color: #fff;
-    }
+    button.success { background: #16a34a; border-color: #16a34a; color: #fff; }
     button.success:hover:not(:disabled) { background: #15803d; }
-    button.danger {
-      background: rgba(239, 68, 68, 0.14);
-      border-color: rgba(239, 68, 68, 0.4);
-      color: #fca5a5;
-    }
-
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 18px;
-    }
+    button.danger { background: rgba(239,68,68,0.14); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+    button.small, .btn-label.small { padding: 5px 10px; font-size: 12px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 18px; min-width: 0; }
     .card-title {
-      font-size: 15px;
-      font-weight: 700;
-      margin: 0 0 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+      font-size: 15px; font-weight: 700; margin: 0 0 12px; display: flex; align-items: center;
+      justify-content: space-between; gap: 12px; flex-wrap: wrap;
     }
-    .card-sub {
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 400;
-    }
-
-    /* Keyboard Top-Row Visualizer */
-    .kbd-shell {
-      background: #11131a;
-      border: 1px solid #2b3142;
-      border-radius: 14px;
-      padding: 16px;
-      overflow-x: auto;
-    }
-    .kbd-row {
-      display: grid;
-      grid-template-columns: repeat(12, minmax(64px, 1fr));
-      gap: 8px;
-      min-width: 780px;
-    }
-    .keycap {
-      position: relative;
-      background: var(--key-bg);
-      border: 1px solid #353c4f;
-      border-bottom-width: 3px;
-      border-radius: 8px;
-      padding: 10px 6px;
-      text-align: center;
-      min-height: 68px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      user-select: none;
-    }
-    .keycap.fixed {
-      opacity: 0.45;
-      cursor: default;
-    }
-    .keycap.editable {
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .keycap.editable:hover {
-      border-color: var(--accent);
-      transform: translateY(-1px);
-    }
-    .keycap.selected {
-      background: var(--key-active);
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.28);
-    }
-    .keycap.modified::after {
-      content: "";
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--warn);
-    }
-    .key-phys {
-      font-size: 11px;
-      color: var(--muted);
-    }
-    .key-val {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text);
-      word-break: break-word;
-    }
-    .key-hex {
-      font-size: 10px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      color: #93c5fd;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1.35fr 1fr;
-      gap: 18px;
-    }
-    @media (max-width: 900px) {
-      .grid-2 { grid-template-columns: 1fr; }
-    }
-
-    .preset-group { margin-bottom: 14px; }
-    .preset-group-label {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 7px;
-      font-weight: 600;
-    }
-    .preset-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-    }
-    .preset-btn {
-      padding: 6px 10px;
-      font-size: 12px;
-      font-weight: 500;
-      border-radius: 7px;
-    }
-    .preset-btn.active {
-      background: rgba(79, 140, 255, 0.22);
-      border-color: var(--accent);
-      color: #bfdbfe;
-    }
-
-    .custom-hex-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid var(--border);
-    }
-    input[type="text"] {
-      background: var(--panel-2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 8px 11px;
-      border-radius: 8px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 13px;
-      width: 120px;
-    }
-
-    .flash-box {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .progress-wrap {
-      width: 100%;
-      height: 12px;
-      background: var(--panel-2);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      overflow: hidden;
-    }
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--accent), #22c55e);
-      transition: width 0.1s linear;
-    }
-    .log-box {
-      background: #0b0d12;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      height: 180px;
-      overflow-y: auto;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 12px;
-      color: #cbd5e1;
-      white-space: pre-wrap;
-    }
+    .card-sub { font-size: 12px; color: var(--muted); font-weight: 400; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .notice {
-      font-size: 12px;
-      color: var(--muted);
-      background: rgba(245, 158, 11, 0.08);
-      border: 1px solid rgba(245, 158, 11, 0.28);
-      border-radius: 9px;
-      padding: 10px 12px;
+      font-size: 12px; color: var(--muted); background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.28); border-radius: 9px; padding: 10px 12px;
     }
-    .file-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      font-size: 12px;
-      color: var(--muted);
+    .notice.info { background: rgba(79,140,255,0.08); border-color: rgba(79,140,255,0.3); }
+
+    /* ---------- Keyboard ---------- */
+    .kbd-shell {
+      background: #11131a; border: 1px solid #2b3142; border-radius: 14px; padding: 14px;
+      overflow-x: auto; margin-bottom: 10px;
     }
+    .kbd { --u: 54px; --gap: 6px; display: flex; flex-direction: column; gap: var(--gap); width: max-content; margin: 0 auto; }
+    .kbd-row { display: flex; gap: var(--gap); }
+    .kbd-row.fn .keycap { height: 40px; }
+    .keycap {
+      position: relative; height: var(--u); flex: none;
+      background: var(--key-bg); border: 1px solid #353c4f; border-bottom-width: 3px; border-radius: 7px;
+      padding: 4px 6px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      user-select: none; cursor: pointer; transition: border-color 0.12s, transform 0.12s, background 0.12s;
+      text-align: center; overflow: hidden;
+    }
+    .keycap:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .keycap.selected { background: var(--key-active); border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,140,255,0.3); }
+    .keycap.locked { opacity: 0.4; cursor: not-allowed; }
+    .keycap.locked:hover { transform: none; border-color: #353c4f; }
+    .keycap.modified::after {
+      content: ""; position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--warn);
+    }
+    .keycap.consumer { border-color: rgba(79,140,255,0.55); }
+    .keycap.disabled-key .k-new { color: var(--danger); }
+    .k-phys { font-size: 12px; font-weight: 600; line-height: 1.15; white-space: nowrap; }
+    .k-new { font-size: 10px; line-height: 1.15; color: #93c5fd; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .arrow-stack { display: flex; flex-direction: column; gap: 3px; flex: none; }
+    .arrow-stack .keycap { height: calc((var(--u) - 3px) / 2); padding: 0 4px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--muted); align-items: center; }
+    .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+    .slot-meter { font-family: var(--mono); font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel-2); }
+    .slot-meter.full { border-color: rgba(245,158,11,0.6); color: var(--warn); }
+
+    /* ---------- Editor ---------- */
+    .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; }
+    @media (max-width: 920px) { .grid-2 { grid-template-columns: 1fr; } }
+    .sel-summary {
+      display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 13px;
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;
+    }
+    .sel-summary dt { color: var(--muted); }
+    .sel-summary dd { margin: 0; font-weight: 600; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+    .tab { padding: 6px 12px; font-size: 12px; }
+    .tab.active { background: rgba(79,140,255,0.22); border-color: var(--accent); color: #bfdbfe; }
+    .opt-group { margin-bottom: 12px; }
+    .opt-group-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+    .opt-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .opt { padding: 5px 9px; font-size: 12px; font-weight: 500; border-radius: 7px; }
+    .opt.active { background: rgba(79,140,255,0.22); border-color: var(--accent); color: #bfdbfe; }
+    .opt .tag { font-size: 10px; color: var(--success); font-weight: 700; }
+    .row-inline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+    input[type="text"] {
+      background: var(--panel-2); border: 1px solid var(--border); color: var(--text); padding: 7px 10px;
+      border-radius: 8px; font-family: var(--mono); font-size: 13px; width: 110px;
+    }
+
+    /* ---------- Flash ---------- */
+    .flash-box { display: flex; flex-direction: column; gap: 12px; }
+    .diff-box {
+      background: #0b0d12; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+      font-size: 12px; max-height: 190px; overflow-y: auto;
+    }
+    .diff-box ul { margin: 0; padding-left: 18px; }
+    .diff-box li { margin: 2px 0; }
+    .diff-meta { font-family: var(--mono); color: var(--muted); font-size: 11px; margin-top: 6px; }
+    .progress-wrap { width: 100%; height: 12px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), #22c55e); transition: width 0.1s linear; }
+    .log-box {
+      background: #0b0d12; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; height: 170px;
+      overflow-y: auto; font-family: var(--mono); font-size: 12px; color: #cbd5e1; white-space: pre-wrap;
+    }
+    .split { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
       <div class="brand">
-        <h1>Lenovo KB331U 网页改键工具 <span class="badge">WebHID · KA024</span></h1>
-        <p>小新无线键盘 Air (17EF:619E) · 免拆机 USB-C 永久固件改键（修改后蓝牙/有线双模生效）</p>
+        <h1>KB331U 全键盘改键 <span class="badge">WebHID · KA024</span></h1>
+        <p>小新无线键盘 Air (17EF:619E) · USB-C 写入固件，蓝牙 / 有线永久生效 · 只改键位数据，不改任何代码</p>
       </div>
       <div class="header-actions">
-        <div class="status-pill">
-          <span id="connDot" class="dot"></span>
-          <span id="connText">未连接键盘</span>
-        </div>
+        <div class="status-pill"><span id="connDot" class="dot"></span><span id="connText">未连接键盘</span></div>
         <button id="btnConnect" class="primary">连接 USB-C 键盘</button>
         <button id="btnQueryVer" disabled>读取固件版本</button>
       </div>
     </header>
 
-    <div id="webhidWarning" class="notice" style="display:none; margin-bottom:18px;"></div>
+    <div id="envWarning" class="notice" style="display:none; margin-bottom:18px;"></div>
+    <div id="schemeBanner" class="notice info" style="margin-bottom:18px;"></div>
 
     <section class="card">
       <div class="card-title">
-        <span>1. 顶部功能键映射（点击任意高亮按键进行修改）</span>
-        <button id="btnRestoreStock" class="danger">恢复全部原厂默认</button>
+        <span>1. 点击任意按键修改</span>
+        <div class="toolbar">
+          <span id="slotMeter" class="slot-meter">功能槽 0/7</span>
+          <button id="btnPresetMine" class="small">载入「MagicPad 当前方案」</button>
+          <button id="btnRestoreStock" class="small danger">全部恢复原厂</button>
+        </div>
       </div>
-      <div class="kbd-shell">
-        <div id="kbdRow" class="kbd-row"></div>
+      <div class="kbd-shell"><div id="kbd" class="kbd"></div></div>
+      <div class="legend">
+        <span><i style="background:var(--warn)"></i>已修改</span>
+        <span><i style="background:var(--accent)"></i>多媒体 / 系统功能（占用功能槽）</span>
+        <span><i style="background:#4b5263"></i>灰色 = 锁定（蓝牙通道键）</span>
+        <span>固件读不回来：页面会记住你上次刷入的方案，也可导出 / 导入方案文件。</span>
       </div>
-      <p class="card-sub" style="margin:10px 0 0;">
-        注：Esc、BT1/BT2/BT3、Delete 为固定键；其余 7 个多媒体/快捷功能键均直接对应固件偏移 <code>0xEE44..0xEE6D</code>（Consumer Page 0x0C）。
-      </p>
+      <div class="toolbar" style="margin-top:12px;">
+        <button id="btnExportScheme" class="small">导出方案 (.json)</button>
+        <label class="btn-label small">导入方案 (.json)<input id="schemeInput" type="file" accept=".json,application/json" hidden /></label>
+        <label class="btn-label small">从固件 .bin 读取方案<input id="binSchemeInput" type="file" accept=".bin" hidden /></label>
+      </div>
     </section>
 
     <div class="grid-2">
       <section class="card">
-        <div class="card-title">
-          <span id="editorTitle">2. 按键功能选择</span>
-          <span id="editorOffset" class="card-sub"></span>
-        </div>
-        <div id="presetContainer"></div>
-        <div class="custom-hex-row">
-          <span style="font-size:12px; color:var(--muted);">自定义 Consumer Usage (0x0000–0x0397):</span>
-          <input id="customHexInput" type="text" placeholder="0x029F" maxlength="6" />
-          <button id="btnApplyCustom">应用</button>
-        </div>
+        <div class="card-title"><span id="editorTitle">2. 选择功能</span></div>
+        <dl id="selSummary" class="sel-summary"></dl>
+        <div id="tabs" class="tabs"></div>
+        <div id="editorBody"></div>
       </section>
 
       <section class="card">
         <div class="card-title">
-          <span>3. 生成固件并 USB-C 刷入</span>
-          <span id="fwStateBadge" class="card-sub">正在加载原厂基线...</span>
+          <span>3. 生成固件并刷入</span>
+          <span id="fwStateBadge" class="card-sub">正在加载原厂基线…</span>
         </div>
         <div class="flash-box">
-          <div class="file-row">
-            <span id="fwInfoText">基线镜像：KA024_official_firmware.bin (64,516 B)</span>
-            <label style="cursor:pointer; color:var(--accent); text-decoration:underline;">
-              手动选择 .bin
-              <input id="fileInput" type="file" accept=".bin" style="display:none;" />
-            </label>
+          <div class="diff-box">
+            <div id="diffList"></div>
+            <div id="diffMeta" class="diff-meta"></div>
           </div>
           <div class="notice">
-            安全机制：键盘采用 Telink Dual-Bank A/B 双分区。写入时仅写入备用分区，4,033 块数据及尾部 CRC-32 校验全部通过后才激活重启。刷写过程约 15 秒，请勿拔线。
+            安全：固件只以内置的联想原厂镜像（SHA-256 校验）为基础生成，并逐字节比对；键位表、功能槽和尾部 CRC 之外只要有一个字节不同就拒绝刷写。键盘写入备用分区，全部 4,033 块与 CRC 校验通过才切换。刷写约 15 秒，请勿拔线。
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button id="btnFlash" class="success" style="flex:1;" disabled>直接 USB-C 刷入键盘</button>
-            <button id="btnDownload">导出 .bin 文件</button>
+            <button id="btnFlash" class="success" style="flex:1; justify-content:center;" disabled>USB-C 刷入键盘</button>
+            <button id="btnDownload" disabled>导出 .bin</button>
           </div>
-          <div class="progress-wrap">
-            <div id="progressBar" class="progress-bar"></div>
-          </div>
-          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);">
-            <span id="progressLabel">就绪</span>
-            <span id="crcPreview">新 CRC-32: --</span>
-          </div>
+          <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
+          <div class="split"><span id="progressLabel">就绪</span><span id="crcPreview">新 CRC-32: --</span></div>
           <div id="logBox" class="log-box"></div>
         </div>
       </section>
@@ -397,528 +224,723 @@
   </div>
 
   <script>
-    // =========================================================================
-    // 1. Keymap & Presets Definition (verified against KA024_official_firmware.bin)
-    // =========================================================================
-    const KEY_SLOTS = [
-      { kind: "fixed", label: "Esc" },
-      { kind: "editable", id: 0x00EB, offset: 0xEE46, phys: "静音", stock: 0x00E2 },
-      { kind: "editable", id: 0x00EC, offset: 0xEE4C, phys: "音量-", stock: 0x00EA },
-      { kind: "editable", id: 0x00ED, offset: 0xEE52, phys: "音量+", stock: 0x00E9 },
-      { kind: "editable", id: 0x00EE, offset: 0xEE58, phys: "亮度-", stock: 0x0070 },
-      { kind: "editable", id: 0x00EF, offset: 0xEE5E, phys: "亮度+", stock: 0x006F },
-      { kind: "editable", id: 0x00F1, offset: 0xEE64, phys: "截图", stock: 0x038E },
-      { kind: "fixed", label: "BT1" },
-      { kind: "fixed", label: "BT2" },
-      { kind: "fixed", label: "BT3" },
-      { kind: "editable", id: 0x00F2, offset: 0xEE6A, phys: "设备互联", stock: 0x0397, highlight: true },
-      { kind: "fixed", label: "Delete" },
-    ];
+  // ===========================================================================
+  // 0. Firmware constants (KA024_A_1.0.8, verified on hardware 2026-11-18)
+  // ===========================================================================
+  const BASE_SHA256 = "7d3c5b418f57ced5ea96d4f70c9522bd47beffdfb06afab194174ad8ec53aa33";
+  const FW_SIZE = 64516;
+  const MATRIX_START = 0xEE79, MATRIX_END = 0xEF00;     // 1 byte per matrix position
+  const SLOT_TABLE = 0xEE44;                              // 7 x [id u16, usage u16, type u16]
+  const SLOT_IDS = [0xEB, 0xEC, 0xED, 0xEE, 0xEF, 0xF1, 0xF2];
+  const SLOT_STOCK_USAGE = { 0xEB: 0x00E2, 0xEC: 0x00EA, 0xED: 0x00E9, 0xEE: 0x0070, 0xEF: 0x006F, 0xF1: 0x038E, 0xF2: 0x0397 };
+  const slotUsageOffset = id => SLOT_TABLE + SLOT_IDS.indexOf(id) * 6 + 2;
+  const CONSUMER_MAX = 0x0397; // HID descriptor Logical Maximum for Report ID 2
 
-    const PRESET_GROUPS = [
-      {
-        label: "Android / MagicOS / 平板导航（推荐）",
-        items: [
-          { usage: 0x029F, name: "最近任务 (MagicOS 实测)" },
-          { usage: 0x01A2, name: "最近任务 (AOSP AppSelect)" },
-          { usage: 0x0223, name: "主页 (Home)" },
-          { usage: 0x0224, name: "返回 (Back)" },
-          { usage: 0x0221, name: "全局搜索 (Search)" },
-        ],
-      },
-      {
-        label: "多媒体与亮度控制",
-        items: [
-          { usage: 0x00CD, name: "播放 / 暂停" },
-          { usage: 0x00B6, name: "上一曲" },
-          { usage: 0x00B5, name: "下一曲" },
-          { usage: 0x00E2, name: "静音" },
-          { usage: 0x00EA, name: "音量减" },
-          { usage: 0x00E9, name: "音量加" },
-          { usage: 0x0070, name: "亮度减" },
-          { usage: 0x006F, name: "亮度加" },
-        ],
-      },
-      {
-        label: "系统 / 联想原厂默认值",
-        items: [
-          { usage: 0x0397, name: "联想设备互联 (原厂)" },
-          { usage: 0x038E, name: "联想截图 (原厂)" },
-          { usage: 0x0192, name: "计算器" },
-          { usage: 0x0196, name: "浏览器" },
-          { usage: 0x0194, name: "文件管理器" },
-          { usage: 0x0000, name: "禁用 (No-Op)" },
-        ],
-      },
-    ];
+  // Physical layout from the KB331U US keycaps. off = matrix byte offset, stock = factory byte.
+  // w = width in key units. Positions verified against the firmware table and live captures.
+  const K = (label, off, stock, w = 1, extra = {}) => ({ label, off, stock, w, ...extra });
+  const ROWS = [
+    { cls: "fn", keys: [
+      K("Esc", 0xEE8B, 0x29, 1.25), K("BT1", 0xEEE0, 0xE8, 1.25, { locked: true }), K("BT2", 0xEEF1, 0xE9, 1.25, { locked: true }),
+      K("BT3", 0xEEF0, 0xEA, 1.25, { locked: true }), K("静音", 0xEEDF, 0xEB, 1.25), K("音量-", 0xEE91, 0xEC, 1.25),
+      K("音量+", 0xEEE6, 0xED, 1.25), K("亮度-", 0xEEF7, 0xEE, 1.25), K("亮度+", 0xEEF8, 0xEF, 1.25),
+      K("🔒 锁", 0xEEE7, 0xF1, 1.25), K("互联", 0xEE8F, 0xF2, 1.25), K("Delete", 0xEE97, 0x4C, 1.25),
+    ]},
+    { keys: [
+      K("`", 0xEE98, 0x35), K("1", 0xEE87, 0x1E), K("2", 0xEE7A, 0x1F), K("3", 0xEE79, 0x20), K("4", 0xEE7C, 0x21),
+      K("5", 0xEE8D, 0x22), K("6", 0xEE8E, 0x23), K("7", 0xEE7D, 0x24), K("8", 0xEE80, 0x25), K("9", 0xEE7E, 0x26),
+      K("0", 0xEE95, 0x27), K("-", 0xEEFB, 0x2D), K("=", 0xEE96, 0x2E), K("Backspace", 0xEE85, 0x2A, 2),
+    ]},
+    { keys: [
+      K("Tab", 0xEEED, 0x2B, 1.5), K("Q", 0xEEA9, 0x14), K("W", 0xEE9C, 0x1A), K("E", 0xEE9B, 0x08), K("R", 0xEE9E, 0x15),
+      K("T", 0xEEE2, 0x17), K("Y", 0xEEE3, 0x1C), K("U", 0xEE9F, 0x18), K("I", 0xEEA2, 0x0C), K("O", 0xEEA0, 0x12),
+      K("P", 0xEE84, 0x13), K("[", 0xEEA6, 0x2F), K("]", 0xEEA7, 0x30), K("\\", 0xEEB8, 0x31, 1.5),
+    ]},
+    { keys: [
+      K("CapsLk", 0xEE8A, 0x39, 1.75), K("A", 0xEEBA, 0x04), K("S", 0xEEAD, 0x16), K("D", 0xEEAC, 0x07), K("F", 0xEEAF, 0x09),
+      K("G", 0xEEF3, 0x0A), K("H", 0xEEF4, 0x0B), K("J", 0xEEB0, 0x0D), K("K", 0xEEB3, 0x0E), K("L", 0xEEB1, 0x0F),
+      K(";", 0xEEB7, 0x33), K("'", 0xEEC9, 0x34), K("Enter", 0xEEDA, 0x28, 2.25),
+    ]},
+    { keys: [
+      K("Shift", 0xEEB2, 0xE1, 2.25, { name: "左 Shift" }), K("Z", 0xEECF, 0x1D), K("X", 0xEEBE, 0x1B), K("C", 0xEEBD, 0x06), K("V", 0xEEC0, 0x19),
+      K("B", 0xEED1, 0x05), K("N", 0xEED2, 0x11), K("M", 0xEEC1, 0x10), K(",", 0xEEC4, 0x36), K(".", 0xEEC2, 0x37),
+      K("/", 0xEEC8, 0x38), K("Shift", 0xEEA1, 0xE5, 2.75, { name: "右 Shift" }),
+    ]},
+    { keys: [
+      K("Ctrl", 0xEE82, 0xE0, 2, { name: "左 Ctrl" }), K("⊞ option", 0xEE94, 0xE3, 1, { name: "左 option (Meta)" }),
+      K("Alt cmd", 0xEECD, 0xE2, 1, { name: "左 Alt/cmd" }), K("Space", 0xEECE, 0x2C, 5.75),
+      K("Alt", 0xEEBC, 0xE6, 1, { name: "空格右 Alt" }), K("Ctrl", 0xEEF9, 0xE4, 1.25, { name: "空格右 Ctrl" }),
+      K("←", 0xEEB4, 0x50), { stack: [K("↑", 0xEED9, 0x52), K("↓", 0xEED3, 0x51)] }, K("→", 0xEEDB, 0x4F),
+    ]},
+  ];
+  const ALL_KEYS = ROWS.flatMap(r => r.keys.flatMap(k => k.stack ? k.stack : [k]));
+  const KEY_BY_OFF = new Map(ALL_KEYS.map(k => [k.off, k]));
+  const EDITABLE_OFFS = new Set(ALL_KEYS.filter(k => !k.locked).map(k => k.off));
 
-    const USAGE_NAMES = new Map();
-    for (const g of PRESET_GROUPS) {
-      for (const item of g.items) USAGE_NAMES.set(item.usage, item.name);
+  // ---------------------------------------------------------------------------
+  // Output options
+  // ---------------------------------------------------------------------------
+  const KB_GROUPS = [
+    { label: "字母", items: Array.from({ length: 26 }, (_, i) => [0x04 + i, String.fromCharCode(65 + i)]) },
+    { label: "数字", items: Array.from({ length: 10 }, (_, i) => [0x1E + i, String((i + 1) % 10)]) },
+    { label: "修饰键", items: [[0xE0, "左 Ctrl"], [0xE1, "左 Shift"], [0xE2, "左 Alt"], [0xE3, "左 Meta (Win/⌘)"],
+      [0xE4, "右 Ctrl"], [0xE5, "右 Shift"], [0xE6, "右 Alt"]] },
+    { label: "编辑 / 导航", items: [[0x29, "Esc"], [0x2B, "Tab"], [0x39, "CapsLock"], [0x28, "Enter"], [0x2A, "Backspace"],
+      [0x4C, "Delete"], [0x2C, "Space"], [0x49, "Insert"], [0x4A, "Home"], [0x4D, "End"], [0x4B, "PgUp"], [0x4E, "PgDn"],
+      [0x50, "←"], [0x52, "↑"], [0x51, "↓"], [0x4F, "→"], [0x46, "PrintScreen"], [0x65, "Menu"]] },
+    { label: "符号", items: [[0x35, "`"], [0x2D, "-"], [0x2E, "="], [0x2F, "["], [0x30, "]"], [0x31, "\\"], [0x33, ";"],
+      [0x34, "'"], [0x36, ","], [0x37, "."], [0x38, "/"]] },
+    { label: "F 键", items: [...Array.from({ length: 12 }, (_, i) => [0x3A + i, "F" + (i + 1)]),
+      ...Array.from({ length: 12 }, (_, i) => [0x68 + i, "F" + (i + 13)])] },
+    { label: "键盘页音量（不占功能槽）", items: [[0x7F, "静音（键盘码）", true], [0x81, "音量-（键盘码）", true], [0x80, "音量+（键盘码）", true]] },
+  ];
+  const KB_NAMES = new Map(KB_GROUPS.flatMap(g => g.items.map(([c, n]) => [c, n])));
+  const KB_ALLOWED = new Set(KB_NAMES.keys());
+
+  const CONSUMER_GROUPS = [
+    { label: "Android 平板 / MagicOS", items: [
+      [0x029F, "多任务视图", true], [0x0223, "回到桌面 Home", true], [0x00CF, "语音助手", true], [0x00D8, "语音输入", true],
+      [0x0224, "返回"], [0x0221, "搜索"], [0x029D, "切换输入法"], [0x00D9, "表情面板"], [0x019F, "打开设置"], [0x0065, "截屏"],
+    ]},
+    { label: "媒体 / 亮度", items: [
+      [0x00CD, "播放 / 暂停"], [0x00B5, "下一曲"], [0x00B6, "上一曲"], [0x00E2, "静音"], [0x00EA, "音量-"], [0x00E9, "音量+"],
+      [0x0070, "亮度-"], [0x006F, "亮度+"],
+    ]},
+    { label: "联想原厂", items: [[0x0397, "设备互联（原厂）"], [0x038E, "锁（原厂）"]] },
+  ];
+  const CONSUMER_NAMES = new Map(CONSUMER_GROUPS.flatMap(g => g.items.map(([u, n]) => [u, n])));
+
+  // ---------------------------------------------------------------------------
+  // Scheme model: Map(off -> {t:"key", v:code} | {t:"consumer", v:usage} | {t:"none"})
+  // ---------------------------------------------------------------------------
+  function stockAssign(k) {
+    return SLOT_IDS.includes(k.stock) ? { t: "consumer", v: SLOT_STOCK_USAGE[k.stock] } : { t: "key", v: k.stock };
+  }
+  const sameAssign = (a, b) => a.t === b.t && (a.t === "none" || a.v === b.v);
+  function stockScheme() { return new Map(ALL_KEYS.map(k => [k.off, stockAssign(k)])); }
+
+  // The configuration flashed on 2026-11-18 (HONOR MagicPad 4).
+  const MY_PRESET = {
+    0xEE8F: { t: "consumer", v: 0x029F },  // 互联 -> 多任务
+    0xEEDF: { t: "key", v: 0x7F },          // 静音 -> 键盘页 Mute
+    0xEE91: { t: "key", v: 0x81 },          // 音量- -> 键盘页 Volume Down
+    0xEEE6: { t: "key", v: 0x80 },          // 音量+ -> 键盘页 Volume Up
+    0xEEF9: { t: "consumer", v: 0x0223 },  // 右 Ctrl -> Home
+  };
+
+  let scheme = stockScheme();
+  let selectedOff = 0xEE8F;
+  let editorTab = "key";
+  let baseFirmware = null;
+  let hidDevice = null;
+  let isFlashing = false;
+  let pendingResolver = null;
+
+  const hex2 = v => "0x" + v.toString(16).toUpperCase().padStart(2, "0");
+  const hex4 = v => "0x" + v.toString(16).toUpperCase().padStart(4, "0");
+  const keyName = k => k.name || k.label;
+  function describe(a) {
+    if (a.t === "none") return "禁用";
+    if (a.t === "key") return KB_NAMES.get(a.v) || hex2(a.v);
+    return CONSUMER_NAMES.get(a.v) || hex4(a.v);
+  }
+
+  // ===========================================================================
+  // 1. Checksums (matched to the official updater)
+  // ===========================================================================
+  function crc16Outer(bytes) {
+    let crc = 0x2A6E;
+    for (let i = 0; i < bytes.length; i++) {
+      crc ^= (bytes[i] << 8) & 0xFFFF;
+      for (let b = 0; b < 8; b++) crc = (crc & 0x8000) ? (((crc << 1) ^ 0x8005) & 0xFFFF) : ((crc << 1) & 0xFFFF);
     }
-
-    // Current working values (default: stock except Device Interconnection pre-selected to 0x029F)
-    const currentMap = new Map();
-    for (const slot of KEY_SLOTS) {
-      if (slot.kind === "editable") {
-        currentMap.set(slot.offset, slot.offset === 0xEE6A ? 0x029F : slot.stock);
-      }
+    return crc;
+  }
+  function crc16Modbus(bytes) {
+    let crc = 0xFFFF;
+    for (let i = 0; i < bytes.length; i++) {
+      crc ^= bytes[i];
+      for (let b = 0; b < 8; b++) crc = (crc & 0x0001) ? (((crc >> 1) ^ 0xA001) & 0xFFFF) : (crc >> 1);
     }
+    return crc;
+  }
+  const CRC32_TBL = (() => {
+    const t = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; }
+    return t;
+  })();
+  function telinkCrc32(bytes) {
+    let crc = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) crc = CRC32_TBL[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+    return crc >>> 0;
+  }
+  const storedCrc = b => (b[b.length - 4] | (b[b.length - 3] << 8) | (b[b.length - 2] << 16) | (b[b.length - 1] << 24)) >>> 0;
+  async function sha256Hex(bytes) {
+    const h = await crypto.subtle.digest("SHA-256", bytes);
+    return Array.from(new Uint8Array(h)).map(x => x.toString(16).padStart(2, "0")).join("");
+  }
 
-    let selectedOffset = 0xEE6A; // Default select Device Interconnection key
-    let baseFirmware = null;
-    let hidDevice = null;
-    let isFlashing = false;
-    let pendingResolver = null;
+  function log(msg) {
+    const box = document.getElementById("logBox");
+    box.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+    box.scrollTop = box.scrollHeight;
+  }
 
-    // =========================================================================
-    // 2. Checksums (100% matched to a/a.java & com.telink.ota.util.Crc)
-    // =========================================================================
-    function crc16Outer(bytes) {
-      let crc = 0x2A6E;
-      for (let i = 0; i < bytes.length; i++) {
-        crc ^= (bytes[i] << 8) & 0xFFFF;
-        for (let b = 0; b < 8; b++) {
-          crc = (crc & 0x8000) ? (((crc << 1) ^ 0x8005) & 0xFFFF) : ((crc << 1) & 0xFFFF);
+  // ===========================================================================
+  // 2. Slot allocation + firmware builder + whitelist guard
+  // ===========================================================================
+  // Every distinct consumer usage needs one of the 7 slot ids. Keys sharing a usage share a slot.
+  function allocateSlots(sch) {
+    const usages = [];
+    for (const k of ALL_KEYS) {
+      const a = sch.get(k.off);
+      if (a.t === "consumer" && !usages.includes(a.v)) usages.push(a.v);
+    }
+    if (usages.length > SLOT_IDS.length) {
+      return { error: `多媒体/系统功能共 ${usages.length} 种，超过固件的 ${SLOT_IDS.length} 个功能槽。可把音量/静音改用「键盘页音量」，或让几颗键共用同一功能。` };
+    }
+    const slotOf = new Map(), taken = new Set();
+    // Pass 1: a usage keeps the slot of a key that owned that slot at the factory (minimal diff).
+    for (const u of usages) {
+      for (const k of ALL_KEYS) {
+        const a = sch.get(k.off);
+        if (a.t === "consumer" && a.v === u && SLOT_IDS.includes(k.stock) && !taken.has(k.stock)) {
+          slotOf.set(u, k.stock); taken.add(k.stock); break;
         }
       }
-      return crc;
+    }
+    // Pass 2: prefer a slot whose factory usage already equals u, then any free slot.
+    for (const u of usages) {
+      if (slotOf.has(u)) continue;
+      const id = SLOT_IDS.find(i => !taken.has(i) && SLOT_STOCK_USAGE[i] === u) ?? SLOT_IDS.find(i => !taken.has(i));
+      slotOf.set(u, id); taken.add(id);
+    }
+    return { slotOf, used: usages.length };
+  }
+
+  function buildFirmware(sch) {
+    if (!baseFirmware) return { error: "原厂基线未加载" };
+    const alloc = allocateSlots(sch);
+    if (alloc.error) return alloc;
+    const out = new Uint8Array(baseFirmware);
+    for (const k of ALL_KEYS) {
+      if (k.locked) continue;
+      const a = sch.get(k.off);
+      out[k.off] = a.t === "none" ? 0x00 : a.t === "key" ? a.v : alloc.slotOf.get(a.v);
+    }
+    for (const id of SLOT_IDS) {
+      const usage = [...alloc.slotOf].find(([, s]) => s === id)?.[0] ?? SLOT_STOCK_USAGE[id];
+      const o = slotUsageOffset(id);
+      out[o] = usage & 0xFF; out[o + 1] = (usage >> 8) & 0xFF;
+    }
+    const crc = telinkCrc32(out.subarray(0, out.length - 4));
+    out[out.length - 4] = crc & 0xFF; out[out.length - 3] = (crc >>> 8) & 0xFF;
+    out[out.length - 2] = (crc >>> 16) & 0xFF; out[out.length - 1] = (crc >>> 24) & 0xFF;
+    const guard = guardImage(out);
+    if (guard.error) return guard;
+    return { bytes: out, crc, used: alloc.used, diff: guard.diff };
+  }
+
+  // Hard safety check: the image may differ from the factory image ONLY in editable matrix bytes,
+  // slot usage bytes and the trailing CRC; every value must be a legal one.
+  function allowedOffsets() {
+    const s = new Set(EDITABLE_OFFS);
+    for (const id of SLOT_IDS) { s.add(slotUsageOffset(id)); s.add(slotUsageOffset(id) + 1); }
+    for (let i = FW_SIZE - 4; i < FW_SIZE; i++) s.add(i);
+    return s;
+  }
+  function guardImage(img) {
+    if (img.length !== FW_SIZE) return { error: "镜像大小不对" };
+    const allowed = allowedOffsets();
+    const diff = [];
+    for (let i = 0; i < FW_SIZE; i++) {
+      if (img[i] !== baseFirmware[i]) {
+        if (!allowed.has(i)) return { error: `安全校验失败：偏移 ${hex4(i)} 不在允许修改的范围内，已拒绝。` };
+        diff.push(i);
+      }
+    }
+    for (const off of EDITABLE_OFFS) {
+      const v = img[off];
+      if (!(v === 0x00 || KB_ALLOWED.has(v) || SLOT_IDS.includes(v))) return { error: `安全校验失败：${hex4(off)} 的键码 ${hex2(v)} 不在白名单内。` };
+    }
+    for (const id of SLOT_IDS) {
+      const base = SLOT_TABLE + SLOT_IDS.indexOf(id) * 6;
+      if (img[base] !== id || img[base + 1] !== 0 || img[base + 4] !== 1 || img[base + 5] !== 0) return { error: "安全校验失败：功能槽结构被改动。" };
+      const u = img[base + 2] | (img[base + 3] << 8);
+      if (u > CONSUMER_MAX) return { error: `安全校验失败：功能值 ${hex4(u)} 超出描述符范围。` };
+    }
+    if (telinkCrc32(img.subarray(0, FW_SIZE - 4)) !== storedCrc(img)) return { error: "CRC 不一致" };
+    return { diff };
+  }
+
+  // Reverse: derive a scheme from a firmware image (after it passes the guard).
+  function schemeFromImage(img) {
+    const sch = stockScheme();
+    for (const k of ALL_KEYS) {
+      if (k.locked) continue;
+      const v = img[k.off];
+      if (v === 0x00) sch.set(k.off, { t: "none" });
+      else if (SLOT_IDS.includes(v)) { const o = slotUsageOffset(v); sch.set(k.off, { t: "consumer", v: img[o] | (img[o + 1] << 8) }); }
+      else sch.set(k.off, { t: "key", v });
+    }
+    return sch;
+  }
+
+  // ===========================================================================
+  // 3. Scheme persistence (the keyboard cannot be read back)
+  // ===========================================================================
+  function schemeToJSON(sch) {
+    const keys = {};
+    for (const k of ALL_KEYS) {
+      const a = sch.get(k.off);
+      if (!sameAssign(a, stockAssign(k))) keys[hex4(k.off)] = a.t === "none" ? { t: "none" } : { t: a.t, v: a.t === "key" ? hex2(a.v) : hex4(a.v) };
+    }
+    return { format: "kb331u-keymap", version: 1, firmware: "KA024_A_1.0.8", keys };
+  }
+  function schemeFromJSON(obj) {
+    if (!obj || obj.format !== "kb331u-keymap" || typeof obj.keys !== "object") throw new Error("不是 KB331U 方案文件");
+    const sch = stockScheme();
+    for (const [offStr, a] of Object.entries(obj.keys)) {
+      const off = parseInt(offStr, 16);
+      const k = KEY_BY_OFF.get(off);
+      if (!k || k.locked) throw new Error(`未知或锁定的按键 ${offStr}`);
+      if (a.t === "none") { sch.set(off, { t: "none" }); continue; }
+      const v = parseInt(a.v, 16);
+      if (a.t === "key" && KB_ALLOWED.has(v)) sch.set(off, { t: "key", v });
+      else if (a.t === "consumer" && v >= 1 && v <= CONSUMER_MAX) sch.set(off, { t: "consumer", v });
+      else throw new Error(`按键 ${offStr} 的取值非法`);
+    }
+    return sch;
+  }
+  function safeStore(key, val) { try { localStorage.setItem(key, val); } catch (_) {} }
+  function safeLoad(key) { try { return localStorage.getItem(key); } catch (_) { return null; } }
+
+  function setBanner(html) { document.getElementById("schemeBanner").innerHTML = html; }
+
+  // ===========================================================================
+  // 4. Rendering
+  // ===========================================================================
+  function keycapEl(k) {
+    const a = scheme.get(k.off);
+    const modified = !sameAssign(a, stockAssign(k));
+    const div = document.createElement("div");
+    div.className = "keycap" + (k.locked ? " locked" : "") + (k.off === selectedOff ? " selected" : "") +
+      (modified ? " modified" : "") + (a.t === "consumer" ? " consumer" : "") + (a.t === "none" ? " disabled-key" : "");
+    div.style.width = `calc(var(--u) * ${k.w} + var(--gap) * ${k.w - 1})`;
+    div.title = k.locked ? `${keyName(k)}（锁定）` : `${keyName(k)} · ${hex4(k.off)} · 当前：${describe(a)}`;
+    div.innerHTML = `<span class="k-phys"></span>${modified ? '<span class="k-new"></span>' : ""}`;
+    div.querySelector(".k-phys").textContent = k.label;
+    const n = div.querySelector(".k-new");
+    if (n) n.textContent = describe(a);
+    if (!k.locked) div.addEventListener("click", () => { selectedOff = k.off; editorTab = a.t === "consumer" ? "consumer" : a.t === "none" ? "none" : "key"; renderAll(); });
+    return div;
+  }
+
+  function renderKeyboard() {
+    const kbd = document.getElementById("kbd");
+    kbd.innerHTML = "";
+    for (const row of ROWS) {
+      const r = document.createElement("div");
+      r.className = "kbd-row" + (row.cls ? " " + row.cls : "");
+      for (const k of row.keys) {
+        if (k.stack) {
+          const s = document.createElement("div");
+          s.className = "arrow-stack";
+          s.style.width = "var(--u)";
+          for (const sk of k.stack) { const el = keycapEl(sk); el.style.width = "var(--u)"; s.appendChild(el); }
+          r.appendChild(s);
+        } else r.appendChild(keycapEl(k));
+      }
+      kbd.appendChild(r);
+    }
+    const alloc = allocateSlots(scheme);
+    const meter = document.getElementById("slotMeter");
+    const used = alloc.error ? "超出" : alloc.used;
+    meter.textContent = `功能槽 ${used}/${SLOT_IDS.length}`;
+    meter.classList.toggle("full", !!alloc.error || alloc.used >= SLOT_IDS.length);
+  }
+
+  function optButton(label, active, onClick, tag) {
+    const b = document.createElement("button");
+    b.className = "opt" + (active ? " active" : "");
+    b.textContent = label;
+    if (tag) { const t = document.createElement("span"); t.className = "tag"; t.textContent = " " + tag; b.appendChild(t); }
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  function renderEditor() {
+    const k = KEY_BY_OFF.get(selectedOff);
+    const a = scheme.get(selectedOff);
+    const stock = stockAssign(k);
+    document.getElementById("editorTitle").textContent = `2. 修改「${keyName(k)}」`;
+    const dl = document.getElementById("selSummary");
+    dl.innerHTML = "";
+    const add = (dt, dd) => { const t = document.createElement("dt"); t.textContent = dt; const d = document.createElement("dd"); d.textContent = dd; dl.append(t, d); };
+    add("原厂功能", `${describe(stock)}`);
+    add("当前设置", `${describe(a)}${a.t === "consumer" ? "（" + hex4(a.v) + "，占 1 个功能槽）" : a.t === "key" ? "（" + hex2(a.v) + "）" : ""}`);
+    add("固件位置", hex4(k.off));
+
+    const tabs = document.getElementById("tabs");
+    tabs.innerHTML = "";
+    for (const [id, name] of [["key", "标准按键"], ["consumer", "多媒体 / 系统功能"], ["none", "禁用"]]) {
+      const b = document.createElement("button");
+      b.className = "tab" + (editorTab === id ? " active" : "");
+      b.textContent = name;
+      b.addEventListener("click", () => { editorTab = id; renderEditor(); });
+      tabs.appendChild(b);
+    }
+    if (!sameAssign(a, stock)) {
+      const b = document.createElement("button");
+      b.className = "tab"; b.textContent = "↺ 恢复原厂";
+      b.addEventListener("click", () => setAssign(stock));
+      tabs.appendChild(b);
     }
 
-    function crc16Modbus(bytes) {
-      let crc = 0xFFFF;
-      for (let i = 0; i < bytes.length; i++) {
-        crc ^= bytes[i];
-        for (let b = 0; b < 8; b++) {
-          crc = (crc & 0x0001) ? (((crc >> 1) ^ 0xA001) & 0xFFFF) : (crc >> 1);
+    const body = document.getElementById("editorBody");
+    body.innerHTML = "";
+    if (editorTab === "key") {
+      for (const g of KB_GROUPS) {
+        const gd = document.createElement("div"); gd.className = "opt-group";
+        gd.innerHTML = `<div class="opt-group-label"></div><div class="opt-list"></div>`;
+        gd.querySelector(".opt-group-label").textContent = g.label;
+        const list = gd.querySelector(".opt-list");
+        for (const [code, name, verified] of g.items) {
+          list.appendChild(optButton(name, a.t === "key" && a.v === code, () => setAssign({ t: "key", v: code }), verified ? "实测" : ""));
+        }
+        body.appendChild(gd);
+      }
+    } else if (editorTab === "consumer") {
+      for (const g of CONSUMER_GROUPS) {
+        const gd = document.createElement("div"); gd.className = "opt-group";
+        gd.innerHTML = `<div class="opt-group-label"></div><div class="opt-list"></div>`;
+        gd.querySelector(".opt-group-label").textContent = g.label;
+        const list = gd.querySelector(".opt-list");
+        for (const [usage, name, verified] of g.items) {
+          list.appendChild(optButton(name, a.t === "consumer" && a.v === usage, () => setAssign({ t: "consumer", v: usage }), verified ? "实测" : ""));
+        }
+        body.appendChild(gd);
+      }
+      const row = document.createElement("div");
+      row.className = "row-inline";
+      row.innerHTML = `<span class="card-sub">自定义 Consumer Usage（0x0001–0x0397）：</span><input id="customHex" type="text" placeholder="0x029F" maxlength="6" /><button id="btnCustom" class="small">应用</button>`;
+      body.appendChild(row);
+      if (a.t === "consumer") row.querySelector("#customHex").value = hex4(a.v);
+      row.querySelector("#btnCustom").addEventListener("click", () => {
+        const v = parseInt(row.querySelector("#customHex").value.trim().replace(/^0x/i, ""), 16);
+        if (Number.isNaN(v) || v < 1 || v > CONSUMER_MAX) { alert("请输入 0x0001 – 0x0397 之间的 16 进制值"); return; }
+        setAssign({ t: "consumer", v });
+      });
+      const p = document.createElement("p");
+      p.className = "card-sub";
+      p.textContent = "「实测」= 已在 HONOR MagicPad 4 上验证。其他功能取决于设备系统是否识别。全键盘最多 7 种不同的多媒体/系统功能。";
+      body.appendChild(p);
+    } else {
+      const p = document.createElement("p");
+      p.className = "card-sub";
+      p.textContent = "禁用后这颗键按下不发送任何内容。";
+      body.appendChild(p);
+      body.appendChild(optButton("禁用这颗键", a.t === "none", () => setAssign({ t: "none" })));
+    }
+  }
+
+  function renderFlashPanel() {
+    const diffList = document.getElementById("diffList");
+    const meta = document.getElementById("diffMeta");
+    const changed = ALL_KEYS.filter(k => !sameAssign(scheme.get(k.off), stockAssign(k)));
+    diffList.innerHTML = "";
+    if (!changed.length) diffList.textContent = "与联想原厂完全一致。";
+    else {
+      const ul = document.createElement("ul");
+      for (const k of changed) {
+        const li = document.createElement("li");
+        li.textContent = `${keyName(k)}：${describe(stockAssign(k))} → ${describe(scheme.get(k.off))}`;
+        ul.appendChild(li);
+      }
+      diffList.appendChild(ul);
+    }
+    const res = buildFirmware(scheme);
+    const crcEl = document.getElementById("crcPreview");
+    if (res.error) {
+      meta.textContent = "⚠ " + res.error;
+      meta.style.color = "var(--warn)";
+      crcEl.textContent = "新 CRC-32: --";
+    } else {
+      meta.style.color = "";
+      meta.textContent = `与原厂相差 ${res.diff.length} 字节（含 4 字节 CRC），全部位于白名单范围内 ✓`;
+      crcEl.textContent = `新 CRC-32: 0x${res.crc.toString(16).toUpperCase().padStart(8, "0")}`;
+    }
+    const ok = !res.error;
+    document.getElementById("btnFlash").disabled = !(ok && hidDevice && hidDevice.opened && !isFlashing);
+    document.getElementById("btnDownload").disabled = !ok || isFlashing;
+  }
+
+  function renderAll() { renderKeyboard(); renderEditor(); renderFlashPanel(); }
+
+  function setAssign(a) {
+    scheme.set(selectedOff, a);
+    safeStore("kb331u.draft", JSON.stringify(schemeToJSON(scheme)));
+    renderAll();
+  }
+
+  // ===========================================================================
+  // 5. WebHID (Report ID 0x04 OUT / 0x03 IN) — same protocol as tools/flash_kb_firmware.c
+  // ===========================================================================
+  function sendAndWait(payloadBytes, timeoutMs = 1000) {
+    return new Promise((resolve, reject) => {
+      if (!hidDevice || !hidDevice.opened) return reject(new Error("设备未打开"));
+      const buf = new Uint8Array(63);
+      buf.set(payloadBytes.subarray(0, 63), 0);
+      const timer = setTimeout(() => { pendingResolver = null; reject(new Error("等待设备回复超时")); }, timeoutMs);
+      pendingResolver = (reply) => { clearTimeout(timer); resolve(reply); };
+      hidDevice.sendReport(0x04, buf).catch((err) => { clearTimeout(timer); pendingResolver = null; reject(err); });
+    });
+  }
+
+  async function queryVersion() {
+    const reply = await sendAndWait(new Uint8Array([0x03, 0x04, 0x01, 0x01, 0x35, 0x02]), 1500);
+    if (reply[0] === 0x04 && reply[1] === 0x04) {
+      const ver = new TextDecoder().decode(reply.subarray(3, 3 + reply[2]));
+      document.getElementById("connText").textContent = `已连接 (${ver})`;
+      log(`键盘固件版本: ${ver}`);
+      return ver;
+    }
+    throw new Error("版本应答格式异常");
+  }
+
+  async function attachDevice(dev) {
+    hidDevice = dev;
+    if (!hidDevice.opened) await hidDevice.open();
+    hidDevice.oninputreport = (event) => {
+      if (event.reportId === 0x03 && pendingResolver) {
+        const fn = pendingResolver; pendingResolver = null;
+        fn(new Uint8Array(event.data.buffer, event.data.byteOffset, event.data.byteLength));
+      }
+    };
+    document.getElementById("connDot").classList.add("connected");
+    document.getElementById("connText").textContent = `已连接: ${hidDevice.productName || "KB331U"}`;
+    document.getElementById("btnQueryVer").disabled = false;
+    await queryVersion();
+    renderFlashPanel();
+  }
+
+  const isVendorIface = d => d.vendorId === 0x17EF && d.productId === 0x619E && d.collections.some(c => c.usagePage === 0xFF00);
+
+  async function connectKeyboard() {
+    if (!("hid" in navigator)) { alert("当前浏览器不支持 WebHID，请使用桌面版 Chrome 或 Edge，并通过 http://localhost 打开。"); return; }
+    try {
+      const devices = await navigator.hid.requestDevice({ filters: [{ vendorId: 0x17EF, productId: 0x619E, usagePage: 0xFF00 }] });
+      if (!devices.length) return;
+      await attachDevice(devices[0]);
+      log(`WebHID 已连接 ${hidDevice.productName}`);
+    } catch (err) { log(`连接失败: ${err.message}`); }
+  }
+
+  let awaitingReboot = false;
+  async function flashFirmware(built) {
+    const fw = built.bytes;
+    isFlashing = true; renderFlashPanel();
+    const bar = document.getElementById("progressBar");
+    const label = document.getElementById("progressLabel");
+    const t0 = performance.now();
+    try {
+      log("1/3 CMD_OTA_START…");
+      const startReply = await sendAndWait(new Uint8Array([0x03, 0x01, 0x02, 0x01, 0xFF, 0x44, 0x80]), 1500);
+      if (!(startReply[0] === 0x04 && startReply[1] === 0x01 && startReply[3] === 0x01)) throw new Error("CMD_OTA_START 被拒绝");
+      const totalChunks = Math.ceil(fw.length / 16);
+      const pkt = new Uint8Array(25);
+      pkt[0] = 0x03; pkt[1] = 0x02; pkt[2] = 0x14;
+      for (let idx = 0; idx < totalChunks; idx++) {
+        pkt[3] = idx & 0xFF; pkt[4] = (idx >> 8) & 0xFF;
+        const chunk = new Uint8Array(16).fill(0xFF);
+        chunk.set(fw.subarray(idx * 16, Math.min(idx * 16 + 16, fw.length)), 0);
+        pkt.set(chunk, 5);
+        const inner = crc16Modbus(pkt.subarray(3, 21));
+        pkt[21] = inner & 0xFF; pkt[22] = (inner >> 8) & 0xFF;
+        const outer = crc16Outer(pkt.subarray(0, 23));
+        pkt[23] = (outer >> 8) & 0xFF; pkt[24] = outer & 0xFF;
+        let ok = false;
+        for (let retry = 0; retry < 3 && !ok; retry++) {
+          try {
+            const r = await sendAndWait(pkt, 800);
+            ok = r[0] === 0x04 && r[1] === 0x02 && (r[3] === 0x01 || r[3] === 0x0A);
+          } catch (_) {}
+          if (!ok) await new Promise(res => setTimeout(res, 5));
+        }
+        if (!ok) throw new Error(`分块 ${idx}/${totalChunks} 写入失败（键盘仍运行旧固件）`);
+        if ((idx + 1) % 50 === 0 || idx + 1 === totalChunks) {
+          const pct = (((idx + 1) / totalChunks) * 100).toFixed(1);
+          bar.style.width = `${pct}%`;
+          label.textContent = `写入中: ${idx + 1} / ${totalChunks} (${pct}%)`;
         }
       }
-      return crc;
+      log("2/3 CMD_OTA_END…");
+      const e = new Uint8Array(13);
+      e[0] = 0x03; e[1] = 0x03; e[2] = 0x08; e[3] = 0x02; e[4] = 0xFF;
+      e[5] = totalChunks & 0xFF; e[6] = (totalChunks >> 8) & 0xFF; e[7] = (~e[5]) & 0xFF; e[8] = (~e[6]) & 0xFF;
+      const ei = crc16Modbus(e.subarray(3, 9)); e[9] = ei & 0xFF; e[10] = (ei >> 8) & 0xFF;
+      const eo = crc16Outer(e.subarray(0, 11)); e[11] = (eo >> 8) & 0xFF; e[12] = eo & 0xFF;
+      const endReply = await sendAndWait(e, 2500);
+      if (!(endReply[0] === 0x04 && endReply[1] === 0x03 && endReply[3] === 0x02)) throw new Error("CMD_OTA_END 校验失败（键盘仍运行旧固件）");
+      const sec = ((performance.now() - t0) / 1000).toFixed(1);
+      label.textContent = `刷写完成 (${sec}s) · 键盘重启中…`;
+      log(`3/3 刷写成功，耗时 ${sec}s。等待键盘重启并自检刷写通道…`);
+      safeStore("kb331u.flashed", JSON.stringify({ at: new Date().toISOString(), scheme: schemeToJSON(scheme) }));
+      awaitingReboot = true;
+    } catch (err) {
+      label.textContent = `失败: ${err.message}`;
+      log(`错误: ${err.message}`);
+    } finally {
+      isFlashing = false; renderFlashPanel();
     }
+  }
 
-    const CRC32_TBL = (() => {
-      const tbl = new Uint32Array(256);
-      for (let n = 0; n < 256; n++) {
-        let c = n;
-        for (let k = 0; k < 8; k++) {
-          c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+  // ===========================================================================
+  // 6. Init & events
+  // ===========================================================================
+  async function loadBase() {
+    const badge = document.getElementById("fwStateBadge");
+    try {
+      const resp = await fetch("./KA024_official_firmware.bin");
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const bytes = new Uint8Array(await resp.arrayBuffer());
+      const sha = await sha256Hex(bytes);
+      if (sha !== BASE_SHA256) throw new Error("SHA-256 与联想原厂不符");
+      baseFirmware = bytes;
+      badge.textContent = "原厂基线校验通过 ✓";
+      log("已加载联想原厂基线 KA024_A_1.0.8（SHA-256 校验通过）");
+    } catch (err) {
+      badge.textContent = "基线加载失败";
+      log(`原厂基线加载失败: ${err.message}。请通过 serve.sh 打开本页。`);
+    }
+  }
+
+  function loadInitialScheme() {
+    const flashed = safeLoad("kb331u.flashed");
+    const draft = safeLoad("kb331u.draft");
+    try {
+      const f = flashed ? JSON.parse(flashed) : null;
+      const d = draft ? JSON.parse(draft) : null;
+      if (f && (!d || JSON.stringify(d.keys) === JSON.stringify(f.scheme.keys))) {
+        scheme = schemeFromJSON(f.scheme);
+        setBanner(`已载入你在 ${new Date(f.at).toLocaleString()} 刷入键盘的方案。`);
+        return;
+      }
+      if (d) {
+        scheme = schemeFromJSON(d);
+        setBanner(`已恢复你上次在本页编辑、<b>尚未刷入</b>的方案。${f ? "（键盘里是 " + new Date(f.at).toLocaleString() + " 刷入的版本）" : ""}`);
+        return;
+      }
+    } catch (_) {}
+    scheme = stockScheme();
+    for (const [off, a] of Object.entries(MY_PRESET)) scheme.set(Number(off), a);
+    setBanner("已载入「MagicPad 当前方案」：互联 → 多任务，右 Ctrl → 回到桌面，音量/静音改用键盘页键码。与 2026-11-18 刷入键盘的固件一致。");
+  }
+
+  (async function init() {
+    const w = document.getElementById("envWarning");
+    if (location.protocol === "file:") {
+      w.style.display = "block";
+      w.innerHTML = "浏览器禁止在 <code>file://</code> 下使用 WebHID。请运行 <code>./serve.sh</code>（Windows 双击 <code>serve.bat</code>）后访问 <code>http://localhost:8765</code>。";
+    } else if (!("hid" in navigator)) {
+      w.style.display = "block";
+      w.textContent = "当前浏览器不支持 WebHID，可以编辑和导出 .bin，但刷写需要桌面版 Chrome / Edge。";
+    } else {
+      navigator.hid.addEventListener("disconnect", (e) => {
+        if (hidDevice && e.device === hidDevice) {
+          hidDevice = null; pendingResolver = null;
+          document.getElementById("connDot").classList.remove("connected");
+          document.getElementById("connText").textContent = awaitingReboot ? "键盘重启中…" : "键盘已断开";
+          document.getElementById("btnQueryVer").disabled = true;
+          renderFlashPanel();
         }
-        tbl[n] = c >>> 0;
-      }
-      return tbl;
-    })();
-
-    function telinkCrc32(bytes) {
-      let crc = 0xFFFFFFFF;
-      for (let i = 0; i < bytes.length; i++) {
-        crc = CRC32_TBL[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
-      }
-      return crc >>> 0;
-    }
-
-    function hex4(v) {
-      return "0x" + v.toString(16).toUpperCase().padStart(4, "0");
-    }
-
-    function log(msg) {
-      const box = document.getElementById("logBox");
-      const ts = new Date().toLocaleTimeString();
-      box.textContent += `[${ts}] ${msg}\n`;
-      box.scrollTop = box.scrollHeight;
-    }
-
-    // =========================================================================
-    // 3. Firmware Patch Builder
-    // =========================================================================
-    function buildPatchedFirmware() {
-      if (!baseFirmware) return null;
-      const out = new Uint8Array(baseFirmware);
-      for (const slot of KEY_SLOTS) {
-        if (slot.kind !== "editable") continue;
-        const val = currentMap.get(slot.offset);
-        out[slot.offset] = val & 0xFF;
-        out[slot.offset + 1] = (val >> 8) & 0xFF;
-      }
-      const crc = telinkCrc32(out.subarray(0, out.length - 4));
-      out[out.length - 4] = crc & 0xFF;
-      out[out.length - 3] = (crc >>> 8) & 0xFF;
-      out[out.length - 2] = (crc >>> 16) & 0xFF;
-      out[out.length - 1] = (crc >>> 24) & 0xFF;
-      return { bytes: out, crc };
-    }
-
-    function updatePreview() {
-      const res = buildPatchedFirmware();
-      const crcEl = document.getElementById("crcPreview");
-      if (!res) {
-        crcEl.textContent = "新 CRC-32: --";
-      } else {
-        crcEl.textContent = `新 CRC-32: 0x${res.crc.toString(16).toUpperCase().padStart(8, "0")}`;
-      }
-      document.getElementById("btnFlash").disabled = !(hidDevice && hidDevice.opened && baseFirmware && !isFlashing);
-      document.getElementById("btnDownload").disabled = !baseFirmware || isFlashing;
-    }
-
-    // =========================================================================
-    // 4. UI Rendering
-    // =========================================================================
-    function renderKeyboard() {
-      const row = document.getElementById("kbdRow");
-      row.innerHTML = "";
-      for (const slot of KEY_SLOTS) {
-        const div = document.createElement("div");
-        if (slot.kind === "fixed") {
-          div.className = "keycap fixed";
-          div.innerHTML = `<span class="key-phys">固定</span><span class="key-val">${slot.label}</span><span class="key-hex">-</span>`;
-        } else {
-          const val = currentMap.get(slot.offset);
-          const isMod = val !== slot.stock;
-          div.className = "keycap editable" +
-            (slot.offset === selectedOffset ? " selected" : "") +
-            (isMod ? " modified" : "");
-          const name = USAGE_NAMES.get(val) || "自定义";
-          div.innerHTML = `
-            <span class="key-phys">${slot.phys}</span>
-            <span class="key-val">${name}</span>
-            <span class="key-hex">${hex4(val)}</span>
-          `;
-          div.addEventListener("click", () => {
-            selectedOffset = slot.offset;
-            renderAll();
-          });
-        }
-        row.appendChild(div);
-      }
-    }
-
-    function renderEditor() {
-      const slot = KEY_SLOTS.find(s => s.offset === selectedOffset);
-      const curVal = currentMap.get(selectedOffset);
-      document.getElementById("editorTitle").textContent = `2. 修改 [${slot.phys}] 按键`;
-      document.getElementById("editorOffset").textContent = `偏移 ${hex4(slot.offset)} · 原厂 ${hex4(slot.stock)}`;
-      document.getElementById("customHexInput").value = hex4(curVal);
-
-      const container = document.getElementById("presetContainer");
-      container.innerHTML = "";
-      for (const group of PRESET_GROUPS) {
-        const gDiv = document.createElement("div");
-        gDiv.className = "preset-group";
-        gDiv.innerHTML = `<div class="preset-group-label">${group.label}</div>`;
-        const list = document.createElement("div");
-        list.className = "preset-list";
-        for (const item of group.items) {
-          const btn = document.createElement("button");
-          btn.className = "preset-btn" + (curVal === item.usage ? " active" : "");
-          btn.textContent = `${item.name} (${hex4(item.usage)})`;
-          btn.addEventListener("click", () => {
-            currentMap.set(selectedOffset, item.usage);
-            renderAll();
-          });
-          list.appendChild(btn);
-        }
-        gDiv.appendChild(list);
-        container.appendChild(gDiv);
-      }
-    }
-
-    function renderAll() {
-      renderKeyboard();
-      renderEditor();
-      updatePreview();
-    }
-
-    // =========================================================================
-    // 5. WebHID Communication (Report ID 0x04 OUT / 0x03 IN, 63-byte payload)
-    // =========================================================================
-    // Note: WebHID passes reportId separately from the 63-byte data payload!
-    function sendAndWait(payloadBytes, timeoutMs = 1000) {
-      return new Promise((resolve, reject) => {
-        if (!hidDevice || !hidDevice.opened) {
-          return reject(new Error("设备未打开"));
-        }
-        const buf = new Uint8Array(63);
-        buf.set(payloadBytes.subarray(0, 63), 0);
-
-        const timer = setTimeout(() => {
-          pendingResolver = null;
-          reject(new Error("等待设备回复超时"));
-        }, timeoutMs);
-
-        pendingResolver = (replyData) => {
-          clearTimeout(timer);
-          resolve(replyData);
-        };
-
-        hidDevice.sendReport(0x04, buf).catch((err) => {
-          clearTimeout(timer);
-          pendingResolver = null;
-          reject(err);
-        });
+      });
+      navigator.hid.addEventListener("connect", async (e) => {
+        if (!isVendorIface(e.device) || hidDevice) return;
+        try {
+          await attachDevice(e.device);
+          if (awaitingReboot) {
+            awaitingReboot = false;
+            log("✓ 键盘已重启并应答版本查询：新固件运行正常，USB 刷写通道可用（随时可刷回）。");
+            document.getElementById("progressLabel").textContent = "刷写完成 · 键盘已正常重启 ✓";
+          }
+        } catch (err) { log(`自动重连失败: ${err.message}，请手动点击「连接 USB-C 键盘」。`); }
       });
     }
+    loadInitialScheme();
+    renderAll();
+    await loadBase();
+    renderFlashPanel();
+  })();
 
-    async function queryVersion() {
-      // Official 6-byte payload (excluding Report ID 0x04): 03 04 01 01 35 02
-      const reply = await sendAndWait(new Uint8Array([0x03, 0x04, 0x01, 0x01, 0x35, 0x02]), 1500);
-      if (reply[0] === 0x04 && reply[1] === 0x04) {
-        const len = reply[2];
-        const ver = new TextDecoder().decode(reply.subarray(3, 3 + len));
-        document.getElementById("connText").textContent = `已连接 (${ver})`;
-        log(`当前键盘固件版本: ${ver}`);
-        return ver;
-      }
-      throw new Error("版本应答格式异常");
-    }
+  document.getElementById("btnConnect").addEventListener("click", connectKeyboard);
+  document.getElementById("btnQueryVer").addEventListener("click", async () => {
+    try { await queryVersion(); } catch (e) { log(`读取版本失败: ${e.message}`); }
+  });
 
-    async function connectKeyboard() {
-      if (!("hid" in navigator)) {
-        alert("当前浏览器不支持 WebHID，请使用桌面版 Chrome 或 Edge，并通过 http://localhost 或 https:// 打开。");
-        return;
-      }
-      try {
-        const devices = await navigator.hid.requestDevice({
-          filters: [{ vendorId: 0x17EF, productId: 0x619E, usagePage: 0xFF00 }],
-        });
-        if (!devices.length) return;
-        hidDevice = devices[0];
-        if (!hidDevice.opened) await hidDevice.open();
+  document.getElementById("btnFlash").addEventListener("click", () => {
+    const built = buildFirmware(scheme);
+    if (built.error) { alert(built.error); return; }
+    const changes = ALL_KEYS.filter(k => !sameAssign(scheme.get(k.off), stockAssign(k)))
+      .map(k => `• ${keyName(k)}：${describe(stockAssign(k))} → ${describe(scheme.get(k.off))}`);
+    const summary = changes.length ? changes.join("\n") : "• 全部恢复为联想原厂";
+    if (confirm(`确认刷入以下配置？\n\n${summary}\n\n与原厂相差 ${built.diff.length} 字节（已通过白名单校验）。\n约 15 秒，期间请勿拔线。`)) flashFirmware(built);
+  });
 
-        hidDevice.oninputreport = (event) => {
-          if (event.reportId === 0x03 && pendingResolver) {
-            const fn = pendingResolver;
-            pendingResolver = null;
-            fn(new Uint8Array(event.data.buffer, event.data.byteOffset, event.data.byteLength));
-          }
-        };
+  document.getElementById("btnDownload").addEventListener("click", () => {
+    const built = buildFirmware(scheme);
+    if (built.error) { alert(built.error); return; }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([built.bytes], { type: "application/octet-stream" }));
+    a.download = `KA024_A_1.0.8_custom_${built.crc.toString(16).padStart(8, "0")}.bin`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    log(`已导出 ${a.download}`);
+  });
 
-        document.getElementById("connDot").classList.add("connected");
-        document.getElementById("connText").textContent = `已连接: ${hidDevice.productName || "KB331U"}`;
-        document.getElementById("btnQueryVer").disabled = false;
-        log(`WebHID 已打开: ${hidDevice.productName} (VID=0x17EF, PID=0x619E)`);
-        await queryVersion();
-        updatePreview();
-      } catch (err) {
-        log(`连接失败: ${err.message}`);
-      }
-    }
+  document.getElementById("btnRestoreStock").addEventListener("click", () => {
+    scheme = stockScheme();
+    safeStore("kb331u.draft", JSON.stringify(schemeToJSON(scheme)));
+    setBanner("已切换为联想原厂方案。刷入后键盘恢复出厂键位。");
+    renderAll();
+  });
+  document.getElementById("btnPresetMine").addEventListener("click", () => {
+    scheme = stockScheme();
+    for (const [off, a] of Object.entries(MY_PRESET)) scheme.set(Number(off), a);
+    safeStore("kb331u.draft", JSON.stringify(schemeToJSON(scheme)));
+    setBanner("已载入「MagicPad 当前方案」。");
+    renderAll();
+  });
 
-    async function flashFirmware() {
-      const built = buildPatchedFirmware();
-      if (!built || !hidDevice || !hidDevice.opened) return;
-      const fw = built.bytes;
-
-      isFlashing = true;
-      updatePreview();
-      const bar = document.getElementById("progressBar");
-      const label = document.getElementById("progressLabel");
-      const startTime = performance.now();
-
-      try {
-        log("1/3 发送 CMD_OTA_START (0xFF01)...");
-        // Payload without Report ID 0x04: 03 01 02 01 FF 44 80
-        const startReply = await sendAndWait(new Uint8Array([0x03, 0x01, 0x02, 0x01, 0xFF, 0x44, 0x80]), 1500);
-        if (!(startReply[0] === 0x04 && startReply[1] === 0x01 && startReply[3] === 0x01)) {
-          throw new Error(`CMD_OTA_START 被拒绝: ${Array.from(startReply.subarray(0, 6)).map(x => x.toString(16)).join(" ")}`);
-        }
-        log("CMD_OTA_START 已确认，开始写入分块...");
-
-        const totalChunks = Math.ceil(fw.length / 16);
-        // 25-byte payload (excluding Report ID 0x04)
-        const pkt = new Uint8Array(25);
-        pkt[0] = 0x03;
-        pkt[1] = 0x02;
-        pkt[2] = 0x14;
-
-        for (let idx = 0; idx < totalChunks; idx++) {
-          pkt[3] = idx & 0xFF;
-          pkt[4] = (idx >> 8) & 0xFF;
-
-          const chunk = new Uint8Array(16).fill(0xFF);
-          const off = idx * 16;
-          chunk.set(fw.subarray(off, Math.min(off + 16, fw.length)), 0);
-          pkt.set(chunk, 5);
-
-          const innerCrc = crc16Modbus(pkt.subarray(3, 21));
-          pkt[21] = innerCrc & 0xFF;
-          pkt[22] = (innerCrc >> 8) & 0xFF;
-
-          const outerCrc = crc16Outer(pkt.subarray(0, 23));
-          pkt[23] = (outerCrc >> 8) & 0xFF;
-          pkt[24] = outerCrc & 0xFF;
-
-          let ok = false;
-          for (let retry = 0; retry < 3; retry++) {
-            try {
-              const r = await sendAndWait(pkt, 800);
-              if (r[0] === 0x04 && r[1] === 0x02 && (r[3] === 0x01 || r[3] === 0x0A)) {
-                ok = true;
-                break;
-              }
-            } catch (_) {}
-            await new Promise(res => setTimeout(res, 5));
-          }
-          if (!ok) throw new Error(`分块 ${idx}/${totalChunks} 写入失败`);
-
-          if ((idx + 1) % 50 === 0 || idx + 1 === totalChunks) {
-            const pct = (((idx + 1) / totalChunks) * 100).toFixed(1);
-            bar.style.width = `${pct}%`;
-            label.textContent = `写入中: ${idx + 1} / ${totalChunks} (${pct}%)`;
-          }
-        }
-
-        log("2/3 发送 CMD_OTA_END (0xFF02)...");
-        const endPkt = new Uint8Array(13);
-        endPkt[0] = 0x03;
-        endPkt[1] = 0x03;
-        endPkt[2] = 0x08;
-        endPkt[3] = 0x02;
-        endPkt[4] = 0xFF;
-        endPkt[5] = totalChunks & 0xFF;
-        endPkt[6] = (totalChunks >> 8) & 0xFF;
-        endPkt[7] = (~endPkt[5]) & 0xFF;
-        endPkt[8] = (~endPkt[6]) & 0xFF;
-
-        const endInner = crc16Modbus(endPkt.subarray(3, 9));
-        endPkt[9] = endInner & 0xFF;
-        endPkt[10] = (endInner >> 8) & 0xFF;
-
-        const endOuter = crc16Outer(endPkt.subarray(0, 11));
-        endPkt[11] = (endOuter >> 8) & 0xFF;
-        endPkt[12] = endOuter & 0xFF;
-
-        const endReply = await sendAndWait(endPkt, 2500);
-        if (endReply[0] === 0x04 && endReply[1] === 0x03 && endReply[3] === 0x02) {
-          const sec = ((performance.now() - startTime) / 1000).toFixed(1);
-          label.textContent = `刷写完成 (${sec}s) · 键盘即将重启`;
-          log(`3/3 刷写成功！耗时 ${sec}s。键盘正在自动重启，请稍候 2 秒后可重新连接。`);
-        } else {
-          throw new Error("CMD_OTA_END 校验失败");
-        }
-      } catch (err) {
-        label.textContent = `失败: ${err.message}`;
-        log(`错误: ${err.message}`);
-      } finally {
-        isFlashing = false;
-        updatePreview();
-      }
-    }
-
-    // =========================================================================
-    // 6. Initialization & Event Listeners
-    // =========================================================================
-    async function loadBaseFirmware(arrayBuffer, name) {
-      const bytes = new Uint8Array(arrayBuffer);
-      if (bytes.length !== 64516 || bytes[0x08] !== 0x4B || bytes[0x09] !== 0x4E ||
-          bytes[0x0A] !== 0x4C || bytes[0x0B] !== 0x54) {
-        log(`校验失败: ${name} 不是有效的 KA024 64,516 字节 Telink 固件`);
-        return;
-      }
-      const calcCrc = telinkCrc32(bytes.subarray(0, bytes.length - 4));
-      const storedCrc = (bytes[bytes.length - 4] | (bytes[bytes.length - 3] << 8) |
-        (bytes[bytes.length - 2] << 16) | (bytes[bytes.length - 1] << 24)) >>> 0;
-      if (calcCrc !== storedCrc) {
-        log(`校验失败: ${name} 自身 CRC-32 不匹配 (计算 0x${calcCrc.toString(16)}, 存储 0x${storedCrc.toString(16)})`);
-        return;
-      }
-      if (bytes[0xEE44] !== 0xEB || bytes[0xEE45] !== 0x00 ||
-          bytes[0xEE68] !== 0xF2 || bytes[0xEE69] !== 0x00) {
-        log(`校验失败: ${name} 键表签名不匹配，已拒绝加载以防刷错位置`);
-        return;
-      }
-      baseFirmware = bytes;
-      document.getElementById("fwStateBadge").textContent = "基线校验通过 ✓";
-      document.getElementById("fwInfoText").textContent = `基线镜像：${name} (64,516 B)`;
-      log(`已加载并校验固件基线 (${name}, CRC32=0x${storedCrc.toString(16).toUpperCase()})`);
-      updatePreview();
-    }
-
-    (async function init() {
-      if (window.location.protocol === "file:") {
-        const w = document.getElementById("webhidWarning");
-        w.style.display = "block";
-        w.innerHTML = "提示：浏览器禁止在 <code>file://</code> 协议下使用 WebHID。请运行目录中的 <code>./serve.sh</code> 并通过 <code>http://localhost:8765</code> 打开。";
-      } else if (!("hid" in navigator)) {
-        const w = document.getElementById("webhidWarning");
-        w.style.display = "block";
-        w.textContent = "当前浏览器不支持 WebHID API，请使用桌面版 Chrome / Edge / Arc 浏览器打开。";
-      } else {
-        navigator.hid.addEventListener("disconnect", (e) => {
-          if (hidDevice && e.device === hidDevice) {
-            hidDevice = null;
-            pendingResolver = null;
-            document.getElementById("connDot").classList.remove("connected");
-            document.getElementById("connText").textContent = "设备已断开（若刚刷写完，请等待重启后重连）";
-            document.getElementById("btnQueryVer").disabled = true;
-            log("USB HID 设备已断开连接。");
-            updatePreview();
-          }
-        });
-      }
-
+  document.getElementById("btnExportScheme").addEventListener("click", () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(schemeToJSON(scheme), null, 2)], { type: "application/json" }));
+    a.download = "kb331u-keymap.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+  document.getElementById("schemeInput").addEventListener("change", async (e) => {
+    const file = e.target.files?.[0]; e.target.value = "";
+    if (!file) return;
+    try {
+      scheme = schemeFromJSON(JSON.parse(await file.text()));
+      safeStore("kb331u.draft", JSON.stringify(schemeToJSON(scheme)));
+      setBanner(`已导入方案文件 ${file.name}。`);
       renderAll();
-
-      try {
-        const resp = await fetch("./KA024_official_firmware.bin");
-        if (resp.ok) {
-          await loadBaseFirmware(await resp.arrayBuffer(), "KA024_official_firmware.bin");
-        } else {
-          document.getElementById("fwStateBadge").textContent = "请手动选择 .bin";
-        }
-      } catch (_) {
-        document.getElementById("fwStateBadge").textContent = "请手动选择 .bin";
-      }
-    })();
-
-    document.getElementById("btnConnect").addEventListener("click", connectKeyboard);
-    document.getElementById("btnQueryVer").addEventListener("click", async () => {
-      try { await queryVersion(); } catch (e) { log(`读取版本失败: ${e.message}`); }
-    });
-    document.getElementById("btnFlash").addEventListener("click", () => {
-      const changes = KEY_SLOTS
-        .filter(s => s.kind === "editable" && currentMap.get(s.offset) !== s.stock)
-        .map(s => `• ${s.phys}: ${hex4(s.stock)} -> ${hex4(currentMap.get(s.offset))}`);
-      const summary = changes.length ? changes.join("\n") : "• 全部恢复为联想原厂默认按键";
-      if (confirm(`确认向 KB331U 键盘刷入以下配置？\n\n${summary}\n\n刷写约需 15 秒，期间请勿拔掉 USB-C 线。`)) {
-        flashFirmware();
-      }
-    });
-
-    document.getElementById("btnDownload").addEventListener("click", () => {
-      const built = buildPatchedFirmware();
-      if (!built) return;
-      const blob = new Blob([built.bytes], { type: "application/octet-stream" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `KA024_A_1.0.8_custom_${built.crc.toString(16).padStart(8, "0")}.bin`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-      log(`已导出自定义固件 (${a.download})`);
-    });
-
-    document.getElementById("btnRestoreStock").addEventListener("click", () => {
-      for (const slot of KEY_SLOTS) {
-        if (slot.kind === "editable") currentMap.set(slot.offset, slot.stock);
-      }
-      renderAll();
-      log("已重置为全部原厂默认映射（点击“直接 USB-C 刷入键盘”即可写回原厂按键）。");
-    });
-
-    document.getElementById("btnApplyCustom").addEventListener("click", () => {
-      const raw = document.getElementById("customHexInput").value.trim().replace(/^0x/i, "");
-      const val = parseInt(raw, 16);
-      if (Number.isNaN(val) || val < 0 || val > 0x0397) {
-        alert("请输入合法的 16 进制 Consumer Usage（范围 0x0000 - 0x0397）");
-        return;
-      }
-      currentMap.set(selectedOffset, val);
-      renderAll();
-    });
-
-    document.getElementById("fileInput").addEventListener("change", async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      await loadBaseFirmware(await file.arrayBuffer(), file.name);
-    });
+    } catch (err) { alert(`导入失败：${err.message}`); }
+  });
+  document.getElementById("binSchemeInput").addEventListener("change", async (e) => {
+    const file = e.target.files?.[0]; e.target.value = "";
+    if (!file || !baseFirmware) return;
+    const img = new Uint8Array(await file.arrayBuffer());
+    const g = guardImage(img);
+    if (g.error) { alert(`无法读取：${g.error}\n只支持由本工具或同一原厂固件改出来的 .bin。`); return; }
+    scheme = schemeFromImage(img);
+    safeStore("kb331u.draft", JSON.stringify(schemeToJSON(scheme)));
+    setBanner(`已从固件 ${file.name} 读出方案（与原厂相差 ${g.diff.length} 字节）。`);
+    log(`从 ${file.name} 读出方案`);
+    renderAll();
+  });
   </script>
 </body>
 </html>
