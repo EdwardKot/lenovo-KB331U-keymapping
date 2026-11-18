@@ -148,6 +148,17 @@
       overflow-y: auto; font-family: var(--mono); font-size: 12px; color: #cbd5e1; white-space: pre-wrap;
     }
     .split { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+    .stages { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px; }
+    .stages li { display: flex; gap: 8px; align-items: baseline; color: var(--muted); }
+    .stages li .ic { width: 16px; text-align: center; flex: none; font-family: var(--mono); }
+    .stages li .info { margin-left: auto; font-family: var(--mono); font-size: 11px; text-align: right; }
+    .stages li.active { color: var(--text, #e5e7eb); font-weight: 600; }
+    .stages li.active .ic { animation: blink 1s steps(2, start) infinite; color: var(--accent); }
+    .stages li.done .ic { color: #22c55e; }
+    .stages li.fail { color: #ef4444; }
+    .stages li.warn .ic { color: var(--warn); }
+    @keyframes blink { to { visibility: hidden; } }
+    #progressLabel { font-family: var(--mono); }
   </style>
 </head>
 <body>
@@ -215,6 +226,7 @@
             <button id="btnFlash" class="success" style="flex:1; justify-content:center;" disabled>USB-C 刷入键盘</button>
             <button id="btnDownload" disabled>导出 .bin</button>
           </div>
+          <ol id="stageList" class="stages" style="display:none;"></ol>
           <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
           <div class="split"><span id="progressLabel">就绪</span><span id="crcPreview">新 CRC-32: --</span></div>
           <div id="logBox" class="log-box"></div>
@@ -736,18 +748,80 @@
     } catch (err) { log(`连接失败: ${err.message}`); }
   }
 
+  // ---- Visible stage tracker: every phase of the flash is shown, nothing is a black box ----
+  const STAGES = [
+    ["build",  "生成固件并通过白名单校验"],
+    ["start",  "键盘进入升级模式"],
+    ["write",  "写入备用分区（4,033 块，每块独立 CRC）"],
+    ["end",    "整体校验并切换到新固件"],
+    ["reboot", "键盘重启"],
+    ["verify", "重新连上并读取版本（确认可随时刷回）"],
+  ];
+  const ICONS = { pending: "○", active: "●", done: "✓", fail: "✗", warn: "!" };
+  function resetStages() {
+    const ol = document.getElementById("stageList");
+    ol.innerHTML = "";
+    ol.style.display = "";
+    for (const [id, text] of STAGES) {
+      const li = document.createElement("li");
+      li.id = `stage-${id}`; li.className = "pending";
+      li.innerHTML = `<span class="ic">${ICONS.pending}</span><span class="tx"></span><span class="info"></span>`;
+      li.querySelector(".tx").textContent = text;
+      ol.appendChild(li);
+    }
+  }
+  const stageT0 = {};
+  function setStage(id, state, info) {
+    const li = document.getElementById(`stage-${id}`);
+    if (!li) return;
+    if (state === "active") stageT0[id] = performance.now();
+    li.className = state;
+    li.querySelector(".ic").textContent = ICONS[state];
+    let text = info || "";
+    if ((state === "done" || state === "warn") && stageT0[id] != null && !info) {
+      text = `${((performance.now() - stageT0[id]) / 1000).toFixed(1)}s`;
+    }
+    li.querySelector(".info").textContent = text;
+  }
+  const fmtSec = s => (s >= 60 ? `${Math.floor(s / 60)}分${Math.round(s % 60)}秒` : `${s.toFixed(1)}s`);
+
+  window.addEventListener("beforeunload", (e) => {
+    if (isFlashing) { e.preventDefault(); e.returnValue = ""; }
+  });
+
   let awaitingReboot = false;
+  let rebootTimer = null;
   async function flashFirmware(built) {
     const fw = built.bytes;
     isFlashing = true; renderFlashPanel();
     const bar = document.getElementById("progressBar");
     const label = document.getElementById("progressLabel");
+    bar.style.width = "0%"; bar.style.background = "";
     const t0 = performance.now();
+    let current = "build";
+    resetStages();
+    setStage("build", "active");
+    setStage("build", "done", `${built.diff.length} 字节变化 ✓`);
     try {
+      current = "start"; setStage("start", "active");
+      label.textContent = "正在请求键盘进入升级模式…";
       log("1/3 CMD_OTA_START…");
       const startReply = await sendAndWait(new Uint8Array([0x03, 0x01, 0x02, 0x01, 0xFF, 0x44, 0x80]), 1500);
       if (!(startReply[0] === 0x04 && startReply[1] === 0x01 && startReply[3] === 0x01)) throw new Error("CMD_OTA_START 被拒绝");
+      setStage("start", "done");
+      current = "write"; setStage("write", "active", "0%");
       const totalChunks = Math.ceil(fw.length / 16);
+      const tw = performance.now();
+      let retries = 0;
+      const updateWrite = (n) => {
+        const pct = (n / totalChunks) * 100;
+        const used = (performance.now() - tw) / 1000;
+        const eta = n > 0 ? used / n * (totalChunks - n) : 0;
+        bar.style.width = `${pct.toFixed(1)}%`;
+        label.textContent = `写入 ${n}/${totalChunks} (${pct.toFixed(1)}%) · 已用 ${fmtSec(used)} · 剩余约 ${fmtSec(eta)}` + (retries ? ` · 重试 ${retries} 次` : "");
+        setStage("write", "active", `${pct.toFixed(0)}%`);
+      };
+      updateWrite(0);
       const pkt = new Uint8Array(25);
       pkt[0] = 0x03; pkt[1] = 0x02; pkt[2] = 0x14;
       for (let idx = 0; idx < totalChunks; idx++) {
@@ -765,15 +839,20 @@
             const r = await sendAndWait(pkt, 800);
             ok = r[0] === 0x04 && r[1] === 0x02 && (r[3] === 0x01 || r[3] === 0x0A);
           } catch (_) {}
-          if (!ok) await new Promise(res => setTimeout(res, 5));
+          if (!ok) {
+            retries++;
+            log(`  分块 ${idx} 第 ${retry + 1} 次未确认，重发…`);
+            await new Promise(res => setTimeout(res, 5));
+          }
         }
-        if (!ok) throw new Error(`分块 ${idx}/${totalChunks} 写入失败（键盘仍运行旧固件）`);
-        if ((idx + 1) % 50 === 0 || idx + 1 === totalChunks) {
-          const pct = (((idx + 1) / totalChunks) * 100).toFixed(1);
-          bar.style.width = `${pct}%`;
-          label.textContent = `写入中: ${idx + 1} / ${totalChunks} (${pct}%)`;
-        }
+        if (!ok) throw new Error(`分块 ${idx}/${totalChunks} 连续 3 次写入失败（键盘仍运行旧固件，可重新刷写）`);
+        if ((idx + 1) % 20 === 0 || idx + 1 === totalChunks) updateWrite(idx + 1);
+        if ((idx + 1) % 1000 === 0) log(`  已写入 ${idx + 1}/${totalChunks} 块`);
       }
+      setStage("write", "done", `${fmtSec((performance.now() - tw) / 1000)}${retries ? ` · 重试 ${retries}` : ""}`);
+      log(`  全部 ${totalChunks} 块已写入${retries ? `（共重试 ${retries} 次，均已成功）` : "，无重试"}`);
+      current = "end"; setStage("end", "active");
+      label.textContent = "键盘正在校验整个固件…";
       log("2/3 CMD_OTA_END…");
       const e = new Uint8Array(13);
       e[0] = 0x03; e[1] = 0x03; e[2] = 0x08; e[3] = 0x02; e[4] = 0xFF;
@@ -782,12 +861,24 @@
       const eo = crc16Outer(e.subarray(0, 11)); e[11] = (eo >> 8) & 0xFF; e[12] = eo & 0xFF;
       const endReply = await sendAndWait(e, 2500);
       if (!(endReply[0] === 0x04 && endReply[1] === 0x03 && endReply[3] === 0x02)) throw new Error("CMD_OTA_END 校验失败（键盘仍运行旧固件）");
+      setStage("end", "done", "CRC ✓");
       const sec = ((performance.now() - t0) / 1000).toFixed(1);
-      label.textContent = `刷写完成 (${sec}s) · 键盘重启中…`;
+      bar.style.width = "100%";
+      label.textContent = `写入完成 (${sec}s) · 等待键盘重启…`;
       log(`3/3 刷写成功，耗时 ${sec}s。等待键盘重启并自检刷写通道…`);
       safeStore("kb331u.flashed", JSON.stringify({ at: new Date().toISOString(), scheme: schemeToJSON(scheme) }));
       awaitingReboot = true;
+      current = "reboot"; setStage("reboot", "active", "通常 2–5 秒");
+      clearTimeout(rebootTimer);
+      rebootTimer = setTimeout(() => {
+        if (!awaitingReboot) return;
+        setStage(hidDevice ? "verify" : "reboot", "warn", "超过 15 秒");
+        label.textContent = "新固件已写入，但页面没自动重连上";
+        log("! 15 秒内没自动重连。新固件已经校验通过并激活；请拔插一次 USB-C 线，再点「连接 USB-C 键盘」→「读取固件版本」确认。");
+      }, 15000);
     } catch (err) {
+      setStage(current, "fail", "失败");
+      bar.style.background = "#ef4444";
       label.textContent = `失败: ${err.message}`;
       log(`错误: ${err.message}`);
     } finally {
@@ -851,20 +942,27 @@
           hidDevice = null; pendingResolver = null;
           document.getElementById("connDot").classList.remove("connected");
           document.getElementById("connText").textContent = awaitingReboot ? "键盘重启中…" : "键盘已断开";
+          if (awaitingReboot) log("  键盘已断开 USB（正在重启，属正常现象）");
           document.getElementById("btnQueryVer").disabled = true;
           renderFlashPanel();
         }
       });
       navigator.hid.addEventListener("connect", async (e) => {
         if (!isVendorIface(e.device) || hidDevice) return;
+        const wasRebooting = awaitingReboot;
+        if (wasRebooting) { setStage("reboot", "done"); setStage("verify", "active"); }
         try {
           await attachDevice(e.device);
-          if (awaitingReboot) {
-            awaitingReboot = false;
+          if (wasRebooting) {
+            awaitingReboot = false; clearTimeout(rebootTimer);
+            setStage("verify", "done", "✓");
             log("✓ 键盘已重启并应答版本查询：新固件运行正常，USB 刷写通道可用（随时可刷回）。");
-            document.getElementById("progressLabel").textContent = "刷写完成 · 键盘已正常重启 ✓";
+            document.getElementById("progressLabel").textContent = "全部完成 · 键盘已正常重启 ✓ 可以拔线了";
           }
-        } catch (err) { log(`自动重连失败: ${err.message}，请手动点击「连接 USB-C 键盘」。`); }
+        } catch (err) {
+          if (wasRebooting) setStage("verify", "warn", "需手动连接");
+          log(`自动重连失败: ${err.message}，请手动点击「连接 USB-C 键盘」。`);
+        }
       });
     }
     loadInitialScheme();
