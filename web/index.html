@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lenovo KB331U 网页改键工具 (WebHID)</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --panel: #171a23;
+      --panel-2: #1e222e;
+      --border: #2a3040;
+      --text: #e6e9f2;
+      --muted: #8b93a7;
+      --accent: #4f8cff;
+      --accent-hover: #3b78eb;
+      --success: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --key-bg: #232836;
+      --key-active: #273759;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 24px 20px 48px;
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 22px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 20px;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(79, 140, 255, 0.16);
+      color: var(--accent);
+      border: 1px solid rgba(79, 140, 255, 0.35);
+    }
+    .brand p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+    .dot.connected { background: var(--success); box-shadow: 0 0 8px rgba(34, 197, 94, 0.7); }
+    button {
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 9px 15px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+    button:hover:not(:disabled) { border-color: #49536d; background: #262b3a; }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    button.primary:hover:not(:disabled) { background: var(--accent-hover); }
+    button.success {
+      background: #16a34a;
+      border-color: #16a34a;
+      color: #fff;
+    }
+    button.success:hover:not(:disabled) { background: #15803d; }
+    button.danger {
+      background: rgba(239, 68, 68, 0.14);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 0 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .card-sub {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    /* Keyboard Top-Row Visualizer */
+    .kbd-shell {
+      background: #11131a;
+      border: 1px solid #2b3142;
+      border-radius: 14px;
+      padding: 16px;
+      overflow-x: auto;
+    }
+    .kbd-row {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(64px, 1fr));
+      gap: 8px;
+      min-width: 780px;
+    }
+    .keycap {
+      position: relative;
+      background: var(--key-bg);
+      border: 1px solid #353c4f;
+      border-bottom-width: 3px;
+      border-radius: 8px;
+      padding: 10px 6px;
+      text-align: center;
+      min-height: 68px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+    .keycap.fixed {
+      opacity: 0.45;
+      cursor: default;
+    }
+    .keycap.editable {
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .keycap.editable:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .keycap.selected {
+      background: var(--key-active);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.28);
+    }
+    .keycap.modified::after {
+      content: "";
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--warn);
+    }
+    .key-phys {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .key-val {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      word-break: break-word;
+    }
+    .key-hex {
+      font-size: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: #93c5fd;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 18px;
+    }
+    @media (max-width: 900px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .preset-group { margin-bottom: 14px; }
+    .preset-group-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 7px;
+      font-weight: 600;
+    }
+    .preset-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .preset-btn {
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 7px;
+    }
+    .preset-btn.active {
+      background: rgba(79, 140, 255, 0.22);
+      border-color: var(--accent);
+      color: #bfdbfe;
+    }
+
+    .custom-hex-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    input[type="text"] {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 11px;
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 13px;
+      width: 120px;
+    }
+
+    .flash-box {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .progress-wrap {
+      width: 100%;
+      height: 12px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #22c55e);
+      transition: width 0.1s linear;
+    }
+    .log-box {
+      background: #0b0d12;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      height: 180px;
+      overflow-y: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      color: #cbd5e1;
+      white-space: pre-wrap;
+    }
+    .notice {
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.28);
+      border-radius: 9px;
+      padding: 10px 12px;
+    }
+    .file-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <h1>Lenovo KB331U 网页改键工具 <span class="badge">WebHID · KA024</span></h1>
+        <p>小新无线键盘 Air (17EF:619E) · 免拆机 USB-C 永久固件改键（修改后蓝牙/有线双模生效）</p>
+      </div>
+      <div class="header-actions">
+        <div class="status-pill">
+          <span id="connDot" class="dot"></span>
+          <span id="connText">未连接键盘</span>
+        </div>
+        <button id="btnConnect" class="primary">连接 USB-C 键盘</button>
+        <button id="btnQueryVer" disabled>读取固件版本</button>
+      </div>
+    </header>
+
+    <div id="webhidWarning" class="notice" style="display:none; margin-bottom:18px;"></div>
+
+    <section class="card">
+      <div class="card-title">
+        <span>1. 顶部功能键映射（点击任意高亮按键进行修改）</span>
+        <button id="btnRestoreStock" class="danger">恢复全部原厂默认</button>
+      </div>
+      <div class="kbd-shell">
+        <div id="kbdRow" class="kbd-row"></div>
+      </div>
+      <p class="card-sub" style="margin:10px 0 0;">
+        注：Esc、BT1/BT2/BT3、Delete 为固定键；其余 7 个多媒体/快捷功能键均直接对应固件偏移 <code>0xEE44..0xEE6D</code>（Consumer Page 0x0C）。
+      </p>
+    </section>
+
+    <div class="grid-2">
+      <section class="card">
+        <div class="card-title">
+          <span id="editorTitle">2. 按键功能选择</span>
+          <span id="editorOffset" class="card-sub"></span>
+        </div>
+        <div id="presetContainer"></div>
+        <div class="custom-hex-row">
+          <span style="font-size:12px; color:var(--muted);">自定义 Consumer Usage (0x0000–0x0397):</span>
+          <input id="customHexInput" type="text" placeholder="0x029F" maxlength="6" />
+          <button id="btnApplyCustom">应用</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">
+          <span>3. 生成固件并 USB-C 刷入</span>
+          <span id="fwStateBadge" class="card-sub">正在加载原厂基线...</span>
+        </div>
+        <div class="flash-box">
+          <div class="file-row">
+            <span id="fwInfoText">基线镜像：KA024_official_firmware.bin (64,516 B)</span>
+            <label style="cursor:pointer; color:var(--accent); text-decoration:underline;">
+              手动选择 .bin
+              <input id="fileInput" type="file" accept=".bin" style="display:none;" />
+            </label>
+          </div>
+          <div class="notice">
+            安全机制：键盘采用 Telink Dual-Bank A/B 双分区。写入时仅写入备用分区，4,033 块数据及尾部 CRC-32 校验全部通过后才激活重启。刷写过程约 15 秒，请勿拔线。
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="btnFlash" class="success" style="flex:1;" disabled>直接 USB-C 刷入键盘</button>
+            <button id="btnDownload">导出 .bin 文件</button>
+          </div>
+          <div class="progress-wrap">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);">
+            <span id="progressLabel">就绪</span>
+            <span id="crcPreview">新 CRC-32: --</span>
+          </div>
+          <div id="logBox" class="log-box"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. Keymap & Presets Definition (verified against KA024_official_firmware.bin)
+    // =========================================================================
+    const KEY_SLOTS = [
+      { kind: "fixed", label: "Esc" },
+      { kind: "editable", id: 0x00EB, offset: 0xEE46, phys: "静音", stock: 0x00E2 },
+      { kind: "editable", id: 0x00EC, offset: 0xEE4C, phys: "音量-", stock: 0x00EA },
+      { kind: "editable", id: 0x00ED, offset: 0xEE52, phys: "音量+", stock: 0x00E9 },
+      { kind: "editable", id: 0x00EE, offset: 0xEE58, phys: "亮度-", stock: 0x0070 },
+      { kind: "editable", id: 0x00EF, offset: 0xEE5E, phys: "亮度+", stock: 0x006F },
+      { kind: "editable", id: 0x00F1, offset: 0xEE64, phys: "截图", stock: 0x038E },
+      { kind: "fixed", label: "BT1" },
+      { kind: "fixed", label: "BT2" },
+      { kind: "fixed", label: "BT3" },
+      { kind: "editable", id: 0x00F2, offset: 0xEE6A, phys: "设备互联", stock: 0x0397, highlight: true },
+      { kind: "fixed", label: "Delete" },
+    ];
+
+    const PRESET_GROUPS = [
+      {
+        label: "Android / MagicOS / 平板导航（推荐）",
+        items: [
+          { usage: 0x029F, name: "最近任务 (MagicOS 实测)" },
+          { usage: 0x01A2, name: "最近任务 (AOSP AppSelect)" },
+          { usage: 0x0223, name: "主页 (Home)" },
+          { usage: 0x0224, name: "返回 (Back)" },
+          { usage: 0x0221, name: "全局搜索 (Search)" },
+        ],
+      },
+      {
+        label: "多媒体与亮度控制",
+        items: [
+          { usage: 0x00CD, name: "播放 / 暂停" },
+          { usage: 0x00B6, name: "上一曲" },
+          { usage: 0x00B5, name: "下一曲" },
+          { usage: 0x00E2, name: "静音" },
+          { usage: 0x00EA, name: "音量减" },
+          { usage: 0x00E9, name: "音量加" },
+          { usage: 0x0070, name: "亮度减" },
+          { usage: 0x006F, name: "亮度加" },
+        ],
+      },
+      {
+        label: "系统 / 联想原厂默认值",
+        items: [
+          { usage: 0x0397, name: "联想设备互联 (原厂)" },
+          { usage: 0x038E, name: "联想截图 (原厂)" },
+          { usage: 0x0192, name: "计算器" },
+          { usage: 0x0196, name: "浏览器" },
+          { usage: 0x0194, name: "文件管理器" },
+          { usage: 0x0000, name: "禁用 (No-Op)" },
+        ],
+      },
+    ];
+
+    const USAGE_NAMES = new Map();
+    for (const g of PRESET_GROUPS) {
+      for (const item of g.items) USAGE_NAMES.set(item.usage, item.name);
+    }
+
+    // Current working values (default: stock except Device Interconnection pre-selected to 0x029F)
+    const currentMap = new Map();
+    for (const slot of KEY_SLOTS) {
+      if (slot.kind === "editable") {
+        currentMap.set(slot.offset, slot.offset === 0xEE6A ? 0x029F : slot.stock);
+      }
+    }
+
+    let selectedOffset = 0xEE6A; // Default select Device Interconnection key
+    let baseFirmware = null;
+    let hidDevice = null;
+    let isFlashing = false;
+    let pendingResolver = null;
+
+    // =========================================================================
+    // 2. Checksums (100% matched to a/a.java & com.telink.ota.util.Crc)
+    // =========================================================================
+    function crc16Outer(bytes) {
+      let crc = 0x2A6E;
+      for (let i = 0; i < bytes.length; i++) {
+        crc ^= (bytes[i] << 8) & 0xFFFF;
+        for (let b = 0; b < 8; b++) {
+          crc = (crc & 0x8000) ? (((crc << 1) ^ 0x8005) & 0xFFFF) : ((crc << 1) & 0xFFFF);
+        }
+      }
+      return crc;
+    }
+
+    function crc16Modbus(bytes) {
+      let crc = 0xFFFF;
+      for (let i = 0; i < bytes.length; i++) {
+        crc ^= bytes[i];
+        for (let b = 0; b < 8; b++) {
+          crc = (crc & 0x0001) ? (((crc >> 1) ^ 0xA001) & 0xFFFF) : (crc >> 1);
+        }
+      }
+      return crc;
+    }
+
+    const CRC32_TBL = (() => {
+      const tbl = new Uint32Array(256);
+      for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++) {
+          c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        }
+        tbl[n] = c >>> 0;
+      }
+      return tbl;
+    })();
+
+    function telinkCrc32(bytes) {
+      let crc = 0xFFFFFFFF;
+      for (let i = 0; i < bytes.length; i++) {
+        crc = CRC32_TBL[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
+      }
+      return crc >>> 0;
+    }
+
+    function hex4(v) {
+      return "0x" + v.toString(16).toUpperCase().padStart(4, "0");
+    }
+
+    function log(msg) {
+      const box = document.getElementById("logBox");
+      const ts = new Date().toLocaleTimeString();
+      box.textContent += `[${ts}] ${msg}\n`;
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // =========================================================================
+    // 3. Firmware Patch Builder
+    // =========================================================================
+    function buildPatchedFirmware() {
+      if (!baseFirmware) return null;
+      const out = new Uint8Array(baseFirmware);
+      for (const slot of KEY_SLOTS) {
+        if (slot.kind !== "editable") continue;
+        const val = currentMap.get(slot.offset);
+        out[slot.offset] = val & 0xFF;
+        out[slot.offset + 1] = (val >> 8) & 0xFF;
+      }
+      const crc = telinkCrc32(out.subarray(0, out.length - 4));
+      out[out.length - 4] = crc & 0xFF;
+      out[out.length - 3] = (crc >>> 8) & 0xFF;
+      out[out.length - 2] = (crc >>> 16) & 0xFF;
+      out[out.length - 1] = (crc >>> 24) & 0xFF;
+      return { bytes: out, crc };
+    }
+
+    function updatePreview() {
+      const res = buildPatchedFirmware();
+      const crcEl = document.getElementById("crcPreview");
+      if (!res) {
+        crcEl.textContent = "新 CRC-32: --";
+      } else {
+        crcEl.textContent = `新 CRC-32: 0x${res.crc.toString(16).toUpperCase().padStart(8, "0")}`;
+      }
+      document.getElementById("btnFlash").disabled = !(hidDevice && hidDevice.opened && baseFirmware && !isFlashing);
+      document.getElementById("btnDownload").disabled = !baseFirmware || isFlashing;
+    }
+
+    // =========================================================================
+    // 4. UI Rendering
+    // =========================================================================
+    function renderKeyboard() {
+      const row = document.getElementById("kbdRow");
+      row.innerHTML = "";
+      for (const slot of KEY_SLOTS) {
+        const div = document.createElement("div");
+        if (slot.kind === "fixed") {
+          div.className = "keycap fixed";
+          div.innerHTML = `<span class="key-phys">固定</span><span class="key-val">${slot.label}</span><span class="key-hex">-</span>`;
+        } else {
+          const val = currentMap.get(slot.offset);
+          const isMod = val !== slot.stock;
+          div.className = "keycap editable" +
+            (slot.offset === selectedOffset ? " selected" : "") +
+            (isMod ? " modified" : "");
+          const name = USAGE_NAMES.get(val) || "自定义";
+          div.innerHTML = `
+            <span class="key-phys">${slot.phys}</span>
+            <span class="key-val">${name}</span>
+            <span class="key-hex">${hex4(val)}</span>
+          `;
+          div.addEventListener("click", () => {
+            selectedOffset = slot.offset;
+            renderAll();
+          });
+        }
+        row.appendChild(div);
+      }
+    }
+
+    function renderEditor() {
+      const slot = KEY_SLOTS.find(s => s.offset === selectedOffset);
+      const curVal = currentMap.get(selectedOffset);
+      document.getElementById("editorTitle").textContent = `2. 修改 [${slot.phys}] 按键`;
+      document.getElementById("editorOffset").textContent = `偏移 ${hex4(slot.offset)} · 原厂 ${hex4(slot.stock)}`;
+      document.getElementById("customHexInput").value = hex4(curVal);
+
+      const container = document.getElementById("presetContainer");
+      container.innerHTML = "";
+      for (const group of PRESET_GROUPS) {
+        const gDiv = document.createElement("div");
+        gDiv.className = "preset-group";
+        gDiv.innerHTML = `<div class="preset-group-label">${group.label}</div>`;
+        const list = document.createElement("div");
+        list.className = "preset-list";
+        for (const item of group.items) {
+          const btn = document.createElement("button");
+          btn.className = "preset-btn" + (curVal === item.usage ? " active" : "");
+          btn.textContent = `${item.name} (${hex4(item.usage)})`;
+          btn.addEventListener("click", () => {
+            currentMap.set(selectedOffset, item.usage);
+            renderAll();
+          });
+          list.appendChild(btn);
+        }
+        gDiv.appendChild(list);
+        container.appendChild(gDiv);
+      }
+    }
+
+    function renderAll() {
+      renderKeyboard();
+      renderEditor();
+      updatePreview();
+    }
+
+    // =========================================================================
+    // 5. WebHID Communication (Report ID 0x04 OUT / 0x03 IN, 63-byte payload)
+    // =========================================================================
+    // Note: WebHID passes reportId separately from the 63-byte data payload!
+    function sendAndWait(payloadBytes, timeoutMs = 1000) {
+      return new Promise((resolve, reject) => {
+        if (!hidDevice || !hidDevice.opened) {
+          return reject(new Error("设备未打开"));
+        }
+        const buf = new Uint8Array(63);
+        buf.set(payloadBytes.subarray(0, 63), 0);
+
+        const timer = setTimeout(() => {
+          pendingResolver = null;
+          reject(new Error("等待设备回复超时"));
+        }, timeoutMs);
+
+        pendingResolver = (replyData) => {
+          clearTimeout(timer);
+          resolve(replyData);
+        };
+
+        hidDevice.sendReport(0x04, buf).catch((err) => {
+          clearTimeout(timer);
+          pendingResolver = null;
+          reject(err);
+        });
+      });
+    }
+
+    async function queryVersion() {
+      // Official 6-byte payload (excluding Report ID 0x04): 03 04 01 01 35 02
+      const reply = await sendAndWait(new Uint8Array([0x03, 0x04, 0x01, 0x01, 0x35, 0x02]), 1500);
+      if (reply[0] === 0x04 && reply[1] === 0x04) {
+        const len = reply[2];
+        const ver = new TextDecoder().decode(reply.subarray(3, 3 + len));
+        document.getElementById("connText").textContent = `已连接 (${ver})`;
+        log(`当前键盘固件版本: ${ver}`);
+        return ver;
+      }
+      throw new Error("版本应答格式异常");
+    }
+
+    async function connectKeyboard() {
+      if (!("hid" in navigator)) {
+        alert("当前浏览器不支持 WebHID，请使用桌面版 Chrome 或 Edge，并通过 http://localhost 或 https:// 打开。");
+        return;
+      }
+      try {
+        const devices = await navigator.hid.requestDevice({
+          filters: [{ vendorId: 0x17EF, productId: 0x619E, usagePage: 0xFF00 }],
+        });
+        if (!devices.length) return;
+        hidDevice = devices[0];
+        if (!hidDevice.opened) await hidDevice.open();
+
+        hidDevice.oninputreport = (event) => {
+          if (event.reportId === 0x03 && pendingResolver) {
+            const fn = pendingResolver;
+            pendingResolver = null;
+            fn(new Uint8Array(event.data.buffer, event.data.byteOffset, event.data.byteLength));
+          }
+        };
+
+        document.getElementById("connDot").classList.add("connected");
+        document.getElementById("connText").textContent = `已连接: ${hidDevice.productName || "KB331U"}`;
+        document.getElementById("btnQueryVer").disabled = false;
+        log(`WebHID 已打开: ${hidDevice.productName} (VID=0x17EF, PID=0x619E)`);
+        await queryVersion();
+        updatePreview();
+      } catch (err) {
+        log(`连接失败: ${err.message}`);
+      }
+    }
+
+    async function flashFirmware() {
+      const built = buildPatchedFirmware();
+      if (!built || !hidDevice || !hidDevice.opened) return;
+      const fw = built.bytes;
+
+      isFlashing = true;
+      updatePreview();
+      const bar = document.getElementById("progressBar");
+      const label = document.getElementById("progressLabel");
+      const startTime = performance.now();
+
+      try {
+        log("1/3 发送 CMD_OTA_START (0xFF01)...");
+        // Payload without Report ID 0x04: 03 01 02 01 FF 44 80
+        const startReply = await sendAndWait(new Uint8Array([0x03, 0x01, 0x02, 0x01, 0xFF, 0x44, 0x80]), 1500);
+        if (!(startReply[0] === 0x04 && startReply[1] === 0x01 && startReply[3] === 0x01)) {
+          throw new Error(`CMD_OTA_START 被拒绝: ${Array.from(startReply.subarray(0, 6)).map(x => x.toString(16)).join(" ")}`);
+        }
+        log("CMD_OTA_START 已确认，开始写入分块...");
+
+        const totalChunks = Math.ceil(fw.length / 16);
+        // 25-byte payload (excluding Report ID 0x04)
+        const pkt = new Uint8Array(25);
+        pkt[0] = 0x03;
+        pkt[1] = 0x02;
+        pkt[2] = 0x14;
+
+        for (let idx = 0; idx < totalChunks; idx++) {
+          pkt[3] = idx & 0xFF;
+          pkt[4] = (idx >> 8) & 0xFF;
+
+          const chunk = new Uint8Array(16).fill(0xFF);
+          const off = idx * 16;
+          chunk.set(fw.subarray(off, Math.min(off + 16, fw.length)), 0);
+          pkt.set(chunk, 5);
+
+          const innerCrc = crc16Modbus(pkt.subarray(3, 21));
+          pkt[21] = innerCrc & 0xFF;
+          pkt[22] = (innerCrc >> 8) & 0xFF;
+
+          const outerCrc = crc16Outer(pkt.subarray(0, 23));
+          pkt[23] = (outerCrc >> 8) & 0xFF;
+          pkt[24] = outerCrc & 0xFF;
+
+          let ok = false;
+          for (let retry = 0; retry < 3; retry++) {
+            try {
+              const r = await sendAndWait(pkt, 800);
+              if (r[0] === 0x04 && r[1] === 0x02 && (r[3] === 0x01 || r[3] === 0x0A)) {
+                ok = true;
+                break;
+              }
+            } catch (_) {}
+            await new Promise(res => setTimeout(res, 5));
+          }
+          if (!ok) throw new Error(`分块 ${idx}/${totalChunks} 写入失败`);
+
+          if ((idx + 1) % 50 === 0 || idx + 1 === totalChunks) {
+            const pct = (((idx + 1) / totalChunks) * 100).toFixed(1);
+            bar.style.width = `${pct}%`;
+            label.textContent = `写入中: ${idx + 1} / ${totalChunks} (${pct}%)`;
+          }
+        }
+
+        log("2/3 发送 CMD_OTA_END (0xFF02)...");
+        const endPkt = new Uint8Array(13);
+        endPkt[0] = 0x03;
+        endPkt[1] = 0x03;
+        endPkt[2] = 0x08;
+        endPkt[3] = 0x02;
+        endPkt[4] = 0xFF;
+        endPkt[5] = totalChunks & 0xFF;
+        endPkt[6] = (totalChunks >> 8) & 0xFF;
+        endPkt[7] = (~endPkt[5]) & 0xFF;
+        endPkt[8] = (~endPkt[6]) & 0xFF;
+
+        const endInner = crc16Modbus(endPkt.subarray(3, 9));
+        endPkt[9] = endInner & 0xFF;
+        endPkt[10] = (endInner >> 8) & 0xFF;
+
+        const endOuter = crc16Outer(endPkt.subarray(0, 11));
+        endPkt[11] = (endOuter >> 8) & 0xFF;
+        endPkt[12] = endOuter & 0xFF;
+
+        const endReply = await sendAndWait(endPkt, 2500);
+        if (endReply[0] === 0x04 && endReply[1] === 0x03 && endReply[3] === 0x02) {
+          const sec = ((performance.now() - startTime) / 1000).toFixed(1);
+          label.textContent = `刷写完成 (${sec}s) · 键盘即将重启`;
+          log(`3/3 刷写成功！耗时 ${sec}s。键盘正在自动重启，请稍候 2 秒后可重新连接。`);
+        } else {
+          throw new Error("CMD_OTA_END 校验失败");
+        }
+      } catch (err) {
+        label.textContent = `失败: ${err.message}`;
+        log(`错误: ${err.message}`);
+      } finally {
+        isFlashing = false;
+        updatePreview();
+      }
+    }
+
+    // =========================================================================
+    // 6. Initialization & Event Listeners
+    // =========================================================================
+    async function loadBaseFirmware(arrayBuffer, name) {
+      const bytes = new Uint8Array(arrayBuffer);
+      if (bytes.length !== 64516 || bytes[0x08] !== 0x4B || bytes[0x09] !== 0x4E ||
+          bytes[0x0A] !== 0x4C || bytes[0x0B] !== 0x54) {
+        log(`校验失败: ${name} 不是有效的 KA024 64,516 字节 Telink 固件`);
+        return;
+      }
+      const calcCrc = telinkCrc32(bytes.subarray(0, bytes.length - 4));
+      const storedCrc = (bytes[bytes.length - 4] | (bytes[bytes.length - 3] << 8) |
+        (bytes[bytes.length - 2] << 16) | (bytes[bytes.length - 1] << 24)) >>> 0;
+      if (calcCrc !== storedCrc) {
+        log(`校验失败: ${name} 自身 CRC-32 不匹配 (计算 0x${calcCrc.toString(16)}, 存储 0x${storedCrc.toString(16)})`);
+        return;
+      }
+      if (bytes[0xEE44] !== 0xEB || bytes[0xEE45] !== 0x00 ||
+          bytes[0xEE68] !== 0xF2 || bytes[0xEE69] !== 0x00) {
+        log(`校验失败: ${name} 键表签名不匹配，已拒绝加载以防刷错位置`);
+        return;
+      }
+      baseFirmware = bytes;
+      document.getElementById("fwStateBadge").textContent = "基线校验通过 ✓";
+      document.getElementById("fwInfoText").textContent = `基线镜像：${name} (64,516 B)`;
+      log(`已加载并校验固件基线 (${name}, CRC32=0x${storedCrc.toString(16).toUpperCase()})`);
+      updatePreview();
+    }
+
+    (async function init() {
+      if (window.location.protocol === "file:") {
+        const w = document.getElementById("webhidWarning");
+        w.style.display = "block";
+        w.innerHTML = "提示：浏览器禁止在 <code>file://</code> 协议下使用 WebHID。请运行目录中的 <code>./serve.sh</code> 并通过 <code>http://localhost:8765</code> 打开。";
+      } else if (!("hid" in navigator)) {
+        const w = document.getElementById("webhidWarning");
+        w.style.display = "block";
+        w.textContent = "当前浏览器不支持 WebHID API，请使用桌面版 Chrome / Edge / Arc 浏览器打开。";
+      } else {
+        navigator.hid.addEventListener("disconnect", (e) => {
+          if (hidDevice && e.device === hidDevice) {
+            hidDevice = null;
+            pendingResolver = null;
+            document.getElementById("connDot").classList.remove("connected");
+            document.getElementById("connText").textContent = "设备已断开（若刚刷写完，请等待重启后重连）";
+            document.getElementById("btnQueryVer").disabled = true;
+            log("USB HID 设备已断开连接。");
+            updatePreview();
+          }
+        });
+      }
+
+      renderAll();
+
+      try {
+        const resp = await fetch("./KA024_official_firmware.bin");
+        if (resp.ok) {
+          await loadBaseFirmware(await resp.arrayBuffer(), "KA024_official_firmware.bin");
+        } else {
+          document.getElementById("fwStateBadge").textContent = "请手动选择 .bin";
+        }
+      } catch (_) {
+        document.getElementById("fwStateBadge").textContent = "请手动选择 .bin";
+      }
+    })();
+
+    document.getElementById("btnConnect").addEventListener("click", connectKeyboard);
+    document.getElementById("btnQueryVer").addEventListener("click", async () => {
+      try { await queryVersion(); } catch (e) { log(`读取版本失败: ${e.message}`); }
+    });
+    document.getElementById("btnFlash").addEventListener("click", () => {
+      const changes = KEY_SLOTS
+        .filter(s => s.kind === "editable" && currentMap.get(s.offset) !== s.stock)
+        .map(s => `• ${s.phys}: ${hex4(s.stock)} -> ${hex4(currentMap.get(s.offset))}`);
+      const summary = changes.length ? changes.join("\n") : "• 全部恢复为联想原厂默认按键";
+      if (confirm(`确认向 KB331U 键盘刷入以下配置？\n\n${summary}\n\n刷写约需 15 秒，期间请勿拔掉 USB-C 线。`)) {
+        flashFirmware();
+      }
+    });
+
+    document.getElementById("btnDownload").addEventListener("click", () => {
+      const built = buildPatchedFirmware();
+      if (!built) return;
+      const blob = new Blob([built.bytes], { type: "application/octet-stream" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `KA024_A_1.0.8_custom_${built.crc.toString(16).padStart(8, "0")}.bin`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      log(`已导出自定义固件 (${a.download})`);
+    });
+
+    document.getElementById("btnRestoreStock").addEventListener("click", () => {
+      for (const slot of KEY_SLOTS) {
+        if (slot.kind === "editable") currentMap.set(slot.offset, slot.stock);
+      }
+      renderAll();
+      log("已重置为全部原厂默认映射（点击“直接 USB-C 刷入键盘”即可写回原厂按键）。");
+    });
+
+    document.getElementById("btnApplyCustom").addEventListener("click", () => {
+      const raw = document.getElementById("customHexInput").value.trim().replace(/^0x/i, "");
+      const val = parseInt(raw, 16);
+      if (Number.isNaN(val) || val < 0 || val > 0x0397) {
+        alert("请输入合法的 16 进制 Consumer Usage（范围 0x0000 - 0x0397）");
+        return;
+      }
+      currentMap.set(selectedOffset, val);
+      renderAll();
+    });
+
+    document.getElementById("fileInput").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      await loadBaseFirmware(await file.arrayBuffer(), file.name);
+    });
+  </script>
+</body>
+</html>

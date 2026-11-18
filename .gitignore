@@ -1,0 +1,12 @@
+# Compiled macOS binaries
+tools/flash_kb_firmware
+tools/query_kb_version
+tools/readonly_hid_probe
+
+# Large / third-party APK installers (not for git)
+*.apk
+
+# OS & Python artifacts
+.DS_Store
+__pycache__/
+*.pyc

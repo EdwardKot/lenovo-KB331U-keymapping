@@ -1,0 +1,33 @@
+  Usage Page = 0xFF00
+  Usage = 0x0001 (page 0xFF00)
+  Collection (Application)
+  Usage = 0x0002 (page 0xFF00)
+  Report ID = 3 (0x3)
+  Logical Minimum = 0 (0x0)
+  Logical Maximum = 255 (0xFF)
+  Report Size = 8 (0x8)
+  Report Count = 63 (0x3F)
+  Input [Variable]
+    -> report_id=3 size=8 count=63 bits=504 logical=0..255
+  Usage = 0x0003 (page 0xFF00)
+  Report ID = 4 (0x4)
+  Logical Minimum = 0 (0x0)
+  Logical Maximum = 255 (0xFF)
+  Report Size = 8 (0x8)
+  Report Count = 63 (0x3F)
+  Output [Variable]
+    -> report_id=4 size=8 count=63 bits=504 logical=0..255
+  End Collection
+  Usage Page = 0x000C
+  Usage = 0x0001 (page 0x000C)
+  Collection (Application)
+  Report ID = 2 (0x2)
+  Report Size = 16 (0x10)
+  Report Count = 1 (0x1)
+  Usage Minimum = 0x0000 (page 0x000C)
+  Usage Maximum = 0x0397 (page 0x000C)
+  Logical Minimum = 0 (0x0)
+  Logical Maximum = 919 (0x397)
+  Input []
+    -> report_id=2 size=16 count=1 bits=16 logical=0..919
+  End Collection

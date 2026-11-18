@@ -1,0 +1,144 @@
+# Lenovo 小新 Air 键盘固件级改键研究
+
+## 1. 研究目标
+
+通过 MacBook USB-C 有线连接联想小新 Air 蓝牙键盘，利用 Codex / Claude Code 研究并修改键盘固件。
+
+**最终目标：将右上角的 Device Interconnection（设备互联）按钮，永久修改为 Android 最近任务 / 多任务切换键。**
+
+要求：
+
+- 优先修改键盘固件，而不是 Android 系统。
+- 修改后通过蓝牙连接 HONOR MagicPad 4 即可使用。
+- 不 Root、不在平板安装改键 App、不运行后台服务。
+- 键盘断电、重新配对后仍然生效。
+- 其他按键功能保持不变。
+
+可以考虑让该按钮发送 `Alt + Tab`，或其他能够触发 Android 最近任务的标准 HID 输入。具体输出需要根据 MagicOS 的实际行为确定。
+
+## 2. 硬件信息（已实测）
+
+| 项目 | 数据 |
+|---|---|
+| 键盘 | Lenovo 小新无线键盘 Air |
+| 推定型号 | KB331U，待核实 |
+| USB 名称 | Multi-Device Wireless Keyboard |
+| Bluetooth 名称 | Lenovo Wireless KB Keyboard |
+| USB VID:PID | `17EF:619E` |
+| USB 连接 | USB-C，12 Mbps |
+| 研究主机 | Apple Silicon MacBook Pro |
+| 目标设备 | HONOR MagicPad 4 |
+
+### 特殊按键事件
+
+在 MagicPad 4 上通过 ADB 捕获：
+
+```text
+/dev/input/event9
+name: "Lenovo Wireless KB Keyboard"
+
+EV_MSC MSC_SCAN 000c0397
+EV_KEY KEY_UNKNOWN DOWN
+
+EV_MSC MSC_SCAN 000c0397
+EV_KEY KEY_UNKNOWN UP
+```
+
+说明该按钮发送：
+
+```text
+HID Usage Page: 0x0C (Consumer)
+HID Usage:      0x0397
+Combined:       0x000C0397
+```
+
+Android 能接收该事件，但目前识别为 `KEY_UNKNOWN`。
+
+已通过以下命令验证 MagicPad 4 可以打开最近任务：
+
+```bash
+adb -s 192.168.1.95:41071 shell input keyevent 187
+```
+
+结果：**成功。**
+
+## 3. USB HID 分析结果（已实测）
+
+MacBook 的 `hidutil` 和 `ioreg` 确认该键盘具有：
+
+| HID 功能 | Usage Page | Report ID | 数据 |
+|---|---|---|---|
+| 标准键盘 | `0x01` | `0x01` | 普通键盘输入 |
+| Consumer Control | `0x0C` | `0x02` | 16-bit Consumer Usage |
+| 厂商自定义 Input | `0xFF00` | `0x03` | 63 字节 |
+| 厂商自定义 Output | `0xFF00` | `0x04` | 63 字节 |
+
+厂商 HID Report Descriptor 原始数据：
+
+```text
+06 00 ff 09 01 a1 01 09 02
+85 03 15 00 25 ff 75 08
+95 3f 81 02 09 03 85 04
+15 00 25 ff 75 08 95 3f
+91 02 c0 05 0c 09 01 a1
+01 85 02 75 10 95 01 19
+00 2a 97 03 15 00 26 97
+03 81 00 c0
+```
+
+重要发现：
+
+- 存在独立的厂商 HID 双向通信通道。
+- `0x03` 为 Input Report，`0x04` 为 Output Report。
+- 特殊按钮采用 Consumer Control Report `0x02`。
+- 厂商通道可能用于配置或固件升级，但尚未证实。
+- 当前描述符没有声明有效的 Feature Report。
+
+## 4. 固件升级线索
+
+联想官方 KB331U 资料提及，可通过兼容联想平板的系统设置更新键盘软件，支持 USB 或蓝牙升级。
+
+官方支持：
+
+https://pcsupport.lenovo.com/us/en/products/accessory/keyboard/lenovo-multi-device-wireless-keyboard-kb331u/downloads
+
+可参考的开源项目：
+
+- https://github.com/fwupd/fwupd （`plugins/lenovo-accessory/`）
+- https://github.com/torvalds/linux/blob/master/drivers/hid/hid-lenovo.c
+
+目前尚未确认：
+
+- 主控 MCU 型号
+- 原厂固件文件位置
+- 固件升级协议
+- 是否需要数字签名
+- 是否能够备份和恢复固件
+- 是否允许第三方固件
+
+## 5. Coding Agent 的具体任务
+
+**首要任务：评估固件级改键是否可行，而不是开发 Android 改键 App。**
+
+按以下顺序开展研究：
+
+1. **识别硬件与协议：** 根据 `17EF:619E`、HID Descriptor、公开拆机资料，确定主控芯片、厂商 HID 通道用途及可能的固件升级协议。
+2. **寻找原厂升级程序与固件：** 重点研究 Lenovo ZUI 的键盘固件更新机制，尝试获取官方固件进行离线分析。
+3. **研究固件改键：** 判断能否将 Consumer Usage `0x0397` 修改为标准 `Alt + Tab` 组合键或 Android 可识别的最近任务 HID 输入。
+4. **验证蓝牙兼容性：** 必须保证修改后的快捷键在 MagicPad 4 蓝牙连接模式下有效，而不只是 USB 模式。
+5. **设计安全刷写与回滚：** 明确原厂固件备份方式、签名检查与失败恢复路径。
+
+禁止在协议和恢复机制未明确前，发送未知 HID Output Report、进入不明 DFU 模式或执行固件擦写。
+
+## 6. 期望 Agent 交付
+
+请优先回答：
+
+- 这款键盘是否有现实可行的固件修改路径？
+- 使用什么 MCU 和升级协议？
+- 能否不拆键盘，仅靠 MacBook USB-C 刷入自定义固件？
+- 能否只修改 Device Interconnection 的按键映射？
+- 如果能，提供具体实施方案和风险控制。
+- 如果不能，指出真正的技术障碍及最有希望的下一步。
+
+**研究范围严格聚焦于键盘端的永久改键，不要转向 Android App、ExKeyMo 或无障碍自动化方案。**
