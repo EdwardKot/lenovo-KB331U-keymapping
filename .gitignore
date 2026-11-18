@@ -6,6 +6,9 @@ tools/readonly_hid_probe
 # Large / third-party APK installers (not for git)
 *.apk
 
+# Release archives (uploaded to GitHub Releases, not git source)
+release/
+
 # OS & Python artifacts
 .DS_Store
 __pycache__/
