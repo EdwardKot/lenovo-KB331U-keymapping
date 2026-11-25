@@ -273,7 +273,43 @@
       display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: end;
       background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;
     }
-    @media (max-width: 560px) { .macro-pickers { grid-template-columns: 1fr; } }
+    .macro-pickers.three { grid-template-columns: 1fr auto 1fr auto 1fr; }
+    @media (max-width: 720px) { .macro-pickers, .macro-pickers.three { grid-template-columns: 1fr; } }
+
+    /* ---------- BT1 / BT2 / BT3 Device Channel Bar ---------- */
+    .mode-bar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+      margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+    }
+    .ch-bar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+      background: #131826; border: 1px solid #2b3550; border-radius: 12px; padding: 10px 12px; margin-bottom: 12px;
+    }
+    .ch-tabs { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+    .ch-tab {
+      display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+      min-width: 145px; padding: 8px 13px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--panel-2); color: var(--muted); text-align: left;
+    }
+    .ch-tab .ch-top { display: flex; align-items: center; gap: 6px; width: 100%; }
+    .ch-tab .ch-code {
+      font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 5px;
+      background: #232b40; color: #94a3b8;
+    }
+    .ch-tab .ch-name { font-size: 13px; font-weight: 700; color: var(--text); }
+    .ch-tab .ch-sub { font-size: 11px; color: var(--muted); }
+    .ch-tab.active { border-color: var(--accent); background: rgba(79,140,255,0.14); box-shadow: 0 0 0 1px rgba(79,140,255,0.35); }
+    .ch-tab.active .ch-code { background: var(--accent); color: #fff; }
+    .ch-tab.ch1.active { border-color: var(--purple); background: rgba(167,139,250,0.14); box-shadow: 0 0 0 1px rgba(167,139,250,0.35); }
+    .ch-tab.ch1.active .ch-code { background: var(--purple); color: #111; }
+    .ch-tab.ch2.active { border-color: var(--teal); background: rgba(20,184,166,0.14); box-shadow: 0 0 0 1px rgba(20,184,166,0.35); }
+    .ch-tab.ch2.active .ch-code { background: var(--teal); color: #052e2b; }
+    .ch-tools { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .ch-tools input { width: 130px; padding: 5px 9px; font-size: 12px; }
+    .ch-badge-inline {
+      font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+      background: rgba(79,140,255,0.16); border: 1px solid rgba(79,140,255,0.45); color: #bfdbfe;
+    }
     .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
     .field select, .field input[type="text"] { width: 100%; }
     .plus-sign { font-size: 18px; font-weight: 700; color: var(--muted); text-align: center; padding-bottom: 6px; }
@@ -338,8 +374,8 @@
   <div class="container">
     <header>
       <div class="brand">
-        <h1>小新无线键盘 Air 改键工具 <span class="badge">KB331U · 14 槽</span> <span class="badge teal">支持蓝牙无线 &amp; 长按 Fn 层</span></h1>
-        <p>支持 USB-C 有线极速写入（15 秒）或蓝牙无线免线写入；改完后有线与蓝牙双模永久生效</p>
+        <h1>小新无线键盘 Air 改键工具 <span class="badge">KB331U · 三通道独立</span> <span class="badge teal">蓝牙无线 · 3 键组合 · Fn 层</span></h1>
+        <p>支持为 BT1 / BT2 / BT3 三台设备各自配独立键位、截图组合与双击搜索；改完后永久生效</p>
       </div>
       <div class="header-actions">
         <div class="status-pill"><span id="connDot" class="dot"></span><span id="connText">未连接键盘</span></div>
@@ -352,14 +388,38 @@
     <div id="envWarning" class="notice" style="display:none; margin-bottom:12px;"></div>
     <div id="schemeBanner" class="notice info" style="margin-bottom:14px;"></div>
 
-    <!-- Step 1: Visual Keyboard & Layer Switch -->
+    <!-- Step 1: Visual Keyboard & Device Channel Switch -->
     <section class="card">
       <div class="card-head">
-        <h2 class="step-title"><span class="step-num">1</span>在键盘图上点击想改的按键</h2>
+        <h2 class="step-title"><span class="step-num">1</span>选择设备通道，点击想改的按键</h2>
         <div class="toolbar">
           <span id="slotMeter" class="quota-pill">快捷功能名额：0 / 14</span>
-          <button id="btnPresetMagic" class="small">载入「平板全功能方案」</button>
+          <button id="btnPresetDual" class="small primary">✨ Mac 截图 + 平板搜索（推荐）</button>
+          <button id="btnPresetMagic" class="small">平板通用方案</button>
           <button id="btnPresetStock" class="small danger">全部恢复原厂</button>
+        </div>
+      </div>
+
+      <!-- Unified vs BT1/BT2/BT3 Per-Device Mode Switch -->
+      <div class="mode-bar">
+        <div class="layer-seg">
+          <button id="btnModePerCh">BT1 / BT2 / BT3 分设备独立配置（推荐）</button>
+          <button id="btnModeUnified">三通道共用同一套键位</button>
+        </div>
+        <div id="modeHint" class="card-sub"></div>
+      </div>
+
+      <!-- BT1 / BT2 / BT3 Device Tabs (shown in per-channel mode) -->
+      <div id="chBar" class="ch-bar" style="display:none;">
+        <div class="ch-tabs">
+          <button id="btnCh0" class="ch-tab ch0 active"><div class="ch-top"><span class="ch-code">BT1</span><span class="ch-name" id="lblChName0">MacBook</span></div><span class="ch-sub" id="lblChSub0">原厂</span></button>
+          <button id="btnCh1" class="ch-tab ch1"><div class="ch-top"><span class="ch-code">BT2</span><span class="ch-name" id="lblChName1">MagicPad</span></div><span class="ch-sub" id="lblChSub1">原厂</span></button>
+          <button id="btnCh2" class="ch-tab ch2"><div class="ch-top"><span class="ch-code">BT3</span><span class="ch-name" id="lblChName2">备用设备</span></div><span class="ch-sub" id="lblChSub2">原厂</span></button>
+        </div>
+        <div class="ch-tools">
+          <input id="inpChName" type="text" maxlength="14" placeholder="给当前通道起个备注名" title="仅用于网页显示备注，帮助区分设备" />
+          <button id="btnCopyFromOther" class="small">从另一通道复制</button>
+          <button id="btnResetCh" class="small">恢复本通道原厂</button>
         </div>
       </div>
 
@@ -372,7 +432,7 @@
           </div>
           <label class="switch-label">
             <input id="chkFnEnable" type="checkbox" />
-            <span>开启「长按变 Fn 层」</span>
+            <span>本通道开启「长按变 Fn 层」</span>
           </label>
         </div>
         <div id="fnQuickHint" class="card-sub"></div>
@@ -428,23 +488,23 @@
     <!-- Step 2 & 3 + Step 4 -->
     <div class="grid-2">
       <div>
-        <!-- Quick Gesture Card: Double-Tap (always visible right below keyboard!) -->
+        <!-- Quick Gesture Card: Double-Tap (per active channel!) -->
         <section id="dtCard" class="card dt-card">
           <div class="card-head">
-            <h2 class="step-title"><span class="step-num" style="background:var(--purple-soft); color:#d8b4fe; border-color:rgba(167,139,250,0.45);">⚡</span>双击快捷键 <span class="card-sub">（不占单键 · 支持连 Mac 自动放行不冲突）</span></h2>
+            <h2 class="step-title"><span class="step-num" style="background:var(--purple-soft); color:#d8b4fe; border-color:rgba(167,139,250,0.45);">⚡</span>双击快捷键 <span id="dtChTag" class="ch-badge-inline" style="display:none;"></span></h2>
             <label class="switch-label">
               <input id="chkDtEnable" type="checkbox" />
               <span>开启双击触发</span>
             </label>
           </div>
           <div id="dtDisabledHint" class="card-sub">
-            适合模仿 macOS「双击 ⌘ 唤出搜索」：连安卓平板时<strong>连续轻点两下空格左边 Alt/cmd</strong> 自动发 <strong>Meta + S</strong> 唤出搜索；切回 Mac 时键盘会自动识别苹果系统并放行原生双击 ⌘，绝不误触 ⌘+S 保存。
+            例如在 <strong>BT2 · MagicPad</strong> 页开启：连续轻点两下空格左边 <strong>Alt/cmd</strong> → 发出 <strong>Meta + S</strong> 唤出平板搜索（60ms 错峰防误唤语音）；而在 <strong>BT1 · Mac</strong> 页保持关闭，就能完全保留 macOS 原生双击 ⌘ Spotlight，互不干扰。
           </div>
           <div id="dtConfigBox" style="display:none;">
-            <div class="dt-os-bar">
+            <div id="dtAppleBar" class="dt-os-bar" style="display:none;">
               <label for="chkDtSkipApple">
                 <input id="chkDtSkipApple" type="checkbox" checked />
-                <span>🍎 连 Mac / iPad 时自动放行（保留原生双击 ⌘，不误触 ⌘+S 保存）</span>
+                <span>🍎 统一模式下连 Mac / iPad 自动放行（保留原生双击 ⌘，不误触 ⌘+S）</span>
               </label>
               <span class="card-sub" style="color:#d8b4fe;">键盘芯片自动识别系统</span>
             </div>
@@ -585,7 +645,7 @@
   // ===========================================================================
   const BASE_SHA256 = "7d3c5b418f57ced5ea96d4f70c9522bd47beffdfb06afab194174ad8ec53aa33";
   const FW_SIZE_STD = 64516;  // 0xFC04 (stock & pure-data builds)
-  const FW_SIZE_EXT = 65284;  // 0xFF04 (with audited 476B v2 Fn + Double-Tap TC32 patch, still < 64KB!)
+  const FW_SIZE_EXT = 66820;  // 0x10504 = 65.25 KB (v3 3-channel independent + 16x 2/3-key combos + Fn + Staggered Double-Tap, < 124KB max!)
 
   const MATRIX_BASE = 0xEE78; // 8 rows x 17 cols = 136 bytes (0xEE78..0xEEFF)
   const MATRIX_LEN  = 136;
@@ -601,7 +661,7 @@
   const CONSUMER_MAX  = 0x0397;
   const MACRO_USAGE   = 0x038E;
 
-  // 2-Key Hardware Macro (0x038E)
+  // Legacy stock 2-Key Hardware Macro (0x038E)
   const MACRO_K1_OFFS = [0x4D84, 0x4DAA, 0x4DDA, 0x4DE6];
   const MACRO_K2_OFFS = [0x4D90, 0x4D9C, 0x4DB6, 0x4DC2];
   const STOCK_MACRO   = { k1: 0xE3, k2: 0x0F };
@@ -613,9 +673,9 @@
     usbName: "Multi-Device Wireless Keyboard",
   };
   const VER_TAG_OFFS_STD = [0xEC94, 0xF1A4, 0xFBE8];
-  const LENOVO_MAGIC_OFF_EXT = 0xFEE0; // 0xFF04 - 0x24: verified at 0x5D84..0x5DD6 (ota_end_cb)!
+  const LENOVO_MAGIC_OFF_EXT = 0x104E0; // 0x10504 - 0x24: verified at 0x5D84..0x5DD6 (ota_end_cb)!
   const LENOVO_TAIL_MAGIC = [0xF9, 0xE6, 0x24, 0xA0, 0x01, 0x02, 0x03, 0x04];
-  const VER_TAG_OFF_EXT_TAIL = 0xFEE8;
+  const VER_TAG_OFF_EXT_TAIL = 0x104E8;
   const VER_TAG_MAX = 13;
 
   const BLE_NAME_OFF = 0xEDD4;
@@ -627,57 +687,81 @@
   const USB_NAME_MAX = 30;
   const USB_LEN_CODE_OFFS = [0x2132, 0x2136];
 
-  // Audited v2.2 Hold-Fn + Apple-aware 4-Phase Staggered Double-Tap TC32 Patch (528 bytes @ 0xFC00..0xFE0F)
-  // Hooks: 0x0018 bin_size=0xFF04, 0x017C bss_end=0x843920, 0x55F8 cb=0xFC01,
-  //        0x4E34/0x4E58 BL fn_dispatch(0xFC12), 0x5592 BL fn_tick(0xFD74)
-  // Staggered combo sequence: [k1 DOWN] -> step_ms -> [k1+k2 DOWN] -> step_ms -> [k1 DOWN, k2 UP] -> step_ms -> [all UP]
+  // Audited v3 3-Channel (BT1/BT2/BT3) + 16x 2/3-Key Combo + Hold-Fn + Staggered Double-Tap TC32 Patch (840B @ 0xFC00..0xFF47)
+  // Active BT channel read directly from verified RAM byte *(u8 *)0x008429D9 (0=BT1, 1=BT2, 2=BT3).
+  // Auto Mac 0xE2<->0xE3 swap compensation via firmware's is_apple_os() @ 0x6918 so Cmd+Shift+4 works on BOTH Mac BLE & USB-C!
   const FN_TRIGGER_CODE = 0xF9;
+  const COMBO_CODE_BASE = 0xC0; // 0xC0..0xCF = 16 independent 2/3-key hardware combos
+  const COMBO_MAX       = 16;
   const EXT_PATCH_BASE  = 0xFC00;
-  const EXT_CONFIG_BASE = 0xFE30; // 32B header: [+0]fn_trig,[+1]fn_tap,[+2..3]0x0003,[+4..7]fn_max,[+8..11]pulse,[+12]dt_idx,[+13]dt_k1,[+14]dt_k2,[+15]dt_flags,[+16..19]dt_win,[+20..23]dt_step
-  const EXT_FN_MAP_BASE = 0xFE50; // 136B fn_map @ 0xFE50..0xFED7
+  const EXT_CONFIG_BASE = 0x10000; // 3 x 32B = 96B (CH_CFG[0..2], magic=0x0004)
+  const EXT_COMBO_BASE  = 0x10060; // 16 x 8B = 128B (COMBO_TABLE[0..15]: k1,k2,k3,flags,step_ticks)
+  const EXT_BASE_MAPS   = 0x10100; // 3 x 144B (stride 0x90): ch0=0x10100, ch1=0x10190, ch2=0x10220
+  const EXT_FN_MAPS     = 0x102B0; // 3 x 144B (stride 0x90): ch0=0x102B0, ch1=0x10340, ch2=0x103D0
+  const CH_MAP_STRIDE   = 144;     // 0x90
   const PULSE_HOLD_TICKS = 20 * 16000; // 20 ms @ 16 MHz reg_system_tick (0x00800740)
   const EXT_HOOKS = [
-    { off: 0x0018, bytes: [0x04, 0xFF, 0x00, 0x00] }, // fw_size = 65284 (0xFF04)
+    { off: 0x0018, bytes: [0x04, 0x05, 0x01, 0x00] }, // fw_size = 66820 (0x10504)
     { off: 0x017C, bytes: [0x20, 0x39, 0x84, 0x00] }, // _bss_end = 0x843920 (auto-zero 0x843860..0x84391F)
-    { off: 0x55F8, bytes: [0x01, 0xFC, 0x00, 0x00] }, // key_cb = fn_entry | 1
-    { off: 0x4E34, bytes: [0x0A, 0x90, 0xED, 0x9E] }, // BL fn_dispatch (0xFC12)
-    { off: 0x4E58, bytes: [0x0A, 0x90, 0xDB, 0x9E] }, // BL fn_dispatch (0xFC12)
-    { off: 0x5592, bytes: [0x0A, 0x90, 0xEF, 0x9B] }, // BL fn_tick     (0xFD74)
+    { off: 0x55F8, bytes: [0xA9, 0xFC, 0x00, 0x00] }, // key_cb = fn_entry (0xFCA8) | 1
+    { off: 0x4E34, bytes: [0x0A, 0x90, 0x41, 0x9F] }, // BL fn_dispatch (0xFCBA)
+    { off: 0x4E58, bytes: [0x0A, 0x90, 0x2F, 0x9F] }, // BL fn_dispatch (0xFCBA)
+    { off: 0x5592, bytes: [0x0A, 0x90, 0x74, 0x9C] }, // BL fn_tick     (0xFE7E)
   ];
   const EXT_PATCH_CODE = new Uint8Array([
-    0x10, 0x65, 0x03, 0xF1, 0x1B, 0xE8, 0x5B, 0xE8, 0x7C, 0x0C, 0x23, 0x40, 0xF5, 0x97, 0xFA, 0x98,
-    0x10, 0x6D, 0xF0, 0x65, 0x79, 0x0C, 0x7A, 0x0D, 0x26, 0x48, 0x07, 0xEC, 0x2A, 0x48, 0x00, 0xAA,
-    0x2F, 0xC0, 0x97, 0x02, 0x2D, 0xC1, 0x00, 0xA2, 0x22, 0x43, 0x01, 0xA9, 0x07, 0xC1, 0x01, 0xA2,
-    0x62, 0x40, 0x00, 0xA2, 0xA2, 0x40, 0x73, 0x0B, 0x1A, 0x58, 0x62, 0x50, 0xF0, 0x6D, 0x00, 0xA2,
-    0x62, 0x40, 0xA2, 0x48, 0x00, 0xAA, 0xF9, 0xC1, 0x6E, 0x48, 0x00, 0xAE, 0xF6, 0xC0, 0x6A, 0x58,
-    0x00, 0xAA, 0x05, 0xC0, 0x6B, 0x0B, 0x1B, 0x58, 0x60, 0x58, 0x1B, 0xEA, 0x9A, 0x02, 0xED, 0xC3,
-    0xE2, 0x48, 0x00, 0xAA, 0x03, 0xC0, 0x30, 0xEC, 0x02, 0xA1, 0xF5, 0x97, 0x2F, 0x98, 0x30, 0xEC,
-    0x01, 0xA1, 0xF5, 0x97, 0x2B, 0x98, 0x01, 0xA2, 0xE2, 0x40, 0x62, 0x0B, 0x1A, 0x58, 0xA2, 0x50,
-    0xF0, 0x6D, 0x01, 0xA9, 0x53, 0xC1, 0x2A, 0x4B, 0x96, 0x02, 0x3D, 0xC1, 0x62, 0x48, 0x00, 0xAA,
-    0x3A, 0xC1, 0xEA, 0x4B, 0x00, 0xAA, 0x03, 0xC0, 0xF6, 0x97, 0x3E, 0x9E, 0x00, 0xA8, 0x33, 0xC1,
-    0x22, 0x4B, 0x02, 0xAA, 0x2A, 0xC1, 0x57, 0x0B, 0x1B, 0x58, 0x20, 0x59, 0x1B, 0xEA, 0x2A, 0x59,
-    0x9A, 0x02, 0x23, 0xC3, 0x00, 0xA2, 0x22, 0x43, 0xFE, 0xA2, 0x53, 0x0B, 0x9A, 0x15, 0x62, 0x4B,
-    0x00, 0xAA, 0x0B, 0xC0, 0x02, 0xAA, 0x03, 0xC1, 0xA8, 0x4B, 0x02, 0xA1, 0xF4, 0x97, 0xFE, 0x9F,
-    0x68, 0x4B, 0x02, 0xA1, 0xF4, 0x97, 0xFA, 0x9F, 0x00, 0xA2, 0x62, 0x43, 0x68, 0x4B, 0x00, 0xA8,
-    0x0B, 0xC0, 0x01, 0xA1, 0xF4, 0x97, 0xF2, 0x9F, 0xA8, 0x4B, 0x04, 0xA2, 0x00, 0xA8, 0x00, 0xC0,
-    0x01, 0xA2, 0x62, 0x43, 0x43, 0x0B, 0x1A, 0x58, 0x62, 0x51, 0xF0, 0x6D, 0x01, 0xA2, 0x22, 0x43,
-    0x40, 0x0B, 0x1A, 0x58, 0x22, 0x51, 0x01, 0x80, 0x00, 0xA2, 0x22, 0x43, 0x38, 0xEC, 0x62, 0x48,
-    0x00, 0xAA, 0x06, 0xC0, 0x01, 0xA2, 0xA2, 0x40, 0x3C, 0x0B, 0x9A, 0x1D, 0x00, 0xAA, 0x00, 0xC0,
-    0x10, 0xEC, 0x39, 0x0B, 0x98, 0x15, 0x01, 0xA1, 0xF4, 0x97, 0xD0, 0x9F, 0xF0, 0x6D, 0x2A, 0x4B,
-    0x96, 0x02, 0x11, 0xC1, 0x22, 0x4B, 0x01, 0xAA, 0x0E, 0xC1, 0x32, 0x0B, 0x1B, 0x58, 0x20, 0x59,
-    0x1B, 0xEA, 0x2A, 0x59, 0x9A, 0x02, 0x05, 0xC3, 0x02, 0xA2, 0x22, 0x43, 0x2D, 0x0B, 0x1A, 0x58,
-    0x22, 0x51, 0x01, 0x80, 0x00, 0xA2, 0x22, 0x43, 0x38, 0xEC, 0x2B, 0x0B, 0x9A, 0x1D, 0x00, 0xAA,
-    0x04, 0xC0, 0x00, 0xA1, 0x99, 0x15, 0xFE, 0xAA, 0x03, 0xC0, 0x10, 0xEC, 0x02, 0xA1, 0xF4, 0x97,
-    0xAD, 0x9F, 0xF0, 0x6D, 0xF0, 0x65, 0x00, 0xA4, 0x20, 0x0D, 0x21, 0x0E, 0xE9, 0x48, 0x00, 0xA9,
-    0x0D, 0xC0, 0x01, 0xA4, 0x1F, 0x0A, 0x12, 0x58, 0xAB, 0x58, 0xD2, 0xEA, 0xB0, 0x58, 0x82, 0x02,
-    0x05, 0xC3, 0x00, 0xA1, 0xE9, 0x40, 0x70, 0x48, 0x02, 0xA1, 0xF4, 0x97, 0x97, 0x9F, 0x6F, 0x4B,
-    0x00, 0xAF, 0x23, 0xC0, 0x01, 0xA4, 0x17, 0x0A, 0x12, 0x58, 0x6B, 0x59, 0xD3, 0xEA, 0x70, 0x59,
-    0x04, 0xAF, 0x00, 0xC1, 0xB0, 0x58, 0x83, 0x02, 0x18, 0xC3, 0x6A, 0x51, 0x01, 0xAF, 0x06, 0xC1,
-    0x02, 0xA1, 0x69, 0x43, 0xB0, 0x4B, 0x01, 0xA1, 0xF4, 0x97, 0x80, 0x9F, 0x0E, 0x80, 0x02, 0xAF,
-    0x06, 0xC1, 0x03, 0xA1, 0x69, 0x43, 0xB0, 0x4B, 0x02, 0xA1, 0xF4, 0x97, 0x77, 0x9F, 0x05, 0x80,
-    0x00, 0xA1, 0x69, 0x43, 0x70, 0x4B, 0x02, 0xA1, 0xF4, 0x97, 0x70, 0x9F, 0xF5, 0x97, 0x64, 0x9B,
-    0x00, 0xA8, 0x01, 0xC1, 0x20, 0xEC, 0xF0, 0x6D, 0x01, 0xA0, 0xF0, 0x6D, 0x60, 0x38, 0x84, 0x00,
-    0x30, 0xFE, 0x00, 0x00, 0x40, 0x07, 0x80, 0x00, 0x78, 0x38, 0x84, 0x00, 0x50, 0xFE, 0x00, 0x00,
+    0xE0, 0x65, 0x05, 0xEC, 0x0E, 0xEC, 0x17, 0xEC, 0x00, 0xAB, 0x18, 0xC0, 0xF6, 0x97, 0x84, 0x9E,
+    0x00, 0xA8, 0x14, 0xC0, 0xE3, 0xAD, 0x03, 0xC0, 0xE2, 0xAD, 0x02, 0xC1, 0xE3, 0xA5, 0x00, 0x80,
+    0xE2, 0xA5, 0xE3, 0xAE, 0x03, 0xC0, 0xE2, 0xAE, 0x02, 0xC1, 0xE3, 0xA6, 0x00, 0x80, 0xE2, 0xA6,
+    0xE3, 0xAF, 0x03, 0xC0, 0xE2, 0xAF, 0x02, 0xC1, 0xE3, 0xA7, 0x00, 0x80, 0xE2, 0xA7, 0x62, 0x4B,
+    0x00, 0xAA, 0x18, 0xC0, 0xB7, 0x0B, 0x02, 0xAA, 0x07, 0xC1, 0x98, 0x48, 0x00, 0xA8, 0x00, 0xC1,
+    0x58, 0x48, 0x02, 0xA1, 0xF5, 0x97, 0x3A, 0x98, 0xB2, 0x0B, 0x98, 0x48, 0x00, 0xA8, 0x04, 0xC0,
+    0x58, 0x48, 0x02, 0xA1, 0xF5, 0x97, 0x32, 0x98, 0xAE, 0x0B, 0x18, 0x48, 0x02, 0xA1, 0xF5, 0x97,
+    0x2D, 0x98, 0x00, 0xA2, 0x62, 0x43, 0x00, 0xAD, 0x15, 0xC0, 0xAA, 0x0B, 0x1D, 0x40, 0x5E, 0x40,
+    0x9F, 0x40, 0x28, 0xEC, 0x01, 0xA1, 0xF5, 0x97, 0x21, 0x98, 0x00, 0xAF, 0x03, 0xC0, 0x30, 0xEC,
+    0x01, 0xA1, 0xF5, 0x97, 0x1B, 0x98, 0x04, 0xA2, 0x00, 0xAE, 0x00, 0xC0, 0x01, 0xA2, 0x62, 0x43,
+    0xA1, 0x0B, 0x1A, 0x58, 0x62, 0x51, 0xE0, 0x6D, 0x10, 0x65, 0x03, 0xF1, 0x1B, 0xE8, 0x5B, 0xE8,
+    0x9E, 0x0C, 0x23, 0x40, 0xF5, 0x97, 0xA6, 0x98, 0x10, 0x6D, 0xF0, 0x65, 0x02, 0xEC, 0xE8, 0xBA,
+    0x03, 0xAA, 0x02, 0xC2, 0xF5, 0x97, 0x02, 0x98, 0xF0, 0x6D, 0x98, 0x0C, 0x26, 0x48, 0x98, 0x0B,
+    0x1B, 0x48, 0x03, 0xAB, 0x00, 0xC3, 0x00, 0xA3, 0x5A, 0xF1, 0x96, 0x0D, 0xAD, 0xE8, 0x01, 0xA9,
+    0x7B, 0xC1, 0xD8, 0xF1, 0x1A, 0xF1, 0x80, 0xE8, 0x93, 0x0A, 0x12, 0xE8, 0x97, 0x1D, 0x00, 0xAF,
+    0x05, 0xC1, 0x00, 0xA2, 0x22, 0x43, 0xFE, 0xA2, 0x90, 0x0B, 0x9A, 0x15, 0xF0, 0x6D, 0x2A, 0x48,
+    0x00, 0xAA, 0x0D, 0xC0, 0x97, 0x02, 0x0B, 0xC1, 0x00, 0xA2, 0x22, 0x43, 0xA2, 0x40, 0x01, 0xA2,
+    0x62, 0x40, 0xE6, 0x43, 0x83, 0x0A, 0x13, 0x42, 0x83, 0x0B, 0x1A, 0x58, 0x62, 0x50, 0xF0, 0x6D,
+    0x2A, 0x4B, 0x96, 0x02, 0x2C, 0xC1, 0x62, 0x48, 0x00, 0xAA, 0x29, 0xC1, 0xEA, 0x4B, 0x01, 0xA0,
+    0x02, 0x00, 0x00, 0xAA, 0x03, 0xC0, 0xF6, 0x97, 0xEF, 0x9D, 0x00, 0xA8, 0x20, 0xC1, 0x22, 0x4B,
+    0x02, 0xAA, 0x17, 0xC1, 0x78, 0x0B, 0x1B, 0x58, 0x20, 0x59, 0x1B, 0xEA, 0x2A, 0x59, 0x9A, 0x02,
+    0x10, 0xC3, 0x00, 0xA2, 0x22, 0x43, 0xFE, 0xA2, 0x78, 0x0B, 0x9A, 0x15, 0x6A, 0x59, 0x71, 0x0B,
+    0x5A, 0x50, 0x68, 0x4B, 0xA9, 0x4B, 0x00, 0xA2, 0xEB, 0x4B, 0x02, 0xA6, 0x33, 0x00, 0xFF, 0x97,
+    0x47, 0x9F, 0xF0, 0x6D, 0x01, 0xA2, 0x22, 0x43, 0x6B, 0x0B, 0x1A, 0x58, 0x22, 0x51, 0x01, 0x80,
+    0x00, 0xA2, 0x22, 0x43, 0x38, 0xEC, 0x62, 0x48, 0x00, 0xAA, 0x0C, 0xC0, 0x01, 0xA2, 0xA2, 0x40,
+    0x64, 0x0B, 0x1B, 0x4A, 0xD9, 0xF1, 0x1A, 0xF1, 0x89, 0xE8, 0x69, 0x0A, 0x52, 0xE8, 0x92, 0x1D,
+    0x00, 0xAA, 0x00, 0xC0, 0x10, 0xEC, 0x02, 0xEC, 0xC0, 0xBA, 0x10, 0xAA, 0x0F, 0xC2, 0xFE, 0xA1,
+    0x62, 0x0B, 0x99, 0x15, 0xD2, 0xF0, 0x63, 0x0D, 0xAD, 0xE8, 0x6A, 0x58, 0x59, 0x0B, 0x5A, 0x50,
+    0x28, 0x48, 0x69, 0x48, 0xAA, 0x48, 0xEB, 0x48, 0xFF, 0x97, 0x1A, 0x9F, 0xF0, 0x6D, 0x5B, 0x0B,
+    0x98, 0x15, 0x01, 0xA1, 0xF4, 0x97, 0x7A, 0x9F, 0xF0, 0x6D, 0x62, 0x48, 0x00, 0xAA, 0x2C, 0xC0,
+    0xE2, 0x4B, 0x96, 0x02, 0x29, 0xC1, 0x00, 0xA2, 0x62, 0x40, 0xFF, 0xA2, 0xE2, 0x43, 0xA2, 0x48,
+    0x00, 0xAA, 0x43, 0xC1, 0x4B, 0x0B, 0x1B, 0x4A, 0x5B, 0xF1, 0x4E, 0x0D, 0xED, 0xE8, 0x6E, 0x48,
+    0x00, 0xAE, 0x3B, 0xC0, 0x6A, 0x58, 0x00, 0xAA, 0x05, 0xC0, 0x47, 0x0B, 0x1B, 0x58, 0x60, 0x58,
+    0x1B, 0xEA, 0x9A, 0x02, 0x32, 0xC3, 0xE2, 0x48, 0x00, 0xAA, 0x03, 0xC0, 0xA0, 0x4B, 0x02, 0xA1,
+    0xF4, 0x97, 0x54, 0x9F, 0xA6, 0x43, 0x30, 0xEC, 0x01, 0xA1, 0xF4, 0x97, 0x4F, 0x9F, 0x01, 0xA2,
+    0xE2, 0x40, 0x3D, 0x0B, 0x1A, 0x58, 0xA2, 0x50, 0xF0, 0x6D, 0x2A, 0x4B, 0x96, 0x02, 0x11, 0xC1,
+    0x22, 0x4B, 0x01, 0xAA, 0x0E, 0xC1, 0x38, 0x0B, 0x1B, 0x58, 0x20, 0x59, 0x1B, 0xEA, 0x2A, 0x59,
+    0x9A, 0x02, 0x05, 0xC3, 0x02, 0xA2, 0x22, 0x43, 0x33, 0x0B, 0x1A, 0x58, 0x22, 0x51, 0x01, 0x80,
+    0x00, 0xA2, 0x22, 0x43, 0x35, 0x0B, 0x9A, 0x1D, 0x00, 0xAA, 0x07, 0xC0, 0x00, 0xA1, 0x99, 0x15,
+    0xFE, 0xAA, 0x03, 0xC0, 0x10, 0xEC, 0x02, 0xA1, 0xF4, 0x97, 0x28, 0x9F, 0xF0, 0x6D, 0xF0, 0x65,
+    0x00, 0xA4, 0x2A, 0x0D, 0x27, 0x0E, 0xE9, 0x48, 0x00, 0xA9, 0x0E, 0xC0, 0x01, 0xA4, 0x26, 0x0A,
+    0x12, 0x58, 0xAB, 0x58, 0xD2, 0xEA, 0x27, 0x08, 0x80, 0x58, 0x82, 0x02, 0x05, 0xC3, 0x00, 0xA1,
+    0xE9, 0x40, 0xA8, 0x4B, 0x02, 0xA1, 0xF4, 0x97, 0x11, 0x9F, 0x6F, 0x4B, 0x00, 0xAF, 0x31, 0xC0,
+    0x01, 0xA4, 0x1D, 0x0A, 0x12, 0x58, 0x6B, 0x59, 0xD3, 0xEA, 0x70, 0x58, 0x04, 0xAF, 0x01, 0xC1,
+    0x1C, 0x08, 0x80, 0x58, 0x83, 0x02, 0x25, 0xC3, 0x6A, 0x51, 0x01, 0xAF, 0x09, 0xC1, 0x02, 0xA1,
+    0x69, 0x43, 0xB0, 0x48, 0x00, 0xA8, 0x00, 0xC1, 0x70, 0x48, 0x01, 0xA1, 0xF4, 0x97, 0xF6, 0x9E,
+    0x18, 0x80, 0x02, 0xAF, 0x09, 0xC1, 0x03, 0xA1, 0x69, 0x43, 0xB0, 0x48, 0x00, 0xA8, 0x00, 0xC1,
+    0x70, 0x48, 0x02, 0xA1, 0xF4, 0x97, 0xEA, 0x9E, 0x0C, 0x80, 0x00, 0xA1, 0x69, 0x43, 0xB0, 0x48,
+    0x00, 0xA8, 0x03, 0xC0, 0x70, 0x48, 0x02, 0xA1, 0xF4, 0x97, 0xE0, 0x9E, 0x30, 0x48, 0x02, 0xA1,
+    0xF4, 0x97, 0xDC, 0x9E, 0xF5, 0x97, 0xD0, 0x9A, 0x00, 0xA8, 0x01, 0xC1, 0x20, 0xEC, 0xF0, 0x6D,
+    0x01, 0xA0, 0xF0, 0x6D, 0x00, 0x39, 0x84, 0x00, 0x40, 0x07, 0x80, 0x00, 0x60, 0x38, 0x84, 0x00,
+    0xD9, 0x29, 0x84, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x78, 0x38, 0x84, 0x00,
+    0xB0, 0x02, 0x01, 0x00, 0x60, 0x00, 0x01, 0x00,
   ]);
 
   // Telink BLE OTA GATT UUIDs (verified against firmware GATT handles 44..54 & OtaController.java)
@@ -787,18 +871,22 @@
   ];
   const CONSUMER_NAMES = new Map(CONSUMER_GROUPS.flatMap(g => g.items.map(([u, n]) => [u, n])));
 
-  const MACRO_PRESETS = [
-    { name: "🔒 锁屏（原厂）",      k1: 0xE3, k2: 0x0F },
-    { name: "🪟 切换窗口 Alt+Tab",  k1: 0xE2, k2: 0x2B },
-    { name: "🔍 搜索 ⌘/Win+空格",   k1: 0xE3, k2: 0x2C },
-    { name: "🏠 显示桌面 Win+D",    k1: 0xE3, k2: 0x07 },
-    { name: "📋 复制 Ctrl+C",       k1: 0xE0, k2: 0x06 },
-    { name: "📄 粘贴 Ctrl+V",       k1: 0xE0, k2: 0x19 },
-    { name: "↩ 撤销 Ctrl+Z",        k1: 0xE0, k2: 0x1D },
-    { name: "📋 复制 ⌘+C",          k1: 0xE3, k2: 0x06 },
-    { name: "📄 粘贴 ⌘+V",          k1: 0xE3, k2: 0x19 },
-    { name: "✖ 关标签 ⌘+W",         k1: 0xE3, k2: 0x1A },
-    { name: "✖ 关窗口 Alt+F4",      k1: 0xE2, k2: 0x3D },
+  // Independent 2/3-Key Combo Presets (each key can have its own combo, up to 16 distinct combos!)
+  const COMBO_PRESETS = [
+    { name: "📸 Mac 框选截图 ⌘+Shift+4",  a: { t: "combo", k1: 0xE3, k2: 0xE1, k3: 0x21, stepMs: 20, macFix: true } },
+    { name: "📸 Mac 截图面板 ⌘+Shift+5",  a: { t: "combo", k1: 0xE3, k2: 0xE1, k3: 0x22, stepMs: 20, macFix: true } },
+    { name: "📸 Mac 全屏截图 ⌘+Shift+3",  a: { t: "combo", k1: 0xE3, k2: 0xE1, k3: 0x20, stepMs: 20, macFix: true } },
+    { name: "🔍 平板搜索 Meta+S（60ms防误唤）", a: { t: "combo", k1: 0xE3, k2: 0x16, k3: 0, stepMs: 60, macFix: true } },
+    { name: "🔒 锁屏（原厂 Win/Meta+L）",  a: { t: "consumer", v: MACRO_USAGE } },
+    { name: "🪟 切换窗口 Alt+Tab",         a: { t: "combo", k1: 0xE2, k2: 0x2B, k3: 0, stepMs: 20, macFix: true } },
+    { name: "🔍 Spotlight ⌘+空格",         a: { t: "combo", k1: 0xE3, k2: 0x2C, k3: 0, stepMs: 20, macFix: true } },
+    { name: "📋 复制 ⌘+C",                a: { t: "combo", k1: 0xE3, k2: 0x06, k3: 0, stepMs: 20, macFix: true } },
+    { name: "📄 粘贴 ⌘+V",                a: { t: "combo", k1: 0xE3, k2: 0x19, k3: 0, stepMs: 20, macFix: true } },
+    { name: "✖ 关标签 ⌘+W",               a: { t: "combo", k1: 0xE3, k2: 0x1A, k3: 0, stepMs: 20, macFix: true } },
+    { name: "📋 复制 Ctrl+C",             a: { t: "combo", k1: 0xE0, k2: 0x06, k3: 0, stepMs: 20, macFix: false } },
+    { name: "📄 粘贴 Ctrl+V",             a: { t: "combo", k1: 0xE0, k2: 0x19, k3: 0, stepMs: 20, macFix: false } },
+    { name: "🏠 显示桌面 Win+D",          a: { t: "combo", k1: 0xE3, k2: 0x07, k3: 0, stepMs: 20, macFix: false } },
+    { name: "✖ 关窗口 Alt+F4",            a: { t: "combo", k1: 0xE2, k2: 0x3D, k3: 0, stepMs: 20, macFix: false } },
   ];
 
   // Friendly Fn Trigger candidates & Tap action choices
@@ -818,13 +906,12 @@
     { id: "cons:0x0224",   label: "返回上一页",          a: { t: "consumer", v: 0x0224 } },
     { id: "cons:0x0223",   label: "回到桌面 Home",       a: { t: "consumer", v: 0x0223 } },
     { id: "cons:0x029F",   label: "多任务视图",          a: { t: "consumer", v: 0x029F } },
-    { id: "cons:0x038E",   label: "一键组合快捷键",      a: { t: "consumer", v: MACRO_USAGE } },
+    { id: "cons:0x038E",   label: "原厂锁屏键",          a: { t: "consumer", v: MACRO_USAGE } },
     { id: "key:0x2B",      label: "Tab",                a: { t: "key", v: 0x2B } },
     { id: "key:0xE6",      label: "右 Alt",             a: { t: "key", v: 0xE6 } },
     { id: "key:0xE4",      label: "右 Ctrl",            a: { t: "key", v: 0xE4 } },
   ];
   const FN_CLASSIC_PRESET = {
-    // IJKL arrows + U/O Home/End + H/N PgUp/PgDn + Backspace->Del + 1..= -> F1..F12 + Media
     0xEEA2: { t: "key", v: 0x52 },         // I -> ↑
     0xEEB0: { t: "key", v: 0x50 },         // J -> ←
     0xEEB3: { t: "key", v: 0x51 },         // K -> ↓
@@ -851,7 +938,7 @@
     0xEEDB: { t: "consumer", v: 0x00B5 },  // → -> 下一曲
   };
 
-  // Friendly Double-Tap candidates & Presets (default: double-tap left Alt/cmd -> Meta+S for Android search)
+  // Friendly Double-Tap candidates & Presets
   const DT_KEY_CHOICES = [
     [0xEECD, "左 Alt / cmd（空格左边，推荐）"],
     [0xEE94, "左 Meta / option"],
@@ -873,12 +960,18 @@
   ];
 
   // ---------------------------------------------------------------------------
-  // State model
+  // State model (v3: BT1 / BT2 / BT3 Independent Device Profiles + 2/3-key Combos)
   // ---------------------------------------------------------------------------
   function stockAssign(k) {
     return SLOT_IDS_7.includes(k.stock) ? { t: "consumer", v: SLOT_STOCK_USAGE[k.stock] } : { t: "key", v: k.stock };
   }
-  const sameAssign = (a, b) => a.t === b.t && (a.t === "none" || a.v === b.v);
+  const comboKey = c => `${c.k1}|${c.k2}|${c.k3 || 0}|${c.stepMs || 20}|${c.macFix ? 1 : 0}`;
+  function sameAssign(a, b) {
+    if (!a || !b || a.t !== b.t) return false;
+    if (a.t === "none") return true;
+    if (a.t === "combo") return comboKey(a) === comboKey(b);
+    return a.v === b.v;
+  }
   const sameDtAction = (a, b) => a && b && a.t === b.t && (a.t === "combo" ? (a.k1 === b.k1 && a.k2 === b.k2) : a.v === b.v);
   const stockKeys = () => new Map(ALL_KEYS.map(k => [k.off, stockAssign(k)]));
   const defaultFn = () => ({
@@ -888,20 +981,51 @@
     timeoutMs: 250,
     keys: new Map(),             // off -> assign (absent = pass through to base layer)
   });
-  const defaultDt = () => ({
+  const defaultDt = (skipApple = false) => ({
     enabled: false,
     keyOff: 0xEECD,                            // 左 Alt/cmd（空格左侧）
     action: { t: "combo", k1: 0xE3, k2: 0x16 }, // Meta/option + S
     windowMs: 320,
-    stepMs: 60,                                // 4 阶段错峰间隔（先按 Meta -> 60ms -> 按 S -> 60ms -> 松 S -> 60ms -> 松 Meta）
-    skipApple: true,                           // 连 Mac / iPad 时自动放行，保留原生双击 ⌘
+    stepMs: 60,                                // 4 阶段错峰间隔（防误唤语音助手）
+    skipApple,                                 // 仅统一模式下需要开启，分设备模式下直接各自开关
   });
-  const stockState = () => ({
+  const DEFAULT_CH_NAMES = ["MacBook", "MagicPad", "备用设备"];
+  const defaultProfile = (name = "默认设备", skipApple = false) => ({
+    name,
     keys: stockKeys(),
+    fn: defaultFn(),
+    dt: defaultDt(skipApple),
+  });
+  function cloneProfile(p, newName = p.name) {
+    return {
+      name: newName,
+      keys: new Map([...p.keys].map(([o, a]) => [o, { ...a }])),
+      fn: {
+        enabled: !!p.fn.enabled,
+        triggerOff: p.fn.triggerOff,
+        tap: { ...p.fn.tap },
+        timeoutMs: p.fn.timeoutMs,
+        keys: new Map([...p.fn.keys].map(([o, a]) => [o, { ...a }])),
+      },
+      dt: {
+        enabled: !!p.dt.enabled,
+        keyOff: p.dt.keyOff,
+        action: { ...p.dt.action },
+        windowMs: p.dt.windowMs,
+        stepMs: p.dt.stepMs || 60,
+        skipApple: !!p.dt.skipApple,
+      },
+    };
+  }
+  const stockState = () => ({
+    perChannel: false,
+    profiles: [
+      defaultProfile(DEFAULT_CH_NAMES[0], false),
+      defaultProfile(DEFAULT_CH_NAMES[1], false),
+      defaultProfile(DEFAULT_CH_NAMES[2], false),
+    ],
     macro: { ...STOCK_MACRO },
     meta: { ...STOCK_META },
-    fn: defaultFn(),
-    dt: defaultDt(),
   });
 
   const MAGICPAD_PRESET_KEYS = {
@@ -910,14 +1034,16 @@
   };
 
   let state = stockState();
-  let activeLayer = "base"; // "base" | "fn"
-  let selectedOff = 0xEE8F;
-  let editorTab = "consumer";
+  let activeCh = 0;          // 0=BT1, 1=BT2, 2=BT3 (when perChannel=false, always edits profiles[0])
+  let activeLayer = "base";  // "base" | "fn"
+  let selectedOff = 0xEEE7;  // 默认选中锁屏键方便直接试改截图
+  let editorTab = "macro";
   let kbSearch = "";
   let baseFirmware = null;
+  let customComboDraft = { k1: 0xE3, k2: 0xE1, k3: 0x21, stepMs: 20, macFix: true }; // 默认 Cmd+Shift+4
 
   // Dual transport connection state (USB-C WebHID OR Wireless Web Bluetooth)
-  let transport = null; // null | "usb" | "ble"
+  let transport = null;
   let hidDevice = null;
   let bleDevice = null;
   let bleOtaChar = null;
@@ -926,13 +1052,19 @@
   let isFlashing = false;
   let pendingResolver = null;
 
+  const curChIdx = () => (state.perChannel ? activeCh : 0);
+  const curProf = () => state.profiles[curChIdx()];
+  const activeProfiles = (st = state) => (st.perChannel ? st.profiles : [st.profiles[0]]);
+
   const hex2 = v => "0x" + v.toString(16).toUpperCase().padStart(2, "0");
   const hex4 = v => "0x" + v.toString(16).toUpperCase().padStart(4, "0");
   const keyName = k => k.name || k.label;
   const macroLabel = (m = state.macro) => `${kbShortName(m.k1)} + ${kbShortName(m.k2)}`;
-  const isMacroAssign = a => a && a.t === "consumer" && a.v === MACRO_USAGE;
-  const isFnTriggerKey = off => state.fn.enabled && state.fn.triggerOff === off;
-  const isDtKey = off => state.dt.enabled && state.dt.keyOff === off;
+  const comboLabel = c => c.k3 ? `${kbShortName(c.k1)}+${kbShortName(c.k2)}+${kbShortName(c.k3)}` : `${kbShortName(c.k1)}+${kbShortName(c.k2)}`;
+  const comboLongLabel = c => c.k3 ? `${kbShortName(c.k1)} + ${kbShortName(c.k2)} + ${kbShortName(c.k3)}` : `${kbShortName(c.k1)} + ${kbShortName(c.k2)}`;
+  const isMacroAssign = a => a && ((a.t === "consumer" && a.v === MACRO_USAGE) || a.t === "combo");
+  const isFnTriggerKey = (off, p = curProf()) => p.fn.enabled && p.fn.triggerOff === off;
+  const isDtKey = (off, p = curProf()) => p.dt.enabled && p.dt.keyOff === off;
   function describeDtAction(a) {
     if (!a) return "未设置";
     if (a.t === "combo") return `${kbShortName(a.k1)} + ${kbShortName(a.k2)}`;
@@ -943,14 +1075,26 @@
     if (!a) return "同普通层";
     if (a.t === "none") return "已禁用";
     if (a.t === "key") return KB_NAMES.get(a.v) || hex2(a.v);
-    if (a.v === MACRO_USAGE) return `组合键 ${macroLabel(m)}`;
+    if (a.t === "combo") {
+      if (a.k1 === 0xE3 && a.k2 === 0xE1 && a.k3 === 0x21) return "Mac 框选截图 (⌘+Shift+4)";
+      if (a.k1 === 0xE3 && a.k2 === 0xE1 && a.k3 === 0x22) return "Mac 截图面板 (⌘+Shift+5)";
+      if (a.k1 === 0xE3 && a.k2 === 0xE1 && a.k3 === 0x20) return "Mac 全屏截图 (⌘+Shift+3)";
+      return `组合键 ${comboLongLabel(a)}`;
+    }
+    if (a.v === MACRO_USAGE) return (m.k1 === STOCK_MACRO.k1 && m.k2 === STOCK_MACRO.k2) ? "原厂锁屏 (Meta+L)" : `组合键 ${macroLabel(m)}`;
     return CONSUMER_NAMES.get(a.v) || `自定义 (${hex4(a.v)})`;
   }
   function shortDescribe(a, m = state.macro) {
     if (!a) return "";
     if (a.t === "none") return "禁用";
     if (a.t === "key") return kbShortName(a.v);
-    if (a.v === MACRO_USAGE) return macroLabel(m);
+    if (a.t === "combo") {
+      if (a.k1 === 0xE3 && a.k2 === 0xE1 && a.k3 === 0x21) return "📸截图4";
+      if (a.k1 === 0xE3 && a.k2 === 0xE1 && a.k3 === 0x22) return "📸截图5";
+      if (a.k1 === 0xE3 && a.k2 === 0xE1 && a.k3 === 0x20) return "📸全屏";
+      return comboLabel(a);
+    }
+    if (a.v === MACRO_USAGE) return (m.k1 === STOCK_MACRO.k1 && m.k2 === STOCK_MACRO.k2) ? "锁屏" : macroLabel(m);
     const full = CONSUMER_NAMES.get(a.v);
     if (!full) return hex4(a.v);
     return full.replace("（原厂）", "").replace("回到桌面 Home", "回桌面").replace("多任务视图", "多任务")
@@ -1019,37 +1163,74 @@
     return errs;
   }
 
+  function allocateCombos(st) {
+    const list = [];
+    const codeOf = new Map();
+    const addCombo = (a) => {
+      if (!a || a.t !== "combo") return null;
+      const k1 = a.k1, k2 = a.k2, k3 = a.k3 || 0;
+      const stepMs = Math.max(10, Math.min(250, Number(a.stepMs) || 20));
+      const macFix = !!a.macFix;
+      if (!KB_ALLOWED.has(k1) || !KB_ALLOWED.has(k2) || k1 === k2) return "组合快捷键的前两个按键必须有效且不能相同";
+      if (k3 !== 0 && (!KB_ALLOWED.has(k3) || k3 === k1 || k3 === k2)) return "组合快捷键的第 3 个按键无效或与前两键重复";
+      const norm = { k1, k2, k3, stepMs, macFix };
+      const key = comboKey(norm);
+      if (!codeOf.has(key)) {
+        if (list.length >= COMBO_MAX) return `自定义多键组合已超过最大上限 ${COMBO_MAX} 种，请合并相同组合。`;
+        codeOf.set(key, COMBO_CODE_BASE + list.length);
+        list.push(norm);
+      }
+      return null;
+    };
+    for (const p of activeProfiles(st)) {
+      for (const k of ALL_KEYS) {
+        if (k.locked || (p.fn.enabled && k.off === p.fn.triggerOff)) continue;
+        const err = addCombo(p.keys.get(k.off));
+        if (err) return { error: err };
+      }
+      if (p.fn.enabled) {
+        for (const k of ALL_KEYS) {
+          if (k.locked || k.off === p.fn.triggerOff) continue;
+          const err = addCombo(p.fn.keys.get(k.off));
+          if (err) return { error: err };
+        }
+      }
+    }
+    return { list, codeOf };
+  }
+
   function allocateSlots(st) {
     const usages = [];
     const addUsage = u => { if (!usages.includes(u)) usages.push(u); };
-    // 1) Base layer (skip trigger key if Fn enabled, since its matrix byte is 0xF9)
-    for (const k of ALL_KEYS) {
-      if (st.fn.enabled && k.off === st.fn.triggerOff) continue;
-      const a = st.keys.get(k.off);
-      if (a.t === "consumer") addUsage(a.v);
-    }
-    // 2) Fn layer & Fn tap action (iterate ALL_KEYS for 100% deterministic slot allocation)
-    if (st.fn.enabled) {
-      if (st.fn.tap && st.fn.tap.t === "consumer") addUsage(st.fn.tap.v);
+    const profs = activeProfiles(st);
+    for (const p of profs) {
       for (const k of ALL_KEYS) {
-        if (k.off === st.fn.triggerOff) continue;
-        const a = st.fn.keys.get(k.off);
+        if (k.locked || (p.fn.enabled && k.off === p.fn.triggerOff)) continue;
+        const a = p.keys.get(k.off);
         if (a && a.t === "consumer") addUsage(a.v);
       }
+      if (p.fn.enabled) {
+        if (p.fn.tap && p.fn.tap.t === "consumer") addUsage(p.fn.tap.v);
+        for (const k of ALL_KEYS) {
+          if (k.locked || k.off === p.fn.triggerOff) continue;
+          const a = p.fn.keys.get(k.off);
+          if (a && a.t === "consumer") addUsage(a.v);
+        }
+      }
+      if (p.dt.enabled && p.dt.action && p.dt.action.t === "consumer") addUsage(p.dt.action.v);
     }
-    // 3) Double-Tap Consumer action (if enabled and mapped to a Consumer usage)
-    if (st.dt.enabled && st.dt.action && st.dt.action.t === "consumer") addUsage(st.dt.action.v);
     if (usages.length > SLOT_IDS_14.length) {
-      return { error: `快捷功能已选 ${usages.length} 种，超过最大上限 ${SLOT_IDS_14.length} 种。可让几颗键共用同一功能，或减少部分快捷功能。` };
+      return { error: `三通道合计已选 ${usages.length} 种快捷功能，超过最大上限 ${SLOT_IDS_14.length} 种。可减少部分不常用的快捷功能。` };
     }
     const extended = usages.length > SLOT_IDS_7.length;
     const pool = extended ? SLOT_IDS_14 : SLOT_IDS_7;
     const slotOf = new Map(), taken = new Set();
+    const p0 = profs[0];
     for (const u of usages) {
       for (const k of ALL_KEYS) {
-        if (st.fn.enabled && k.off === st.fn.triggerOff) continue;
-        const a = st.keys.get(k.off);
-        if (a.t === "consumer" && a.v === u && SLOT_IDS_7.includes(k.stock) && !taken.has(k.stock)) {
+        if (p0.fn.enabled && k.off === p0.fn.triggerOff) continue;
+        const a = p0.keys.get(k.off);
+        if (a && a.t === "consumer" && a.v === u && SLOT_IDS_7.includes(k.stock) && !taken.has(k.stock)) {
           slotOf.set(u, k.stock); taken.add(k.stock); break;
         }
       }
@@ -1062,56 +1243,76 @@
     return { slotOf, used: usages.length, extended, pool };
   }
 
-  function encodeAssign(a, slotOf) {
+  function encodeAssign(a, slotOf, comboCodeOf) {
     if (!a || a.t === "none") return 0x00;
-    return a.t === "key" ? a.v : slotOf.get(a.v);
+    if (a.t === "key") return a.v;
+    if (a.t === "combo") return comboCodeOf.get(comboKey({ k1: a.k1, k2: a.k2, k3: a.k3 || 0, stepMs: Math.max(10, Math.min(250, Number(a.stepMs) || 20)), macFix: !!a.macFix }));
+    return slotOf.get(a.v);
+  }
+
+  function validateProfile(p, label) {
+    if (p.fn.enabled) {
+      if (!EDITABLE_OFFS.has(p.fn.triggerOff)) return `${label}：Fn 触发键无效`;
+      if (p.fn.tap && p.fn.tap.t === "combo") return `${label}：Fn 轻点动作不支持多键组合`;
+    }
+    if (p.dt.enabled) {
+      if (!EDITABLE_OFFS.has(p.dt.keyOff)) return `${label}：双击触发键无效`;
+      if (p.fn.enabled && p.dt.keyOff === p.fn.triggerOff) {
+        return `${label}：「长按 Fn 触发键」与「双击触发键」不能是同一颗键，请更换其中之一`;
+      }
+      if (!p.dt.action) return `${label}：双击动作未设置`;
+      if (p.dt.action.t === "combo") {
+        if (!KB_ALLOWED.has(p.dt.action.k1) || !KB_ALLOWED.has(p.dt.action.k2) || p.dt.action.k1 === p.dt.action.k2) {
+          return `${label}：双击自定义组合的两个按键必须有效且不能相同`;
+        }
+      } else if (p.dt.action.t === "key") {
+        if (!KB_ALLOWED.has(p.dt.action.v)) return `${label}：双击目标按键无效`;
+      } else if (p.dt.action.t === "consumer") {
+        if (p.dt.action.v < 1 || p.dt.action.v > CONSUMER_MAX) return `${label}：双击快捷功能码超出范围`;
+      } else {
+        return `${label}：双击触发动作类型无效`;
+      }
+    }
+    return null;
   }
 
   function buildFirmware(st) {
     if (!baseFirmware) return { error: "原厂固件基线尚未加载" };
     if (!KB_ALLOWED.has(st.macro.k1) || !KB_ALLOWED.has(st.macro.k2) || st.macro.k1 === st.macro.k2) {
-      return { error: "组合快捷键的两个按键必须有效且不能相同" };
+      return { error: "原厂组合宏的两个按键必须有效且不能相同" };
     }
     const metaErrs = validateMeta(st.meta);
     if (Object.keys(metaErrs).length) return { error: "设备名称或方案标签格式有误：" + Object.values(metaErrs)[0] };
-    if (st.fn.enabled && !EDITABLE_OFFS.has(st.fn.triggerOff)) return { error: "Fn 触发键无效" };
-    if (st.dt.enabled) {
-      if (!EDITABLE_OFFS.has(st.dt.keyOff)) return { error: "双击触发键无效" };
-      if (st.fn.enabled && st.dt.keyOff === st.fn.triggerOff) {
-        return { error: "「长按 Fn 触发键」与「双击触发键」不能是同一颗键，请更换其中之一" };
-      }
-      if (!st.dt.action) return { error: "双击动作未设置" };
-      if (st.dt.action.t === "combo") {
-        if (!KB_ALLOWED.has(st.dt.action.k1) || !KB_ALLOWED.has(st.dt.action.k2) || st.dt.action.k1 === st.dt.action.k2) {
-          return { error: "双击自定义组合的两个按键必须有效且不能相同" };
-        }
-      } else if (st.dt.action.t === "key") {
-        if (!KB_ALLOWED.has(st.dt.action.v)) return { error: "双击目标按键无效" };
-      } else if (st.dt.action.t === "consumer") {
-        if (st.dt.action.v < 1 || st.dt.action.v > CONSUMER_MAX) return { error: "双击快捷功能码超出范围" };
-      } else {
-        return { error: "双击触发动作类型无效" };
-      }
+
+    const profs = activeProfiles(st);
+    for (let i = 0; i < profs.length; i++) {
+      const err = validateProfile(profs[i], st.perChannel ? `BT${i + 1}` : "当前方案");
+      if (err) return { error: err };
     }
 
+    const combos = allocateCombos(st);
+    if (combos.error) return combos;
     const alloc = allocateSlots(st);
     if (alloc.error) return alloc;
 
-    const fnOn = !!st.fn.enabled;
-    const dtOn = !!st.dt.enabled;
-    const extOn = fnOn || dtOn;
+    const anyFn = profs.some(p => p.fn.enabled);
+    const anyDt = profs.some(p => p.dt.enabled);
+    const anyCombo = combos.list.length > 0;
+    const extOn = !!(st.perChannel || anyFn || anyDt || anyCombo);
     const targetLen = extOn ? FW_SIZE_EXT : FW_SIZE_STD;
     const out = new Uint8Array(targetLen);
     out.fill(0xFF);
     out.set(baseFirmware, 0);
 
-    // 1) Base key matrix
-    for (const k of ALL_KEYS) {
-      if (k.locked) continue;
-      if (fnOn && k.off === st.fn.triggerOff) {
-        out[k.off] = FN_TRIGGER_CODE;
-      } else {
-        out[k.off] = encodeAssign(st.keys.get(k.off), alloc.slotOf);
+    // 1) Base key matrix @ 0xEE78:
+    //    - In pure-data mode (extOn=false): patch 0xEE78 directly.
+    //    - In v3 extended mode (extOn=true): keep 0xEE78 100% stock non-zero so 0x4E18 never skips a key
+    //      that is disabled on one channel and enabled on another! Per-channel maps live at 0x10100+.
+    if (!extOn) {
+      const p0 = st.profiles[0];
+      for (const k of ALL_KEYS) {
+        if (k.locked) continue;
+        out[k.off] = encodeAssign(p0.keys.get(k.off), alloc.slotOf, combos.codeOf);
       }
     }
 
@@ -1135,52 +1336,88 @@
       }
     }
 
-    // 3) 2-Key Hardware Macro (0x038E)
+    // 3) Legacy 2-Key Hardware Macro (0x038E)
     if (st.macro.k1 !== STOCK_MACRO.k1 || st.macro.k2 !== STOCK_MACRO.k2) {
       for (const o of MACRO_K1_OFFS) out[o] = st.macro.k1;
       for (const o of MACRO_K2_OFFS) out[o] = st.macro.k2;
     }
 
-    // 4) Audited v2 Extended TC32 Patch (Hold-for-Fn + Double-Tap, ONLY when extOn)
+    // 4) Audited v3 3-Channel + Multi-Key Combo + Fn + Staggered Double-Tap Patch (ONLY when extOn)
     if (extOn) {
       for (const h of EXT_HOOKS) {
         for (let i = 0; i < h.bytes.length; i++) out[h.off + i] = h.bytes[i];
       }
       out.set(EXT_PATCH_CODE, EXT_PATCH_BASE);
-      // Config header @ 0xFE30..0xFE4F + 136B Fn map @ 0xFE50..0xFED7
-      out.fill(0x00, EXT_CONFIG_BASE, EXT_FN_MAP_BASE + MATRIX_LEN);
-      out[EXT_CONFIG_BASE] = fnOn ? FN_TRIGGER_CODE : 0x00;
-      out[EXT_CONFIG_BASE + 1] = fnOn ? encodeAssign(st.fn.tap, alloc.slotOf) : 0x00;
-      writeU16(out, EXT_CONFIG_BASE + 2, 0x0003); // v3 staggered config format magic
-      const maxTicks = fnOn ? Math.max(0, Number(st.fn.timeoutMs) || 0) * 16000 : 0;
-      writeU32(out, EXT_CONFIG_BASE + 4, maxTicks >>> 0);
-      writeU32(out, EXT_CONFIG_BASE + 8, PULSE_HOLD_TICKS);
-      if (dtOn) {
-        out[EXT_CONFIG_BASE + 12] = st.dt.keyOff - MATRIX_BASE;
-        if (st.dt.action.t === "combo") {
-          out[EXT_CONFIG_BASE + 13] = st.dt.action.k1;
-          out[EXT_CONFIG_BASE + 14] = st.dt.action.k2;
+
+      // 4a) 3 x 32B Channel Configs @ 0x10000..0x1005F
+      out.fill(0x00, EXT_CONFIG_BASE, EXT_CONFIG_BASE + 96);
+      for (let ch = 0; ch < 3; ch++) {
+        const p = st.perChannel ? st.profiles[ch] : st.profiles[0];
+        const cfg = EXT_CONFIG_BASE + ch * 32;
+        out[cfg + 0] = p.fn.enabled ? FN_TRIGGER_CODE : 0x00;
+        out[cfg + 1] = p.fn.enabled ? encodeAssign(p.fn.tap, alloc.slotOf, combos.codeOf) : 0x00;
+        writeU16(out, cfg + 2, 0x0004); // v3 3-channel config magic
+        writeU32(out, cfg + 4, (p.fn.enabled ? Math.max(0, Number(p.fn.timeoutMs) || 0) * 16000 : 0) >>> 0);
+        writeU32(out, cfg + 8, PULSE_HOLD_TICKS);
+        if (p.dt.enabled) {
+          out[cfg + 12] = p.dt.keyOff - MATRIX_BASE;
+          if (p.dt.action.t === "combo") {
+            out[cfg + 13] = p.dt.action.k1;
+            out[cfg + 14] = p.dt.action.k2;
+          } else {
+            out[cfg + 13] = encodeAssign(p.dt.action, alloc.slotOf, combos.codeOf);
+            out[cfg + 14] = 0x00;
+          }
+          // bit0 = skip_apple (unified mode only), bit1 = auto Mac 0xE2<->0xE3 fix for combos (zero effect on Android/Win!)
+          out[cfg + 15] = ((!st.perChannel && p.dt.skipApple) ? 0x01 : 0x00) | (p.dt.action.t === "combo" ? 0x02 : 0x00);
+          writeU32(out, cfg + 16, (Math.max(50, Number(p.dt.windowMs) || 320) * 16000) >>> 0);
+          writeU32(out, cfg + 20, (Math.max(20, Math.min(250, Number(p.dt.stepMs) || 60)) * 16000) >>> 0);
         } else {
-          out[EXT_CONFIG_BASE + 13] = encodeAssign(st.dt.action, alloc.slotOf);
-          out[EXT_CONFIG_BASE + 14] = 0x00;
-        }
-        out[EXT_CONFIG_BASE + 15] = st.dt.skipApple ? 0x01 : 0x00;
-        const winTicks = Math.max(50, Number(st.dt.windowMs) || 320) * 16000;
-        writeU32(out, EXT_CONFIG_BASE + 16, winTicks >>> 0);
-        const stepMs = Math.max(20, Math.min(250, Number(st.dt.stepMs) || 60));
-        writeU32(out, EXT_CONFIG_BASE + 20, (stepMs * 16000) >>> 0);
-      } else {
-        out[EXT_CONFIG_BASE + 12] = 0xFF;
-      }
-      if (fnOn) {
-        for (const [off, a] of st.fn.keys) {
-          if (!EDITABLE_OFFS.has(off) || off === st.fn.triggerOff || !a || a.t === "none") continue;
-          out[EXT_FN_MAP_BASE + (off - MATRIX_BASE)] = encodeAssign(a, alloc.slotOf);
+          out[cfg + 12] = 0xFF;
         }
       }
-      // Lenovo post-OTA magic @ 0xFEE0..0xFEE7 (bin_size - 0x24, checked by firmware 0x5D60..0x5DD6!)
+
+      // 4b) 16 x 8B Custom 2/3-Key Combo Table @ 0x10060..0x100DF
+      out.fill(0x00, EXT_COMBO_BASE, EXT_COMBO_BASE + COMBO_MAX * 8);
+      for (let i = 0; i < combos.list.length; i++) {
+        const c = combos.list[i];
+        const o = EXT_COMBO_BASE + i * 8;
+        out[o + 0] = c.k1;
+        out[o + 1] = c.k2;
+        out[o + 2] = c.k3 || 0;
+        out[o + 3] = c.macFix ? 0x01 : 0x00;
+        writeU32(out, o + 4, (c.stepMs * 16000) >>> 0);
+      }
+
+      // 4c) 3 x 136B Per-Channel Base Maps @ 0x10100, 0x10190, 0x10220
+      for (let ch = 0; ch < 3; ch++) {
+        const p = st.perChannel ? st.profiles[ch] : st.profiles[0];
+        const base = EXT_BASE_MAPS + ch * CH_MAP_STRIDE;
+        out.set(baseFirmware.subarray(MATRIX_BASE, MATRIX_BASE + MATRIX_LEN), base);
+        for (const k of ALL_KEYS) {
+          if (k.locked) continue;
+          const idx = k.off - MATRIX_BASE;
+          out[base + idx] = (p.fn.enabled && k.off === p.fn.triggerOff)
+            ? FN_TRIGGER_CODE
+            : encodeAssign(p.keys.get(k.off), alloc.slotOf, combos.codeOf);
+        }
+      }
+
+      // 4d) 3 x 136B Per-Channel Fn Maps @ 0x102B0, 0x10340, 0x103D0
+      for (let ch = 0; ch < 3; ch++) {
+        const p = st.perChannel ? st.profiles[ch] : st.profiles[0];
+        const fnBase = EXT_FN_MAPS + ch * CH_MAP_STRIDE;
+        out.fill(0x00, fnBase, fnBase + MATRIX_LEN);
+        if (p.fn.enabled) {
+          for (const [off, a] of p.fn.keys) {
+            if (!EDITABLE_OFFS.has(off) || off === p.fn.triggerOff || !a || a.t === "none") continue;
+            out[fnBase + (off - MATRIX_BASE)] = encodeAssign(a, alloc.slotOf, combos.codeOf);
+          }
+        }
+      }
+
+      // 4e) Lenovo post-OTA magic @ 0x104E0..0x104E7 (bin_size - 0x24!)
       for (let i = 0; i < LENOVO_TAIL_MAGIC.length; i++) out[LENOVO_MAGIC_OFF_EXT + i] = LENOVO_TAIL_MAGIC[i];
-      // Tail version area @ 0xFEE8..0xFEFF (zero-filled + 13B tag)
       out.fill(0x00, VER_TAG_OFF_EXT_TAIL, FW_SIZE_EXT - 4);
       for (let i = 0; i < VER_TAG_MAX; i++) {
         out[VER_TAG_OFF_EXT_TAIL + i] = i < st.meta.verTag.length ? st.meta.verTag.charCodeAt(i) : 0x00;
@@ -1225,11 +1462,15 @@
 
     const guard = guardImage(out);
     if (guard.error) return guard;
-    return { bytes: out, crc, used: alloc.used, extended: alloc.extended, extOn, fnOn, dtOn, diff: guard.diff };
+    return {
+      bytes: out, crc, used: alloc.used, extended: alloc.extended,
+      extOn, perChannel: !!st.perChannel, fnOn: anyFn, dtOn: anyDt, comboCount: combos.list.length,
+      diff: guard.diff,
+    };
   }
 
   function allowedOffsets(extOn) {
-    const s = new Set(EDITABLE_OFFS);
+    const s = new Set(extOn ? [] : EDITABLE_OFFS);
     for (let i = 0; i < SLOT_IDS_7.length; i++) { s.add(SLOT_TABLE_7 + i * 6 + 2); s.add(SLOT_TABLE_7 + i * 6 + 3); }
     for (let i = 0; i < SLOT_IDS_14.length * 6; i++) s.add(SLOT_TABLE_14 + i);
     for (let i = 0; i < 4; i++) s.add(SLOT_PTR_OFF + i);
@@ -1289,30 +1530,15 @@
       return { error: `安全校验失败：槽表指针/数量非法 (${hex4(ptr)}, ${cnt})` };
     }
 
-    const cfgFnTrig = extOn ? img[EXT_CONFIG_BASE] : 0x00;
-    const fnOn = extOn && cfgFnTrig === FN_TRIGGER_CODE;
-    const dtIdx = extOn ? img[EXT_CONFIG_BASE + 12] : 0xFF;
-    const dtOn = extOn && dtIdx !== 0xFF;
-
-    // Matrix keycode validation
-    let triggerCount = 0;
-    for (const off of EDITABLE_OFFS) {
-      const v = img[off];
-      if (fnOn && v === FN_TRIGGER_CODE) { triggerCount++; continue; }
-      if (!(v === 0x00 || KB_ALLOWED.has(v) || activePool.includes(v))) {
-        return { error: `安全校验失败：按键 ${hex4(off)} 的键值 ${hex2(v)} 非法` };
+    if (!extOn) {
+      for (const off of EDITABLE_OFFS) {
+        const v = img[off];
+        if (!(v === 0x00 || KB_ALLOWED.has(v) || activePool.includes(v))) {
+          return { error: `安全校验失败：按键 ${hex4(off)} 的键值 ${hex2(v)} 非法` };
+        }
       }
-    }
-
-    // Extended v2.2 TC32 patch code & hooks strict byte-for-byte integrity verification
-    if (extOn) {
-      if (!(cfgFnTrig === 0x00 || cfgFnTrig === FN_TRIGGER_CODE) || readU16(img, EXT_CONFIG_BASE + 2) !== 0x0003) {
-        return { error: "安全校验失败：扩展补丁配置头异常" };
-      }
-      if (!fnOn && !dtOn) return { error: "安全校验失败：扩展补丁未开启 Fn 或双击功能" };
-      if (triggerCount !== (fnOn ? 1 : 0)) {
-        return { error: `安全校验失败：Fn 触发键数量异常（预期 ${fnOn ? 1 : 0}，当前 ${triggerCount}）` };
-      }
+    } else {
+      // Strict byte-for-byte verification of all v3 hooks, 840B machine code, padding, combos, and 3 channel maps
       for (const h of EXT_HOOKS) {
         for (let i = 0; i < h.bytes.length; i++) {
           if (img[h.off + i] !== h.bytes[i]) return { error: `安全校验失败：补丁钩子 ${hex4(h.off + i)} 字节不匹配` };
@@ -1324,36 +1550,82 @@
       for (let i = EXT_PATCH_BASE + EXT_PATCH_CODE.length; i < EXT_CONFIG_BASE; i++) {
         if (img[i] !== 0xFF) return { error: `安全校验失败：补丁保留区 ${hex4(i)} 非法` };
       }
-      for (let i = EXT_FN_MAP_BASE + MATRIX_LEN; i < LENOVO_MAGIC_OFF_EXT; i++) {
+      for (let i = EXT_COMBO_BASE + COMBO_MAX * 8; i < EXT_BASE_MAPS; i++) {
+        if (img[i] !== 0xFF) return { error: `安全校验失败：组合表间隙区 ${hex4(i)} 非法` };
+      }
+      for (let i = EXT_FN_MAPS + 2 * CH_MAP_STRIDE + MATRIX_LEN; i < LENOVO_MAGIC_OFF_EXT; i++) {
         if (img[i] !== 0xFF) return { error: `安全校验失败：补丁尾部填充区 ${hex4(i)} 非法` };
       }
-      const tapCode = img[EXT_CONFIG_BASE + 1];
-      if (!(tapCode === 0x00 || KB_ALLOWED.has(tapCode) || activePool.includes(tapCode))) {
-        return { error: `安全校验失败：Fn 短按键值 ${hex2(tapCode)} 非法` };
-      }
-      for (let idx = 0; idx < MATRIX_LEN; idx++) {
-        const v = img[EXT_FN_MAP_BASE + idx];
-        if (v === 0x00) continue;
-        if (!EDITABLE_OFFS.has(MATRIX_BASE + idx)) return { error: "安全校验失败：Fn 层触碰了不可编辑位置" };
-        if (!(KB_ALLOWED.has(v) || activePool.includes(v))) return { error: `安全校验失败：Fn 层键值 ${hex2(v)} 非法` };
-      }
-      if (dtOn) {
-        if (dtIdx >= MATRIX_LEN || !EDITABLE_OFFS.has(MATRIX_BASE + dtIdx)) {
-          return { error: `安全校验失败：双击触发键索引 ${hex2(dtIdx)} 非法` };
-        }
-        if (fnOn && img[MATRIX_BASE + dtIdx] === FN_TRIGGER_CODE) {
-          return { error: "安全校验失败：双击触发键与 Fn 触发键冲突" };
-        }
-        const dtK1 = img[EXT_CONFIG_BASE + 13], dtK2 = img[EXT_CONFIG_BASE + 14];
-        const dtFlags = img[EXT_CONFIG_BASE + 15];
-        if (dtFlags !== 0x00 && dtFlags !== 0x01) return { error: "安全校验失败：双击配置标志位非法" };
-        if (dtK2 === 0x00) {
-          if (!(KB_ALLOWED.has(dtK1) || activePool.includes(dtK1))) {
-            return { error: `安全校验失败：双击单键/快捷码 ${hex2(dtK1)} 非法` };
+      // Verify 8-byte alignment gaps between 136B channel maps (stride 144B)
+      for (const mapBase of [EXT_BASE_MAPS, EXT_FN_MAPS]) {
+        for (let ch = 0; ch < 3; ch++) {
+          if (mapBase === EXT_FN_MAPS && ch === 2) continue; // tail already checked up to LENOVO_MAGIC_OFF_EXT
+          const gapStart = mapBase + ch * CH_MAP_STRIDE + MATRIX_LEN;
+          for (let i = gapStart; i < gapStart + (CH_MAP_STRIDE - MATRIX_LEN); i++) {
+            if (img[i] !== 0xFF) return { error: `安全校验失败：通道表对齐间隙 ${hex4(i)} 非法` };
           }
-        } else {
-          if (!KB_ALLOWED.has(dtK1) || !KB_ALLOWED.has(dtK2) || dtK1 === dtK2) {
-            return { error: `安全校验失败：双击组合键 (${hex2(dtK1)}, ${hex2(dtK2)}) 非法` };
+        }
+      }
+      // Validate 16-slot combo table
+      const validComboCodes = new Set();
+      for (let s = 0; s < COMBO_MAX; s++) {
+        const o = EXT_COMBO_BASE + s * 8;
+        const k1 = img[o], k2 = img[o + 1], k3 = img[o + 2], fl = img[o + 3];
+        const stTicks = readU32(img, o + 4);
+        if (k1 === 0) {
+          if (k2 !== 0 || k3 !== 0 || fl !== 0 || stTicks !== 0) return { error: `安全校验失败：空组合槽 ${s} 数据非零` };
+          continue;
+        }
+        if (!KB_ALLOWED.has(k1) || !KB_ALLOWED.has(k2) || k1 === k2) return { error: `安全校验失败：组合槽 ${s} 前两键非法` };
+        if (k3 !== 0 && (!KB_ALLOWED.has(k3) || k3 === k1 || k3 === k2)) return { error: `安全校验失败：组合槽 ${s} 第 3 键非法` };
+        if (fl !== 0x00 && fl !== 0x01) return { error: `安全校验失败：组合槽 ${s} 标志位非法` };
+        if (stTicks < 10 * 16000 || stTicks > 250 * 16000) return { error: `安全校验失败：组合槽 ${s} 错峰时长非法` };
+        validComboCodes.add(COMBO_CODE_BASE + s);
+      }
+      const isCodeOk = (v, allowCombo = true) => (v === 0x00 || KB_ALLOWED.has(v) || activePool.includes(v) || (allowCombo && validComboCodes.has(v)));
+      // Validate each of the 3 BT channels
+      for (let ch = 0; ch < 3; ch++) {
+        const cfg = EXT_CONFIG_BASE + ch * 32;
+        const cfgTrig = img[cfg];
+        if (!(cfgTrig === 0x00 || cfgTrig === FN_TRIGGER_CODE) || readU16(img, cfg + 2) !== 0x0004) {
+          return { error: `安全校验失败：BT${ch + 1} 配置头异常` };
+        }
+        if (readU32(img, cfg + 8) !== PULSE_HOLD_TICKS) {
+          return { error: `安全校验失败：BT${ch + 1} 脉冲保持时长异常` };
+        }
+        for (let r = 24; r < 32; r++) {
+          if (img[cfg + r] !== 0x00) return { error: `安全校验失败：BT${ch + 1} 配置保留字节非零` };
+        }
+        const fnOn = cfgTrig === FN_TRIGGER_CODE;
+        const tapCode = img[cfg + 1];
+        if (!isCodeOk(tapCode, false)) return { error: `安全校验失败：BT${ch + 1} Fn 短按键值 ${hex2(tapCode)} 非法` };
+        const base = EXT_BASE_MAPS + ch * CH_MAP_STRIDE;
+        const fnBase = EXT_FN_MAPS + ch * CH_MAP_STRIDE;
+        let trigCnt = 0;
+        for (let idx = 0; idx < MATRIX_LEN; idx++) {
+          const off = MATRIX_BASE + idx;
+          const bv = img[base + idx];
+          const fv = img[fnBase + idx];
+          if (!EDITABLE_OFFS.has(off)) {
+            if (bv !== baseFirmware[off]) return { error: `安全校验失败：BT${ch + 1} 修改了锁定/保留键位 ${hex4(off)}` };
+            if (fv !== 0x00) return { error: `安全校验失败：BT${ch + 1} Fn 层触碰了不可编辑位置` };
+            continue;
+          }
+          if (fnOn && bv === FN_TRIGGER_CODE) trigCnt++;
+          else if (!isCodeOk(bv, true)) return { error: `安全校验失败：BT${ch + 1} 按键 ${hex4(off)} 键值 ${hex2(bv)} 非法` };
+          if (!isCodeOk(fv, true)) return { error: `安全校验失败：BT${ch + 1} Fn 层键值 ${hex2(fv)} 非法` };
+        }
+        if (trigCnt !== (fnOn ? 1 : 0)) return { error: `安全校验失败：BT${ch + 1} Fn 触发键数量异常 (${trigCnt})` };
+        const dtIdx = img[cfg + 12];
+        if (dtIdx !== 0xFF) {
+          if (dtIdx >= MATRIX_LEN || !EDITABLE_OFFS.has(MATRIX_BASE + dtIdx)) return { error: `安全校验失败：BT${ch + 1} 双击触发键索引非法` };
+          if (fnOn && img[base + dtIdx] === FN_TRIGGER_CODE) return { error: `安全校验失败：BT${ch + 1} 双击键与 Fn 触发键冲突` };
+          const dk1 = img[cfg + 13], dk2 = img[cfg + 14], dfl = img[cfg + 15];
+          if ((dfl & ~0x03) !== 0) return { error: `安全校验失败：BT${ch + 1} 双击标志位非法` };
+          if (dk2 === 0x00) {
+            if (!(KB_ALLOWED.has(dk1) || activePool.includes(dk1))) return { error: `安全校验失败：BT${ch + 1} 双击动作码 ${hex2(dk1)} 非法` };
+          } else {
+            if (!KB_ALLOWED.has(dk1) || !KB_ALLOWED.has(dk2) || dk1 === dk2) return { error: `安全校验失败：BT${ch + 1} 双击组合非法` };
           }
         }
       }
@@ -1362,11 +1634,11 @@
       }
     }
 
-    // 2-key macro consistency
+    // Legacy 2-key macro consistency
     const k1 = img[MACRO_K1_OFFS[0]], k2 = img[MACRO_K2_OFFS[0]];
-    if (!KB_ALLOWED.has(k1) || !KB_ALLOWED.has(k2) || k1 === k2) return { error: "安全校验失败：组合快捷键键值非法" };
+    if (!KB_ALLOWED.has(k1) || !KB_ALLOWED.has(k2) || k1 === k2) return { error: "安全校验失败：原厂组合宏键值非法" };
     if (!MACRO_K1_OFFS.every(o => img[o] === k1) || !MACRO_K2_OFFS.every(o => img[o] === k2)) {
-      return { error: "安全校验失败：组合快捷键 8 处字节不一致" };
+      return { error: "安全校验失败：原厂组合宏 8 处字节不一致" };
     }
 
     // BLE / USB / Version tag consistency
@@ -1390,18 +1662,15 @@
     return { diff };
   }
 
-  function decodeCode(v, slotUsage) {
+  function decodeCode(v, slotUsage, comboTable) {
     if (v === 0x00) return { t: "none" };
+    if (comboTable && comboTable.has(v)) return { t: "combo", ...comboTable.get(v) };
     if (slotUsage.has(v)) return { t: "consumer", v: slotUsage.get(v) };
     return { t: "key", v };
   }
 
   function stateFromImage(img) {
     const extOn = img.length === FW_SIZE_EXT;
-    const fnOn = extOn && img[EXT_CONFIG_BASE] === FN_TRIGGER_CODE;
-    const dtIdx = extOn ? img[EXT_CONFIG_BASE + 12] : 0xFF;
-    const dtOn = extOn && dtIdx !== 0xFF;
-
     const ptr = readU32(img, SLOT_PTR_OFF);
     const cnt = img[SLOT_CNT_OFF];
     const tableBase = ptr === SLOT_TABLE_14 ? SLOT_TABLE_14 : SLOT_TABLE_7;
@@ -1411,44 +1680,70 @@
       slotUsage.set(readU16(img, b), readU16(img, b + 2));
     }
 
-    const keys = stockKeys();
-    let triggerOff = 0xEE8A;
-    for (const k of ALL_KEYS) {
-      if (k.locked) continue;
-      const v = img[k.off];
-      if (fnOn && v === FN_TRIGGER_CODE) {
-        triggerOff = k.off;
-        keys.set(k.off, stockAssign(k));
-      } else {
-        keys.set(k.off, decodeCode(v, slotUsage));
-      }
-    }
-
-    const fn = defaultFn();
-    if (fnOn) {
-      fn.enabled = true;
-      fn.triggerOff = triggerOff;
-      fn.tap = decodeCode(img[EXT_CONFIG_BASE + 1], slotUsage);
-      fn.timeoutMs = Math.round(readU32(img, EXT_CONFIG_BASE + 4) / 16000);
+    const st = stockState();
+    if (!extOn) {
+      const p0 = st.profiles[0];
       for (const k of ALL_KEYS) {
-        if (k.locked || k.off === triggerOff) continue;
-        const v = img[EXT_FN_MAP_BASE + (k.off - MATRIX_BASE)];
-        if (v !== 0x00) fn.keys.set(k.off, decodeCode(v, slotUsage));
+        if (k.locked) continue;
+        p0.keys.set(k.off, decodeCode(img[k.off], slotUsage, null));
       }
+    } else {
+      const comboTable = new Map();
+      for (let s = 0; s < COMBO_MAX; s++) {
+        const o = EXT_COMBO_BASE + s * 8;
+        if (img[o] !== 0) {
+          comboTable.set(COMBO_CODE_BASE + s, {
+            k1: img[o], k2: img[o + 1], k3: img[o + 2],
+            macFix: (img[o + 3] & 1) !== 0,
+            stepMs: Math.round(readU32(img, o + 4) / 16000) || 20,
+          });
+        }
+      }
+      for (let ch = 0; ch < 3; ch++) {
+        const p = st.profiles[ch];
+        const cfg = EXT_CONFIG_BASE + ch * 32;
+        const base = EXT_BASE_MAPS + ch * CH_MAP_STRIDE;
+        const fnBase = EXT_FN_MAPS + ch * CH_MAP_STRIDE;
+        const fnOn = img[cfg] === FN_TRIGGER_CODE;
+        let trigOff = 0xEE8A;
+        for (const k of ALL_KEYS) {
+          if (k.locked) continue;
+          const v = img[base + (k.off - MATRIX_BASE)];
+          if (fnOn && v === FN_TRIGGER_CODE) {
+            trigOff = k.off;
+            p.keys.set(k.off, stockAssign(k));
+          } else {
+            p.keys.set(k.off, decodeCode(v, slotUsage, comboTable));
+          }
+        }
+        if (fnOn) {
+          p.fn.enabled = true;
+          p.fn.triggerOff = trigOff;
+          p.fn.tap = decodeCode(img[cfg + 1], slotUsage, null);
+          p.fn.timeoutMs = Math.round(readU32(img, cfg + 4) / 16000);
+          for (const k of ALL_KEYS) {
+            if (k.locked || k.off === trigOff) continue;
+            const v = img[fnBase + (k.off - MATRIX_BASE)];
+            if (v !== 0x00) p.fn.keys.set(k.off, decodeCode(v, slotUsage, comboTable));
+          }
+        }
+        const dtIdx = img[cfg + 12];
+        if (dtIdx !== 0xFF) {
+          p.dt.enabled = true;
+          p.dt.keyOff = MATRIX_BASE + dtIdx;
+          const dk1 = img[cfg + 13], dk2 = img[cfg + 14];
+          p.dt.action = dk2 !== 0 ? { t: "combo", k1: dk1, k2: dk2 } : decodeCode(dk1, slotUsage, null);
+          p.dt.skipApple = (img[cfg + 15] & 1) !== 0;
+          p.dt.windowMs = Math.round(readU32(img, cfg + 16) / 16000);
+          p.dt.stepMs = Math.round(readU32(img, cfg + 20) / 16000) || 60;
+        }
+      }
+      // Auto-detect whether all 3 channels are identical (unified) or distinct (per-channel)
+      const ser = p => JSON.stringify(profileToJSON(p));
+      st.perChannel = !(ser(st.profiles[0]) === ser(st.profiles[1]) && ser(st.profiles[0]) === ser(st.profiles[2]));
     }
 
-    const dt = defaultDt();
-    if (dtOn) {
-      dt.enabled = true;
-      dt.keyOff = MATRIX_BASE + dtIdx;
-      const dtK1 = img[EXT_CONFIG_BASE + 13], dtK2 = img[EXT_CONFIG_BASE + 14];
-      dt.action = dtK2 !== 0x00 ? { t: "combo", k1: dtK1, k2: dtK2 } : decodeCode(dtK1, slotUsage);
-      dt.skipApple = (img[EXT_CONFIG_BASE + 15] & 1) !== 0;
-      dt.windowMs = Math.round(readU32(img, EXT_CONFIG_BASE + 16) / 16000);
-      dt.stepMs = Math.round(readU32(img, EXT_CONFIG_BASE + 20) / 16000) || 60;
-    }
-
-    const macro = { k1: img[MACRO_K1_OFFS[0]], k2: img[MACRO_K2_OFFS[0]] };
+    st.macro = { k1: img[MACRO_K1_OFFS[0]], k2: img[MACRO_K2_OFFS[0]] };
     let verTag = "";
     for (let i = 0; i < VER_TAG_MAX; i++) { const c = img[VER_TAG_OFFS_STD[0] + i]; if (c === 0) break; verTag += String.fromCharCode(c); }
     const bleLen = img[BLE_LEN_OFFS.copy1];
@@ -1457,70 +1752,122 @@
     const usbChars = (img[USB_NAME_BLEN_OFF] - 2) / 2;
     let usbName = "";
     for (let i = 0; i < usbChars; i++) usbName += String.fromCharCode(img[USB_NAME_DATA_OFF + i * 2]);
-
-    return {
-      keys, macro, fn, dt,
-      meta: { verTag: verTag || STOCK_META.verTag, bleName: bleName || STOCK_META.bleName, usbName: usbName || STOCK_META.usbName },
-    };
+    st.meta = { verTag: verTag || STOCK_META.verTag, bleName: bleName || STOCK_META.bleName, usbName: usbName || STOCK_META.usbName };
+    return st;
   }
 
   // ===========================================================================
-  // 3. Scheme JSON Persistence (v4, backwards compatible with v1/v2/v3)
+  // 3. Scheme JSON Persistence (v5: 3-channel + 3-key combos, backwards compatible with v1..v4)
   // ===========================================================================
-  const serializeAssign = a => a.t === "none" ? { t: "none" } : { t: a.t, v: a.t === "key" ? hex2(a.v) : hex4(a.v) };
+  function serializeAssign(a) {
+    if (!a || a.t === "none") return { t: "none" };
+    if (a.t === "combo") return { t: "combo", k1: hex2(a.k1), k2: hex2(a.k2), k3: a.k3 ? hex2(a.k3) : "0x00", stepMs: a.stepMs || 20, macFix: !!a.macFix };
+    return { t: a.t, v: a.t === "key" ? hex2(a.v) : hex4(a.v) };
+  }
   function parseAssign(a) {
     if (!a || a.t === "none") return { t: "none" };
+    if (a.t === "combo") {
+      const k1 = parseInt(a.k1, 16), k2 = parseInt(a.k2, 16), k3 = a.k3 ? parseInt(a.k3, 16) : 0;
+      if (!KB_ALLOWED.has(k1) || !KB_ALLOWED.has(k2) || k1 === k2) throw new Error("组合快捷键非法");
+      if (k3 !== 0 && (!KB_ALLOWED.has(k3) || k3 === k1 || k3 === k2)) throw new Error("组合快捷键第 3 键非法");
+      return { t: "combo", k1, k2, k3, stepMs: (typeof a.stepMs === "number" && a.stepMs >= 10 && a.stepMs <= 250) ? a.stepMs : 20, macFix: a.macFix !== false };
+    }
     const v = parseInt(a.v, 16);
     if (a.t === "key" && KB_ALLOWED.has(v)) return { t: "key", v };
     if (a.t === "consumer" && v >= 1 && v <= CONSUMER_MAX) return { t: "consumer", v };
     throw new Error("按键取值非法");
   }
 
-  function stateToJSON(st) {
+  function profileToJSON(p) {
     const keys = {};
     for (const k of ALL_KEYS) {
-      const a = st.keys.get(k.off);
+      const a = p.keys.get(k.off);
       if (!sameAssign(a, stockAssign(k))) keys[hex4(k.off)] = serializeAssign(a);
     }
     const fnKeys = {};
-    for (const [off, a] of st.fn.keys) {
+    for (const [off, a] of p.fn.keys) {
       if (a && a.t !== "none") fnKeys[hex4(off)] = serializeAssign(a);
     }
     return {
-      format: "kb331u-keymap",
-      version: 4,
-      firmware: "KA024_A_1.0.8",
       keys,
-      macro: { k1: hex2(st.macro.k1), k2: hex2(st.macro.k2) },
-      meta: { ...st.meta },
-      fn: {
-        enabled: !!st.fn.enabled,
-        triggerOff: hex4(st.fn.triggerOff),
-        tap: serializeAssign(st.fn.tap),
-        timeoutMs: st.fn.timeoutMs,
-        keys: fnKeys,
-      },
+      fn: { enabled: !!p.fn.enabled, triggerOff: hex4(p.fn.triggerOff), tap: serializeAssign(p.fn.tap), timeoutMs: p.fn.timeoutMs, keys: fnKeys },
       dt: {
-        enabled: !!st.dt.enabled,
-        keyOff: hex4(st.dt.keyOff),
-        windowMs: st.dt.windowMs,
-        stepMs: st.dt.stepMs || 60,
-        skipApple: !!st.dt.skipApple,
-        action: st.dt.action.t === "combo"
-          ? { t: "combo", k1: hex2(st.dt.action.k1), k2: hex2(st.dt.action.k2) }
-          : serializeAssign(st.dt.action),
+        enabled: !!p.dt.enabled, keyOff: hex4(p.dt.keyOff), windowMs: p.dt.windowMs, stepMs: p.dt.stepMs || 60, skipApple: !!p.dt.skipApple,
+        action: p.dt.action.t === "combo" ? { t: "combo", k1: hex2(p.dt.action.k1), k2: hex2(p.dt.action.k2) } : serializeAssign(p.dt.action),
       },
     };
   }
 
+  function profileFromJSON(obj, fallbackName) {
+    const p = defaultProfile(typeof obj.name === "string" && obj.name.trim() ? obj.name.trim().slice(0, 14) : fallbackName, false);
+    if (obj.keys && typeof obj.keys === "object") {
+      for (const [offStr, a] of Object.entries(obj.keys)) {
+        const off = parseInt(offStr, 16);
+        const k = KEY_BY_OFF.get(off);
+        if (!k || k.locked) throw new Error(`未知或锁定的按键 ${offStr}`);
+        p.keys.set(off, parseAssign(a));
+      }
+    }
+    if (obj.fn && typeof obj.fn === "object") {
+      p.fn.enabled = !!obj.fn.enabled;
+      const trig = parseInt(obj.fn.triggerOff, 16);
+      if (EDITABLE_OFFS.has(trig)) p.fn.triggerOff = trig;
+      if (obj.fn.tap) {
+        const parsedTap = parseAssign(obj.fn.tap);
+        if (parsedTap.t !== "combo") p.fn.tap = parsedTap;
+      }
+      if (typeof obj.fn.timeoutMs === "number" && obj.fn.timeoutMs >= 0) p.fn.timeoutMs = obj.fn.timeoutMs;
+      if (obj.fn.keys && typeof obj.fn.keys === "object") {
+        for (const [offStr, a] of Object.entries(obj.fn.keys)) {
+          const off = parseInt(offStr, 16);
+          if (EDITABLE_OFFS.has(off) && off !== p.fn.triggerOff) p.fn.keys.set(off, parseAssign(a));
+        }
+      }
+    }
+    if (obj.dt && typeof obj.dt === "object") {
+      p.dt.enabled = !!obj.dt.enabled;
+      const dtOff = parseInt(obj.dt.keyOff, 16);
+      if (EDITABLE_OFFS.has(dtOff)) p.dt.keyOff = dtOff;
+      if (typeof obj.dt.windowMs === "number" && obj.dt.windowMs >= 50) p.dt.windowMs = obj.dt.windowMs;
+      if (typeof obj.dt.stepMs === "number" && obj.dt.stepMs >= 20 && obj.dt.stepMs <= 250) p.dt.stepMs = obj.dt.stepMs;
+      if (typeof obj.dt.skipApple === "boolean") p.dt.skipApple = obj.dt.skipApple;
+      if (obj.dt.action && typeof obj.dt.action === "object") {
+        if (obj.dt.action.t === "combo") {
+          const k1 = parseInt(obj.dt.action.k1, 16), k2 = parseInt(obj.dt.action.k2, 16);
+          if (KB_ALLOWED.has(k1) && KB_ALLOWED.has(k2) && k1 !== k2) p.dt.action = { t: "combo", k1, k2 };
+        } else {
+          const parsed = parseAssign(obj.dt.action);
+          if (parsed.t !== "none") p.dt.action = parsed;
+        }
+      }
+    }
+    return p;
+  }
+
+  function stateToJSON(st) {
+    return {
+      format: "kb331u-keymap",
+      version: 5,
+      firmware: "KA024_A_1.0.8",
+      perChannel: !!st.perChannel,
+      profiles: st.profiles.map((p, i) => ({ name: p.name || DEFAULT_CH_NAMES[i], ...profileToJSON(p) })),
+      macro: { k1: hex2(st.macro.k1), k2: hex2(st.macro.k2) },
+      meta: { ...st.meta },
+    };
+  }
+
   function stateFromJSON(obj) {
-    if (!obj || obj.format !== "kb331u-keymap" || typeof obj.keys !== "object") throw new Error("不是有效的 KB331U 方案文件");
+    if (!obj || obj.format !== "kb331u-keymap") throw new Error("不是有效的 KB331U 方案文件");
     const st = stockState();
-    for (const [offStr, a] of Object.entries(obj.keys)) {
-      const off = parseInt(offStr, 16);
-      const k = KEY_BY_OFF.get(off);
-      if (!k || k.locked) throw new Error(`未知或锁定的按键 ${offStr}`);
-      st.keys.set(off, parseAssign(a));
+    if (Array.isArray(obj.profiles) && obj.profiles.length === 3) {
+      st.perChannel = !!obj.perChannel;
+      for (let i = 0; i < 3; i++) st.profiles[i] = profileFromJSON(obj.profiles[i] || {}, DEFAULT_CH_NAMES[i]);
+    } else if (typeof obj.keys === "object") {
+      // Legacy v1..v4 single-profile JSON -> import cleanly into profiles[0] (unified mode)
+      st.perChannel = false;
+      st.profiles[0] = profileFromJSON(obj, DEFAULT_CH_NAMES[0]);
+    } else {
+      throw new Error("方案文件缺少按键数据");
     }
     if (obj.macro && obj.macro.k1 && obj.macro.k2) {
       const k1 = parseInt(obj.macro.k1, 16), k2 = parseInt(obj.macro.k2, 16);
@@ -1530,36 +1877,6 @@
       if (typeof obj.meta.verTag === "string") st.meta.verTag = obj.meta.verTag.slice(0, VER_TAG_MAX);
       if (typeof obj.meta.bleName === "string") st.meta.bleName = obj.meta.bleName.slice(0, BLE_NAME_MAX);
       if (typeof obj.meta.usbName === "string") st.meta.usbName = obj.meta.usbName.slice(0, USB_NAME_MAX);
-    }
-    if (obj.fn && typeof obj.fn === "object") {
-      st.fn.enabled = !!obj.fn.enabled;
-      const trig = parseInt(obj.fn.triggerOff, 16);
-      if (EDITABLE_OFFS.has(trig)) st.fn.triggerOff = trig;
-      if (obj.fn.tap) st.fn.tap = parseAssign(obj.fn.tap);
-      if (typeof obj.fn.timeoutMs === "number" && obj.fn.timeoutMs >= 0) st.fn.timeoutMs = obj.fn.timeoutMs;
-      if (obj.fn.keys && typeof obj.fn.keys === "object") {
-        for (const [offStr, a] of Object.entries(obj.fn.keys)) {
-          const off = parseInt(offStr, 16);
-          if (EDITABLE_OFFS.has(off) && off !== st.fn.triggerOff) st.fn.keys.set(off, parseAssign(a));
-        }
-      }
-    }
-    if (obj.dt && typeof obj.dt === "object") {
-      st.dt.enabled = !!obj.dt.enabled;
-      const dtOff = parseInt(obj.dt.keyOff, 16);
-      if (EDITABLE_OFFS.has(dtOff)) st.dt.keyOff = dtOff;
-      if (typeof obj.dt.windowMs === "number" && obj.dt.windowMs >= 50) st.dt.windowMs = obj.dt.windowMs;
-      if (typeof obj.dt.stepMs === "number" && obj.dt.stepMs >= 20 && obj.dt.stepMs <= 250) st.dt.stepMs = obj.dt.stepMs;
-      if (typeof obj.dt.skipApple === "boolean") st.dt.skipApple = obj.dt.skipApple;
-      if (obj.dt.action && typeof obj.dt.action === "object") {
-        if (obj.dt.action.t === "combo") {
-          const k1 = parseInt(obj.dt.action.k1, 16), k2 = parseInt(obj.dt.action.k2, 16);
-          if (KB_ALLOWED.has(k1) && KB_ALLOWED.has(k2) && k1 !== k2) st.dt.action = { t: "combo", k1, k2 };
-        } else {
-          const parsed = parseAssign(obj.dt.action);
-          if (parsed.t !== "none") st.dt.action = parsed;
-        }
-      }
     }
     return st;
   }
@@ -1572,28 +1889,59 @@
   // ===========================================================================
   // 4. UI Rendering
   // ===========================================================================
+  function profileSummary(p) {
+    const chg = ALL_KEYS.filter(k => !k.locked && !(p.fn.enabled && k.off === p.fn.triggerOff) && !sameAssign(p.keys.get(k.off), stockAssign(k))).length;
+    const parts = [];
+    if (chg) parts.push(`${chg} 键改位`);
+    if (p.dt.enabled) parts.push(`双击:${describeDtAction(p.dt.action)}`);
+    if (p.fn.enabled) parts.push(`Fn(${p.fn.keys.size})`);
+    return parts.length ? parts.join(" · ") : "原厂默认";
+  }
+
+  function renderChannelBar() {
+    document.getElementById("btnModePerCh").className = state.perChannel ? "active" : "";
+    document.getElementById("btnModeUnified").className = !state.perChannel ? "active" : "";
+    document.getElementById("modeHint").textContent = state.perChannel
+      ? "当前为「三通道独立模式」：键盘切到 BT1 / BT2 / BT3 时自动切换对应整套配置（插 USB-C 时沿用当前选中通道）"
+      : "当前为「统一模式」：BT1 / BT2 / BT3 共用同一套键位（未开 Fn/双击/自定义组合时 100% 纯数据 0 补丁代码）";
+
+    const bar = document.getElementById("chBar");
+    bar.style.display = state.perChannel ? "" : "none";
+    if (!state.perChannel) return;
+
+    for (let ch = 0; ch < 3; ch++) {
+      const btn = document.getElementById(`btnCh${ch}`);
+      btn.className = `ch-tab ch${ch}` + (activeCh === ch ? " active" : "");
+      document.getElementById(`lblChName${ch}`).textContent = state.profiles[ch].name || DEFAULT_CH_NAMES[ch];
+      document.getElementById(`lblChSub${ch}`).textContent = profileSummary(state.profiles[ch]);
+    }
+    const inp = document.getElementById("inpChName");
+    if (document.activeElement !== inp) inp.value = curProf().name || "";
+  }
+
   function keycapEl(k) {
+    const prof = curProf();
     const div = document.createElement("div");
     div.style.width = `calc(var(--u) * ${k.w} + var(--gap) * ${k.w - 1})`;
 
-    const isTrig = isFnTriggerKey(k.off);
+    const isTrig = isFnTriggerKey(k.off, prof);
     if (activeLayer === "fn") {
-      const fa = state.fn.keys.get(k.off);
+      const fa = prof.fn.keys.get(k.off);
       const locked = k.locked || isTrig;
       div.className = "keycap" +
         (locked ? " locked" : "") +
         (isTrig ? " fn-trigger" : "") +
         (!isTrig && fa ? " fn-mapped" : !k.locked ? " fn-pass" : "") +
         (k.off === selectedOff && !isTrig ? " selected" : "");
-      div.title = k.locked ? `${keyName(k)}（蓝牙通道键）` : isTrig ? `${keyName(k)}（Fn 触发键：按住激活 Fn 层，轻点触发 ${describe(state.fn.tap)}）` : `${keyName(k)} 在 Fn 层：${describe(fa)}`;
+      div.title = k.locked ? `${keyName(k)}（蓝牙通道键）` : isTrig ? `${keyName(k)}（Fn 触发键：按住激活 Fn 层，轻点触发 ${describe(prof.fn.tap)}）` : `${keyName(k)} 在 Fn 层：${describe(fa)}`;
       div.innerHTML = `<span class="k-phys"></span>${(isTrig || fa) ? '<span class="k-new"></span>' : ""}`;
       div.querySelector(".k-phys").textContent = k.label;
       const n = div.querySelector(".k-new");
-      if (n) n.textContent = isTrig ? `Fn / ${shortDescribe(state.fn.tap)}` : shortDescribe(fa);
+      if (n) n.textContent = isTrig ? `Fn / ${shortDescribe(prof.fn.tap)}` : shortDescribe(fa);
       if (!locked) {
         div.addEventListener("click", () => {
           selectedOff = k.off;
-          editorTab = !fa ? "key" : isMacroAssign(fa) ? "macro" : fa.t === "consumer" ? "consumer" : "key";
+          syncEditorTabForSelection();
           renderAll();
         });
       }
@@ -1601,32 +1949,32 @@
     }
 
     // Base layer
-    const a = state.keys.get(k.off);
-    const isDt = isDtKey(k.off);
-    const modified = isTrig || isDt || !sameAssign(a, stockAssign(k)) || (isMacroAssign(a) && (state.macro.k1 !== STOCK_MACRO.k1 || state.macro.k2 !== STOCK_MACRO.k2));
+    const a = prof.keys.get(k.off);
+    const isDt = isDtKey(k.off, prof);
+    const modified = isTrig || isDt || !sameAssign(a, stockAssign(k)) || (a.t === "consumer" && a.v === MACRO_USAGE && (state.macro.k1 !== STOCK_MACRO.k1 || state.macro.k2 !== STOCK_MACRO.k2));
     div.className = "keycap" +
       (k.locked ? " locked" : "") +
       (k.off === selectedOff ? " selected" : "") +
       (isTrig ? " fn-trigger" : modified ? " modified" : "") +
-      (!isTrig && (isMacroAssign(a) || isDt) ? " macro" : !isTrig && a.t === "consumer" ? " consumer" : "") +
+      (!isTrig && (a.t === "combo" || isDt) ? " macro" : !isTrig && a.t === "consumer" ? " consumer" : "") +
       (!isTrig && a.t === "none" ? " disabled-key" : "");
     div.title = k.locked ? `${keyName(k)}（蓝牙通道键，不可修改）`
-      : isTrig ? `${keyName(k)}：长按激活 Fn 层，轻点触发「${describe(state.fn.tap)}」`
-      : isDt ? `${keyName(k)}：当前为「${describe(a)}」· 连续双击触发「${describeDtAction(state.dt.action)}」`
+      : isTrig ? `${keyName(k)}：长按激活 Fn 层，轻点触发「${describe(prof.fn.tap)}」`
+      : isDt ? `${keyName(k)}：当前为「${describe(a)}」· 连续双击触发「${describeDtAction(prof.dt.action)}」`
       : `${keyName(k)}：当前为「${describe(a)}」`;
-    div.innerHTML = `<span class="k-phys"></span>${(modified || isMacroAssign(a)) ? '<span class="k-new"></span>' : ""}`;
+    div.innerHTML = `<span class="k-phys"></span>${(modified || a.t === "combo") ? '<span class="k-new"></span>' : ""}`;
     div.querySelector(".k-phys").textContent = k.label;
     const n = div.querySelector(".k-new");
     if (n) {
-      if (isTrig) n.textContent = `Fn / ${shortDescribe(state.fn.tap)}`;
-      else if (isDt && sameAssign(a, stockAssign(k))) n.textContent = `⚡${describeDtAction(state.dt.action)}`;
+      if (isTrig) n.textContent = `Fn / ${shortDescribe(prof.fn.tap)}`;
+      else if (isDt && sameAssign(a, stockAssign(k))) n.textContent = `⚡${describeDtAction(prof.dt.action)}`;
       else if (isDt) n.textContent = `${shortDescribe(a)}·⚡`;
       else n.textContent = shortDescribe(a);
     }
     if (!k.locked) {
       div.addEventListener("click", () => {
         selectedOff = k.off;
-        editorTab = isMacroAssign(a) ? "macro" : a.t === "consumer" ? "consumer" : a.t === "none" ? "none" : "key";
+        syncEditorTabForSelection();
         renderAll();
       });
     }
@@ -1634,39 +1982,38 @@
   }
 
   function renderLayerControls() {
-    document.getElementById("chkFnEnable").checked = state.fn.enabled;
+    const prof = curProf();
+    document.getElementById("chkFnEnable").checked = prof.fn.enabled;
     const bBase = document.getElementById("btnLayerBase");
     const bFn = document.getElementById("btnLayerFn");
     bBase.className = activeLayer === "base" ? "active" : "";
     bFn.className = activeLayer === "fn" ? "active fn-mode" : "";
-    bFn.textContent = state.fn.enabled ? `Fn 组合层（已配 ${state.fn.keys.size} 键）` : "Fn 组合层（未开启）";
+    bFn.textContent = prof.fn.enabled ? `Fn 组合层（已配 ${prof.fn.keys.size} 键）` : "Fn 组合层（未开启）";
     document.getElementById("kbdShell").classList.toggle("fn-view", activeLayer === "fn");
 
     const box = document.getElementById("fnConfigBox");
-    box.style.display = (state.fn.enabled || activeLayer === "fn") ? "" : "none";
+    box.style.display = (prof.fn.enabled || activeLayer === "fn") ? "" : "none";
 
     const hint = document.getElementById("fnQuickHint");
-    if (!state.fn.enabled) {
-      hint.textContent = state.dt.enabled
-        ? "未开启 Fn 层（当前仅启用下方双击快捷键补丁）"
-        : "未开启 Fn 层与双击快捷键：固件 100% 纯改数据，不附加任何补丁代码";
+    const chPrefix = state.perChannel ? `BT${activeCh + 1}（${prof.name}）：` : "";
+    if (!prof.fn.enabled) {
+      hint.textContent = `${chPrefix}未开启 Fn 层`;
     } else {
-      const trigK = KEY_BY_OFF.get(state.fn.triggerOff);
-      hint.textContent = `长按「${keyName(trigK)}」= 进入 Fn 层（${state.fn.keys.size} 键）· 轻点 = ${describe(state.fn.tap)}`;
+      const trigK = KEY_BY_OFF.get(prof.fn.triggerOff);
+      hint.textContent = `${chPrefix}长按「${keyName(trigK)}」= 进入 Fn 层（${prof.fn.keys.size} 键）· 轻点 = ${describe(prof.fn.tap)}`;
     }
 
-    // Populate trigger & tap selects
     const selTrig = document.getElementById("selFnTrigger");
     selTrig.innerHTML = "";
     const triggerList = [...FN_TRIGGER_CHOICES];
-    if (!triggerList.some(([o]) => o === state.fn.triggerOff)) {
-      const curK = KEY_BY_OFF.get(state.fn.triggerOff);
+    if (!triggerList.some(([o]) => o === prof.fn.triggerOff)) {
+      const curK = KEY_BY_OFF.get(prof.fn.triggerOff);
       if (curK) triggerList.unshift([curK.off, keyName(curK)]);
     }
     for (const [off, label] of triggerList) {
       const opt = document.createElement("option");
       opt.value = String(off); opt.textContent = label;
-      if (off === state.fn.triggerOff) opt.selected = true;
+      if (off === prof.fn.triggerOff) opt.selected = true;
       selTrig.appendChild(opt);
     }
 
@@ -1676,26 +2023,27 @@
     for (const c of FN_TAP_CHOICES) {
       const opt = document.createElement("option");
       opt.value = c.id; opt.textContent = c.label;
-      if (sameAssign(state.fn.tap, c.a)) { opt.selected = true; matchedTap = true; }
+      if (sameAssign(prof.fn.tap, c.a)) { opt.selected = true; matchedTap = true; }
       selTap.appendChild(opt);
     }
     if (!matchedTap) {
       const opt = document.createElement("option");
-      opt.value = "custom"; opt.textContent = `当前：${describe(state.fn.tap)}`; opt.selected = true;
+      opt.value = "custom"; opt.textContent = `当前：${describe(prof.fn.tap)}`; opt.selected = true;
       selTap.appendChild(opt);
     }
 
     const selTo = document.getElementById("selFnTimeout");
-    const toVal = String(state.fn.timeoutMs);
+    const toVal = String(prof.fn.timeoutMs);
     if (![...selTo.options].some(o => o.value === toVal)) {
       const opt = document.createElement("option");
-      opt.value = toVal; opt.textContent = `${(state.fn.timeoutMs / 1000).toFixed(2)} 秒`;
+      opt.value = toVal; opt.textContent = `${(prof.fn.timeoutMs / 1000).toFixed(2)} 秒`;
       selTo.appendChild(opt);
     }
     selTo.value = toVal;
   }
 
   function renderKeyboard() {
+    renderChannelBar();
     renderLayerControls();
     const kbd = document.getElementById("kbd");
     kbd.innerHTML = "";
@@ -1739,8 +2087,14 @@
     return b;
   }
 
-  function populateKeySelect(sel, currentVal) {
+  function populateKeySelect(sel, currentVal, allowNone = false) {
     sel.innerHTML = "";
+    if (allowNone) {
+      const noneOpt = document.createElement("option");
+      noneOpt.value = "0"; noneOpt.textContent = "（无 · 仅双键组合）";
+      if (!currentVal) noneOpt.selected = true;
+      sel.appendChild(noneOpt);
+    }
     for (const g of KB_GROUPS) {
       if (g.label.startsWith("备用音量")) continue;
       const og = document.createElement("optgroup"); og.label = g.label;
@@ -1755,62 +2109,57 @@
   }
 
   function renderEditor() {
+    const prof = curProf();
     const k = KEY_BY_OFF.get(selectedOff);
     const isFnView = activeLayer === "fn";
-    const isTrig = isFnTriggerKey(selectedOff);
+    const isTrig = isFnTriggerKey(selectedOff, prof);
+    const chLabel = state.perChannel ? `「BT${activeCh + 1} · ${prof.name}」` : "";
 
     const selBar = document.getElementById("selBar");
     const tabs = document.getElementById("tabs");
     const body = document.getElementById("editorBody");
     const btnRestoreOne = document.getElementById("btnRestoreOne");
 
-    // Special friendly view if user clicked the Fn Trigger key on Base layer
     if (isTrig) {
-      document.getElementById("editorTitle").textContent = `「${keyName(k)}」当前是 Fn 触发键`;
+      document.getElementById("editorTitle").textContent = `${chLabel}「${keyName(k)}」当前是 Fn 触发键`;
       btnRestoreOne.style.display = "none";
       selBar.innerHTML = `
         <div class="sel-main">
           <span class="sel-chip fn"></span>
           <span class="sel-arrow">→</span>
-          <span class="sel-now fn">长按进入 Fn 层 · 轻点触发「${describe(state.fn.tap)}」</span>
+          <span class="sel-now fn">长按进入 Fn 层 · 轻点触发「${describe(prof.fn.tap)}」</span>
         </div>
-        <div class="sel-meta">可在上方绿色的「Fn 层设置栏」里更换触发键、修改轻点功能，或关闭 Fn 层恢复成普通按键。</div>
+        <div class="sel-meta">可在上方绿色的「Fn 层设置栏」里更换触发键、修改轻点功能，或关闭本通道 Fn 层恢复成普通按键。</div>
       `;
       selBar.querySelector(".sel-chip").textContent = keyName(k);
       tabs.innerHTML = "";
-      body.innerHTML = `<div class="toolbar"><button id="btnJumpFnLayer" class="teal-btn">去编辑 Fn 组合层按键 →</button><button id="btnDisableFnHere" class="small">关闭「长按变 Fn 层」</button></div>`;
+      body.innerHTML = `<div class="toolbar"><button id="btnJumpFnLayer" class="teal-btn">去编辑 Fn 组合层按键 →</button><button id="btnDisableFnHere" class="small">关闭本通道「长按变 Fn 层」</button></div>`;
       body.querySelector("#btnJumpFnLayer").addEventListener("click", () => { activeLayer = "fn"; selectedOff = 0xEEA2; editorTab = "key"; renderAll(); });
-      body.querySelector("#btnDisableFnHere").addEventListener("click", () => { state.fn.enabled = false; activeLayer = "base"; saveDraft(); renderAll(); });
+      body.querySelector("#btnDisableFnHere").addEventListener("click", () => { prof.fn.enabled = false; activeLayer = "base"; saveDraft(); renderAll(); });
       return;
     }
 
-    // If viewing Fn layer while Fn is OFF, gently invite to enable
-    if (isFnView && !state.fn.enabled) {
-      document.getElementById("editorTitle").textContent = "开启「长按变 Fn 层」解锁第二层键位";
+    if (isFnView && !prof.fn.enabled) {
+      document.getElementById("editorTitle").textContent = `开启${chLabel}「长按变 Fn 层」解锁第二层键位`;
       btnRestoreOne.style.display = "none";
-      selBar.innerHTML = `<div class="sel-meta" style="margin:0; font-size:13px; color:var(--text);">这把键盘没有物理 Fn 键。开启后，可以把 <strong>CapsLock</strong>（或任意键）变成 <strong>长按进入 Fn 层、轻点当 Esc</strong> 的高效双功能键。</div>`;
+      selBar.innerHTML = `<div class="sel-meta" style="margin:0; font-size:13px; color:var(--text);">开启后，可以把 <strong>CapsLock</strong>（或任意键）变成 <strong>长按进入 Fn 层、轻点当 Esc</strong> 的高效双功能键。</div>`;
       tabs.innerHTML = "";
       body.innerHTML = `<div class="toolbar"><button id="btnEnableClassicFn" class="primary">开启并套用「CapsLock 变 Fn + 经典方向/F键」</button><button id="btnEnableEmptyFn">仅开启（空白 Fn 层自己配）</button></div>`;
       body.querySelector("#btnEnableClassicFn").addEventListener("click", () => {
-        state.fn.enabled = true;
-        applyFnClassicPreset();
-        selectedOff = 0xEEA2;
-        saveDraft(); renderAll();
+        prof.fn.enabled = true; applyFnClassicPreset(prof); selectedOff = 0xEEA2; saveDraft(); renderAll();
       });
       body.querySelector("#btnEnableEmptyFn").addEventListener("click", () => {
-        state.fn.enabled = true;
-        selectedOff = 0xEEA2;
-        saveDraft(); renderAll();
+        prof.fn.enabled = true; selectedOff = 0xEEA2; saveDraft(); renderAll();
       });
       return;
     }
 
-    const a = isFnView ? state.fn.keys.get(selectedOff) : state.keys.get(selectedOff);
+    const a = isFnView ? prof.fn.keys.get(selectedOff) : prof.keys.get(selectedOff);
     const stock = stockAssign(k);
 
     document.getElementById("editorTitle").textContent = isFnView
-      ? `按住 Fn +「${keyName(k)}」时触发什么？`
-      : `修改「${keyName(k)}」的功能`;
+      ? `${chLabel}按住 Fn +「${keyName(k)}」时触发什么？`
+      : `${chLabel}修改「${keyName(k)}」的功能`;
 
     btnRestoreOne.style.display = isFnView ? (a ? "" : "none") : (sameAssign(a, stock) ? "none" : "");
     btnRestoreOne.textContent = isFnView ? "↺ 清除（改回同普通层）" : "↺ 恢复这颗键原厂";
@@ -1826,13 +2175,13 @@
     selBar.querySelector(".sel-chip").textContent = isFnView ? `Fn + ${keyName(k)}` : keyName(k);
     selBar.querySelector(".sel-now").textContent = describe(a);
     selBar.querySelector(".sel-meta").textContent = isFnView
-      ? `不设置时，按住 Fn +「${keyName(k)}」会照常输出普通层的「${describe(state.keys.get(selectedOff))}」`
+      ? `不设置时，按住 Fn +「${keyName(k)}」会照常输出普通层的「${describe(prof.keys.get(selectedOff))}」`
       : `原厂默认：${describe(stock, STOCK_MACRO)}`;
 
     tabs.innerHTML = "";
     const tabDefs = [
       ["consumer", "快捷功能（平板 / 媒体 / 音量）"],
-      ["macro", "一键组合快捷键"],
+      ["macro", "一键组合快捷键（支持 2–3 键）"],
       ["key", "普通按键"],
       ["none", isFnView ? "同普通层（不覆盖）" : "禁用此键"],
     ];
@@ -1876,58 +2225,97 @@
       body.appendChild(adv);
 
     } else if (editorTab === "macro") {
-      const isBoundHere = isMacroAssign(a);
+      const curC = (a && a.t === "combo") ? a : customComboDraft;
+      const isBound = a && a.t === "combo" && comboKey(a) === comboKey(curC);
+
       const preview = document.createElement("div");
       preview.className = "macro-preview-box";
+      const pillsHtml = curC.k3
+        ? `<span class="kbd-pill" id="mpK1"></span><span>+</span><span class="kbd-pill" id="mpK2"></span><span>+</span><span class="kbd-pill" id="mpK3"></span>`
+        : `<span class="kbd-pill" id="mpK1"></span><span>+</span><span class="kbd-pill" id="mpK2"></span>`;
       preview.innerHTML = `
         <div>
-          <div style="font-size:12px; color:#d8b4fe; margin-bottom:5px; font-weight:600;">当前一键组合快捷键（有线 / 蓝牙通用）</div>
-          <div class="macro-keys"><span class="kbd-pill" id="mpK1"></span><span>+</span><span class="kbd-pill" id="mpK2"></span></div>
+          <div style="font-size:12px; color:#d8b4fe; margin-bottom:5px; font-weight:600;">独立多键快捷键（全键盘最多 16 组 · 互不占用锁屏键 · Mac 蓝牙/USB 自动适配 ⌘）</div>
+          <div class="macro-keys">${pillsHtml}</div>
         </div>
-        <button id="btnBindMacro" class="${isBoundHere ? "small" : "primary"}">${isBoundHere ? "✓ 已绑定到这里" : `把「${isFnView ? "Fn+" : ""}${keyName(k)}」设为这个组合键`}</button>
+        <button id="btnBindCombo" class="${isBound ? "small" : "primary"}">${isBound ? "✓ 已绑定到此键" : `把「${isFnView ? "Fn+" : ""}${keyName(k)}」设为此组合`}</button>
       `;
-      preview.querySelector("#mpK1").textContent = KB_NAMES.get(state.macro.k1) || hex2(state.macro.k1);
-      preview.querySelector("#mpK2").textContent = KB_NAMES.get(state.macro.k2) || hex2(state.macro.k2);
-      preview.querySelector("#btnBindMacro").addEventListener("click", () => setCurrentKeyAssign({ t: "consumer", v: MACRO_USAGE }));
+      preview.querySelector("#mpK1").textContent = kbShortName(curC.k1);
+      preview.querySelector("#mpK2").textContent = kbShortName(curC.k2);
+      if (curC.k3) preview.querySelector("#mpK3").textContent = kbShortName(curC.k3);
+      preview.querySelector("#btnBindCombo").addEventListener("click", () => {
+        setCurrentKeyAssign({ t: "combo", k1: curC.k1, k2: curC.k2, k3: curC.k3 || 0, stepMs: curC.stepMs || 20, macFix: curC.macFix !== false });
+      });
       body.appendChild(preview);
 
       const pGroup = document.createElement("div");
       pGroup.className = "opt-group";
-      pGroup.innerHTML = `<div class="opt-group-label">常用组合一键套用</div><div class="opt-list"></div>`;
+      pGroup.innerHTML = `<div class="opt-group-label">常用 2 键 / 3 键组合一键套用（如 Mac 框选截图、平板搜索）</div><div class="opt-list"></div>`;
       const plist = pGroup.querySelector(".opt-list");
-      for (const p of MACRO_PRESETS) {
-        plist.appendChild(optButton(p.name, state.macro.k1 === p.k1 && state.macro.k2 === p.k2, () => {
-          state.macro = { k1: p.k1, k2: p.k2 };
-          setCurrentKeyAssign({ t: "consumer", v: MACRO_USAGE });
+      for (const p of COMBO_PRESETS) {
+        plist.appendChild(optButton(p.name, sameAssign(a, p.a), () => {
+          if (p.a.t === "combo") customComboDraft = { ...p.a };
+          setCurrentKeyAssign({ ...p.a });
         }, "", true));
       }
       body.appendChild(pGroup);
 
       const pickers = document.createElement("div");
-      pickers.className = "macro-pickers";
+      pickers.className = "macro-pickers three";
       pickers.innerHTML = `
-        <div class="field"><label for="selM1">第 1 键（通常是修饰键）</label><select id="selM1"></select></div>
+        <div class="field"><label for="selM1">第 1 键（修饰键）</label><select id="selM1"></select></div>
         <div class="plus-sign">+</div>
-        <div class="field"><label for="selM2">第 2 键（目标键）</label><select id="selM2"></select></div>
+        <div class="field"><label for="selM2">第 2 键（修饰键或目标键）</label><select id="selM2"></select></div>
+        <div class="plus-sign">+</div>
+        <div class="field"><label for="selM3">第 3 键（可选 · 3 键组合）</label><select id="selM3"></select></div>
       `;
-      const s1 = pickers.querySelector("#selM1"), s2 = pickers.querySelector("#selM2");
-      populateKeySelect(s1, state.macro.k1);
-      populateKeySelect(s2, state.macro.k2);
-      const onMacroChange = () => {
-        const k1 = Number(s1.value), k2 = Number(s2.value);
-        if (k1 === k2) { alert("组合快捷键的两个按键不能相同"); populateKeySelect(s1, state.macro.k1); populateKeySelect(s2, state.macro.k2); return; }
-        state.macro = { k1, k2 };
-        saveDraft(); renderAll();
+      const s1 = pickers.querySelector("#selM1"), s2 = pickers.querySelector("#selM2"), s3 = pickers.querySelector("#selM3");
+      populateKeySelect(s1, curC.k1);
+      populateKeySelect(s2, curC.k2);
+      populateKeySelect(s3, curC.k3 || 0, true);
+      const onComboPick = () => {
+        const k1 = Number(s1.value), k2 = Number(s2.value), k3 = Number(s3.value);
+        if (k1 === k2 || (k3 !== 0 && (k3 === k1 || k3 === k2))) {
+          alert("组合快捷键里的按键不能重复");
+          renderEditor(); return;
+        }
+        const autoStep = (k1 === 0xE3 && k2 === 0x16 && k3 === 0) ? 60 : (curC.stepMs || 20);
+        customComboDraft = { k1, k2, k3, stepMs: autoStep, macFix: true };
+        setCurrentKeyAssign({ t: "combo", ...customComboDraft });
       };
-      s1.addEventListener("change", onMacroChange);
-      s2.addEventListener("change", onMacroChange);
+      s1.addEventListener("change", onComboPick);
+      s2.addEventListener("change", onComboPick);
+      s3.addEventListener("change", onComboPick);
       body.appendChild(pickers);
 
-      const mNote = document.createElement("div");
-      mNote.className = "notice";
-      mNote.style.marginTop = "8px";
-      mNote.innerHTML = "<strong>MagicPad / 安卓平板提示：</strong>单键组合快捷键使用原厂瞬发机制（两键同时发包），设为 <code>Meta + S</code> 会因间隔过短而同时唤醒语音助手。若想无副作用唤出平板搜索，请使用上方 <strong>「⚡ 双击快捷键」</strong>（内置 4 步错峰发送：先按住 Meta → 间隔后再按 S → 先松 S → 最后松 Meta）。";
-      body.appendChild(mNote);
+      const stepRow = document.createElement("div");
+      stepRow.className = "fn-config-grid";
+      stepRow.style.gridTemplateColumns = "1fr 1fr";
+      stepRow.innerHTML = `
+        <div class="field">
+          <label for="selComboStep">分步错峰发送间隔</label>
+          <select id="selComboStep">
+            <option value="20">20 ms（推荐 · Mac 截图/常规组合瞬间触发）</option>
+            <option value="60">60 ms（推荐 · 安卓平板 Meta+S 防误唤语音助手）</option>
+            <option value="90">90 ms（超稳 · 防慢速蓝牙合并）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>发送顺序保障</label>
+          <div class="card-sub" style="padding-top:6px;">自动先按住修饰键 → 间隔后按目标键 → 先松目标键 → 最后松修饰键，绝不卡键。</div>
+        </div>
+      `;
+      const sStep = stepRow.querySelector("#selComboStep");
+      const curStepVal = String(curC.stepMs || 20);
+      if (![...sStep.options].some(o => o.value === curStepVal)) {
+        const o = document.createElement("option"); o.value = curStepVal; o.textContent = `${curStepVal} ms`; sStep.appendChild(o);
+      }
+      sStep.value = curStepVal;
+      sStep.addEventListener("change", () => {
+        customComboDraft = { ...curC, stepMs: Number(sStep.value) };
+        if (a && a.t === "combo") setCurrentKeyAssign({ t: "combo", ...customComboDraft });
+      });
+      body.appendChild(stepRow);
 
     } else if (editorTab === "key") {
       const sr = document.createElement("div");
@@ -1946,7 +2334,7 @@
       p.className = "card-sub"; p.style.marginTop = "0";
       p.textContent = isFnView
         ? "清除后，按住 Fn + 这颗键会照常输出普通层的功能。"
-        : "禁用后，按下这颗键不会产生任何输入（适合防止误触）。";
+        : "禁用后，按下这颗键在当前通道下不会产生任何输入（不影响其他蓝牙通道）。";
       body.appendChild(p);
       body.appendChild(optButton(isFnView ? "设为同普通层" : "确认禁用这颗键", isFnView ? !a : (a && a.t === "none"), () => setCurrentKeyAssign(isFnView ? null : { t: "none" })));
     }
@@ -1976,68 +2364,87 @@
   }
 
   function renderDoubleTapPanel() {
-    document.getElementById("dtCard").classList.toggle("enabled", state.dt.enabled);
-    document.getElementById("chkDtEnable").checked = state.dt.enabled;
-    document.getElementById("dtDisabledHint").style.display = state.dt.enabled ? "none" : "";
-    document.getElementById("dtConfigBox").style.display = state.dt.enabled ? "" : "none";
-    if (!state.dt.enabled) return;
+    const prof = curProf();
+    const tag = document.getElementById("dtChTag");
+    tag.style.display = state.perChannel ? "" : "none";
+    if (state.perChannel) tag.textContent = `当前页：BT${activeCh + 1} · ${prof.name}`;
 
-    document.getElementById("chkDtSkipApple").checked = !!state.dt.skipApple;
+    document.getElementById("dtCard").classList.toggle("enabled", prof.dt.enabled);
+    document.getElementById("chkDtEnable").checked = prof.dt.enabled;
+    document.getElementById("dtDisabledHint").style.display = prof.dt.enabled ? "none" : "";
+    document.getElementById("dtConfigBox").style.display = prof.dt.enabled ? "" : "none";
+    if (!prof.dt.enabled) return;
 
-    const dtK = KEY_BY_OFF.get(state.dt.keyOff);
-    const dtKeyText = dtK ? keyName(dtK) : hex4(state.dt.keyOff);
-    const actText = describeDtAction(state.dt.action);
-    const stepMs = state.dt.stepMs || 60;
-    const isCombo = state.dt.action.t === "combo";
-    const k1Short = isCombo ? kbShortName(state.dt.action.k1) : "";
-    const k2Short = isCombo ? kbShortName(state.dt.action.k2) : "";
+    // Only show Apple-skip toggle in Unified mode; in Per-Channel mode each BT channel is its own device!
+    document.getElementById("dtAppleBar").style.display = state.perChannel ? "none" : "";
+    document.getElementById("chkDtSkipApple").checked = !!prof.dt.skipApple;
+
+    const dtK = KEY_BY_OFF.get(prof.dt.keyOff);
+    const dtKeyText = dtK ? keyName(dtK) : hex4(prof.dt.keyOff);
+    const actText = describeDtAction(prof.dt.action);
+    const stepMs = prof.dt.stepMs || 60;
+    const isCombo = prof.dt.action.t === "combo";
+    const k1Short = isCombo ? kbShortName(prof.dt.action.k1) : "";
+    const k2Short = isCombo ? kbShortName(prof.dt.action.k2) : "";
     const staggerNote = isCombo
-      ? `（错峰 ${stepMs}ms：先按住 ${k1Short} → 再按 ${k2Short} → 先松 ${k2Short} → 最后松 ${k1Short}，避免误唤语音助手）`
+      ? `（错峰 ${stepMs}ms：先按住 ${k1Short} → 再按 ${k2Short} → 先松 ${k2Short} → 最后松 ${k1Short}，防误唤语音助手）`
       : "";
+
     const preview = document.getElementById("dtPreviewGrid");
-    if (state.dt.skipApple) {
+    if (state.perChannel) {
+      preview.style.gridTemplateColumns = "1fr";
       preview.innerHTML = `
         <div class="dt-os-card active-os">
-          <div class="dt-os-title">📱 连安卓平板 / Windows 时</div>
+          <div class="dt-os-title">⚡ 仅在「BT${activeCh + 1} · ${prof.name}」生效（与其他通道完全隔离）</div>
           <div>连续双击 <strong>${dtKeyText}</strong> → 自动发出 <strong>${actText}</strong>${staggerNote}；平时按住配其他键（如 Alt+Tab）依然 0 延迟无影响。</div>
-        </div>
-        <div class="dt-os-card safe-os">
-          <div class="dt-os-title">🍎 连 Mac / iPad 时（已自动放行 ✓）</div>
-          <div>键盘自动识别 Apple 系统并跳过映射 → 照常发出两次原生按键，<strong>完整保留 macOS 双击 ⌘ Spotlight</strong>，不会误触 ⌘+S。</div>
         </div>
       `;
     } else {
-      preview.innerHTML = `
-        <div class="dt-os-card active-os">
-          <div class="dt-os-title">📱 连安卓平板 / Windows 时</div>
-          <div>连续双击 <strong>${dtKeyText}</strong> → 自动发出 <strong>${actText}</strong>${staggerNote}；平时按住配其他键依然 0 延迟。</div>
-        </div>
-        <div class="dt-os-card warn-os">
-          <div class="dt-os-title">🍎 连 Mac / iPad 时（同样触发）</div>
-          <div>也会发出 <strong>${actText}</strong>。提示：若组合含 Win/⌘，在 Mac 下会对应 ⌘ 组合键（例如 Meta+S 会变成 ⌘+S 保存）。</div>
-        </div>
-      `;
+      preview.style.gridTemplateColumns = "";
+      if (prof.dt.skipApple) {
+        preview.innerHTML = `
+          <div class="dt-os-card active-os">
+            <div class="dt-os-title">📱 连安卓平板 / Windows 时</div>
+            <div>连续双击 <strong>${dtKeyText}</strong> → 自动发出 <strong>${actText}</strong>${staggerNote}；平时按住配其他键依然 0 延迟。</div>
+          </div>
+          <div class="dt-os-card safe-os">
+            <div class="dt-os-title">🍎 连 Mac / iPad 时（已自动放行 ✓）</div>
+            <div>键盘自动识别 Apple 系统并跳过映射 → 完整保留 macOS 双击 ⌘ Spotlight，不会误触 ⌘+S。</div>
+          </div>
+        `;
+      } else {
+        preview.innerHTML = `
+          <div class="dt-os-card active-os">
+            <div class="dt-os-title">🌐 所有通道统一生效</div>
+            <div>连续双击 <strong>${dtKeyText}</strong> → 自动发出 <strong>${actText}</strong>${staggerNote}。</div>
+          </div>
+          <div class="dt-os-card warn-os">
+            <div class="dt-os-title">💡 多设备建议</div>
+            <div>如果同时连 Mac 和平板，建议切到上方 <strong>「BT1 / BT2 / BT3 分设备独立配置」</strong>，各自独立更直观！</div>
+          </div>
+        `;
+      }
     }
 
     const selKey = document.getElementById("selDtKey");
     selKey.innerHTML = "";
     const choices = [...DT_KEY_CHOICES];
-    if (!choices.some(([o]) => o === state.dt.keyOff)) {
-      const curK = KEY_BY_OFF.get(state.dt.keyOff);
+    if (!choices.some(([o]) => o === prof.dt.keyOff)) {
+      const curK = KEY_BY_OFF.get(prof.dt.keyOff);
       if (curK) choices.unshift([curK.off, keyName(curK)]);
     }
     for (const [off, label] of choices) {
       const opt = document.createElement("option");
       opt.value = String(off); opt.textContent = label;
-      if (off === state.dt.keyOff) opt.selected = true;
+      if (off === prof.dt.keyOff) opt.selected = true;
       selKey.appendChild(opt);
     }
 
     const selWin = document.getElementById("selDtWindow");
-    const winVal = String(state.dt.windowMs);
+    const winVal = String(prof.dt.windowMs);
     if (![...selWin.options].some(o => o.value === winVal)) {
       const opt = document.createElement("option");
-      opt.value = winVal; opt.textContent = `${(state.dt.windowMs / 1000).toFixed(2)} 秒`;
+      opt.value = winVal; opt.textContent = `${(prof.dt.windowMs / 1000).toFixed(2)} 秒`;
       selWin.appendChild(opt);
     }
     selWin.value = winVal;
@@ -2057,14 +2464,14 @@
     const plist = document.getElementById("dtPresetList");
     plist.innerHTML = "";
     for (const p of DT_PRESETS) {
-      plist.appendChild(optButton(p.name, sameDtAction(state.dt.action, p.a), () => {
-        state.dt.action = { ...p.a };
+      plist.appendChild(optButton(p.name, sameDtAction(prof.dt.action, p.a), () => {
+        prof.dt.action = { ...p.a };
         saveDraft(); renderAll();
       }, "", true));
     }
 
-    const curK1 = state.dt.action.t === "combo" ? state.dt.action.k1 : 0xE3;
-    const curK2 = state.dt.action.t === "combo" ? state.dt.action.k2 : 0x16;
+    const curK1 = prof.dt.action.t === "combo" ? prof.dt.action.k1 : 0xE3;
+    const curK2 = prof.dt.action.t === "combo" ? prof.dt.action.k2 : 0x16;
     populateKeySelect(document.getElementById("selDtK1"), curK1);
     populateKeySelect(document.getElementById("selDtK2"), curK2);
   }
@@ -2087,46 +2494,65 @@
     syncField("inpUsbName", "cntUsbName", "errUsbName", "boxUsbName", state.meta.usbName, USB_NAME_MAX, STOCK_META.usbName, errs.usbName);
   }
 
+  function profileDiffLines(p) {
+    const lines = [];
+    for (const k of ALL_KEYS) {
+      if (k.locked || (p.fn.enabled && k.off === p.fn.triggerOff)) continue;
+      if (!sameAssign(p.keys.get(k.off), stockAssign(k))) {
+        lines.push(`${keyName(k)}：${describe(stockAssign(k), STOCK_MACRO)} → ${describe(p.keys.get(k.off))}`);
+      }
+    }
+    if (p.fn.enabled) {
+      const trigK = KEY_BY_OFF.get(p.fn.triggerOff);
+      lines.push(`长按 Fn 层：触发键「${keyName(trigK)}」（轻点=${describe(p.fn.tap)}），共 ${p.fn.keys.size} 键`);
+    }
+    if (p.dt.enabled) {
+      const dtK = KEY_BY_OFF.get(p.dt.keyOff);
+      const osNote = (!state.perChannel && p.dt.skipApple) ? " · 🍎连 Mac 放行" : "";
+      lines.push(`双击「${keyName(dtK)}」→ ${describeDtAction(p.dt.action)}${osNote}`);
+    }
+    return lines;
+  }
+
   function renderFlashPanel() {
     const box = document.getElementById("diffBox");
     box.innerHTML = "";
 
-    const changedKeys = ALL_KEYS.filter(k => !(state.fn.enabled && k.off === state.fn.triggerOff) && !sameAssign(state.keys.get(k.off), stockAssign(k)));
     const macroChanged = state.macro.k1 !== STOCK_MACRO.k1 || state.macro.k2 !== STOCK_MACRO.k2;
     const metaChanges = [];
     if (state.meta.verTag !== STOCK_META.verTag) metaChanges.push(`方案标签：${STOCK_META.verTag} → ${state.meta.verTag}`);
     if (state.meta.bleName !== STOCK_META.bleName) metaChanges.push(`蓝牙名称：${STOCK_META.bleName} → ${state.meta.bleName}`);
     if (state.meta.usbName !== STOCK_META.usbName) metaChanges.push(`USB 名称：${STOCK_META.usbName} → ${state.meta.usbName}`);
 
-    if (!changedKeys.length && !macroChanged && !metaChanges.length && !state.fn.enabled && !state.dt.enabled) {
-      box.innerHTML = `<div class="empty-state">当前与联想原厂完全一致（写入后将还原出厂默认状态）。</div>`;
-    } else {
-      const addSection = (title, lines) => {
-        if (!lines.length) return;
-        const h = document.createElement("div"); h.className = "diff-group-title"; h.textContent = title;
-        const ul = document.createElement("ul");
-        for (const t of lines) { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); }
-        box.append(h, ul);
-      };
-      addSection("普通层按键改动", changedKeys.map(k => `${keyName(k)}：${describe(stockAssign(k), STOCK_MACRO)} → ${describe(state.keys.get(k.off))}`));
-      if (state.fn.enabled) {
-        const trigK = KEY_BY_OFF.get(state.fn.triggerOff);
-        const fnLines = [`触发键「${keyName(trigK)}」：长按进 Fn 层，轻点 = ${describe(state.fn.tap)}`];
-        for (const [off, a] of state.fn.keys) {
-          const fk = KEY_BY_OFF.get(off);
-          if (fk) fnLines.push(`Fn + ${keyName(fk)} → ${describe(a)}`);
+    const addSection = (title, lines) => {
+      if (!lines.length) return;
+      const h = document.createElement("div"); h.className = "diff-group-title"; h.textContent = title;
+      const ul = document.createElement("ul");
+      for (const t of lines) { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); }
+      box.append(h, ul);
+    };
+
+    let anyDiff = false;
+    if (state.perChannel) {
+      for (let ch = 0; ch < 3; ch++) {
+        const p = state.profiles[ch];
+        const lines = profileDiffLines(p);
+        if (lines.length) {
+          anyDiff = true;
+          addSection(`BT${ch + 1} · ${p.name}`, lines);
         }
-        addSection(`长按 Fn 层（已配 ${state.fn.keys.size} 键）`, fnLines);
       }
-      if (state.dt.enabled) {
-        const dtK = KEY_BY_OFF.get(state.dt.keyOff);
-        const osNote = state.dt.skipApple ? " · 🍎连 Mac/iPad 自动放行" : " · 所有系统生效";
-        addSection("双击快捷键", [
-          `连续双击「${keyName(dtK)}」（${(state.dt.windowMs / 1000).toFixed(2)} 秒内）→ ${describeDtAction(state.dt.action)}${osNote}`,
-        ]);
-      }
-      if (macroChanged) addSection("一键组合快捷键", [`锁屏 (${macroLabel(STOCK_MACRO)}) → ${macroLabel(state.macro)}`]);
-      addSection("设备名称与标签", metaChanges);
+    } else {
+      const lines = profileDiffLines(state.profiles[0]);
+      if (lines.length) { anyDiff = true; addSection("按键与手势改动（三通道统一）", lines); }
+    }
+    if (macroChanged) { anyDiff = true; addSection("原厂锁屏宏改动", [`${macroLabel(STOCK_MACRO)} → ${macroLabel(state.macro)}`]); }
+    if (metaChanges.length) { anyDiff = true; addSection("设备名称与标签", metaChanges); }
+
+    if (!anyDiff && !state.perChannel) {
+      box.innerHTML = `<div class="empty-state">当前与联想原厂完全一致（写入后将还原出厂默认状态）。</div>`;
+    } else if (!anyDiff && state.perChannel) {
+      box.innerHTML = `<div class="empty-state">已开启三通道独立模式，目前 3 个通道均保持原厂默认，可在左侧各通道页自由修改。</div>`;
     }
 
     const res = buildFirmware(state);
@@ -2145,14 +2571,14 @@
       guardEl.className = "notice ok";
       const parts = [];
       parts.push(res.extended ? `14 槽扩展（已用 ${res.used}/14）` : `原厂 7 槽（已用 ${res.used}/14）`);
-      if (res.fnOn && res.dtOn) parts.push("已加载 Fn 层 + 双击快捷键补丁");
-      else if (res.fnOn) parts.push("已加载长按 Fn 层补丁");
-      else if (res.dtOn) parts.push("已加载双击快捷键补丁");
+      if (res.perChannel) parts.push("BT1/BT2/BT3 三通道独立");
+      if (res.comboCount) parts.push(`${res.comboCount} 组多键快捷键`);
+      if (res.fnOn) parts.push("长按 Fn 层");
+      if (res.dtOn) parts.push("双击快捷键");
       guardEl.textContent = `✓ 安全校验通过 · ${parts.join(" · ")}`;
-      const patchDesc = res.extOn ? `开(0xFC00:${res.fnOn ? "Fn" : ""}${res.fnOn && res.dtOn ? "+" : ""}${res.dtOn ? "双击" : ""})` : "关";
-      techMeta.textContent = `大小: ${res.bytes.length}B (${Math.ceil(res.bytes.length / 16)}块) · 差异: ${res.diff.length}B · 槽表: ${res.extended ? "14槽(0xEF34)" : "7槽(0xEE44)"} · 扩展补丁: ${patchDesc} · CRC-32: 0x${res.crc.toString(16).toUpperCase().padStart(8, "0")}`;
-      const quickTag = res.fnOn && res.dtOn ? "Fn+双击模式" : res.fnOn ? "Fn 层模式" : res.dtOn ? "双击快捷键模式" : res.extended ? "14 槽模式" : "标准模式";
-      modeInfo.textContent = `${res.bytes.length}B · ${quickTag}`;
+      techMeta.textContent = `大小: ${res.bytes.length}B (${(res.bytes.length / 1024).toFixed(1)}KB / ${Math.ceil(res.bytes.length / 16)}块) · 差异: ${res.diff.length}B · 槽表: ${res.extended ? "14槽" : "7槽"} · v3补丁: ${res.extOn ? "开(0xFC00)" : "关(纯数据)"} · 组合: ${res.comboCount}/16 · CRC-32: 0x${res.crc.toString(16).toUpperCase().padStart(8, "0")}`;
+      const quickTag = res.perChannel ? "三通道独立模式" : res.extOn ? "扩展增强模式" : res.extended ? "14 槽纯数据" : "标准纯数据";
+      modeInfo.textContent = `${(res.bytes.length / 1024).toFixed(1)}KB · ${quickTag}`;
     }
 
     const ok = !res.error;
@@ -2168,6 +2594,19 @@
     document.getElementById("bleTip").style.display = transport === "ble" ? "block" : "none";
   }
 
+  function syncEditorTabForSelection() {
+    const prof = curProf();
+    const a = activeLayer === "fn" ? prof.fn.keys.get(selectedOff) : prof.keys.get(selectedOff);
+    if (a && a.t === "combo") {
+      customComboDraft = { k1: a.k1, k2: a.k2, k3: a.k3 || 0, stepMs: a.stepMs || 20, macFix: !!a.macFix };
+    }
+    if (!a) {
+      editorTab = "key";
+    } else {
+      editorTab = isMacroAssign(a) ? "macro" : a.t === "consumer" ? "consumer" : a.t === "none" ? "none" : "key";
+    }
+  }
+
   function renderAll() {
     renderKeyboard();
     renderEditor();
@@ -2177,11 +2616,12 @@
   }
 
   function setCurrentKeyAssign(a) {
+    const prof = curProf();
     if (activeLayer === "fn") {
-      if (!a || a.t === "none") state.fn.keys.delete(selectedOff);
-      else state.fn.keys.set(selectedOff, a);
+      if (!a || a.t === "none") prof.fn.keys.delete(selectedOff);
+      else prof.fn.keys.set(selectedOff, a);
     } else {
-      state.keys.set(selectedOff, a);
+      prof.keys.set(selectedOff, a);
     }
     saveDraft();
     renderAll();
@@ -2575,18 +3015,42 @@
     }
   }
 
-  function applyFnClassicPreset() {
-    state.fn.keys = new Map();
+  function applyFnClassicPreset(prof = curProf()) {
+    prof.fn.keys = new Map();
     for (const [off, a] of Object.entries(FN_CLASSIC_PRESET)) {
       const o = Number(off);
-      if (o !== state.fn.triggerOff) state.fn.keys.set(o, a);
+      if (o !== prof.fn.triggerOff) prof.fn.keys.set(o, a);
     }
   }
 
   function applyMagicPadPreset() {
     state = stockState();
-    for (const [off, a] of Object.entries(MAGICPAD_PRESET_KEYS)) state.keys.set(Number(off), a);
+    state.perChannel = false;
+    activeCh = 0;
+    for (const [off, a] of Object.entries(MAGICPAD_PRESET_KEYS)) state.profiles[0].keys.set(Number(off), a);
     state.meta.verTag = "KA024_PAD_14S";
+  }
+
+  function applyDualDevicePreset() {
+    state = stockState();
+    state.perChannel = true;
+    activeCh = 0;
+    // BT1: MacBook -> 锁屏键一键 ⌘+Shift+4 框选截图，双击关（保留原生双击 ⌘ Spotlight）
+    state.profiles[0].name = "MacBook";
+    state.profiles[0].keys.set(0xEEE7, { t: "combo", k1: 0xE3, k2: 0xE1, k3: 0x21, stepMs: 20, macFix: true });
+    // BT2: MagicPad -> 互联多任务 + 右Ctrl回桌面 + 锁屏保留原厂 + 双击 Alt/cmd -> Meta+S (60ms错峰)
+    state.profiles[1].name = "MagicPad";
+    for (const [off, a] of Object.entries(MAGICPAD_PRESET_KEYS)) state.profiles[1].keys.set(Number(off), a);
+    state.profiles[1].dt.enabled = true;
+    state.profiles[1].dt.keyOff = 0xEECD;
+    state.profiles[1].dt.action = { t: "combo", k1: 0xE3, k2: 0x16 };
+    state.profiles[1].dt.windowMs = 320;
+    state.profiles[1].dt.stepMs = 60;
+    // BT3: 备用设备保持原厂
+    state.profiles[2].name = "备用设备";
+    state.meta.verTag = "KA024_3CH_V1";
+    selectedOff = 0xEEE7;
+    editorTab = "macro";
   }
 
   function loadInitialState() {
@@ -2606,8 +3070,8 @@
         return;
       }
     } catch (_) {}
-    applyMagicPadPreset();
-    setBanner("已载入「平板全功能方案」：<strong>设备互联 → 多任务</strong>，<strong>右 Ctrl → 回桌面</strong>，<strong>静音与音量全保留原厂</strong>。还可随时勾选「开启长按变 Fn 层」或点「蓝牙无线连接」免线刷入。");
+    applyDualDevicePreset();
+    setBanner("已载入「Mac 截图 + 平板搜索」三通道推荐方案：<strong>BT1 (MacBook)</strong> 锁屏键变 <strong>⌘+Shift+4 框选截图</strong>；<strong>BT2 (MagicPad)</strong> 互联→多任务、右Ctrl→回桌面、双击 Alt/cmd→Meta+S 搜索，锁屏保留原厂；<strong>BT3</strong> 原厂默认。");
   }
 
   (async function init() {
@@ -2618,6 +3082,10 @@
     } else if (!("hid" in navigator) && !("bluetooth" in navigator)) {
       w.style.display = "block";
       w.textContent = "当前浏览器不支持 WebHID 和 Web Bluetooth，仍可编辑并导出 .bin；如需直连写入请使用 Chrome 或 Edge。";
+    }
+    if (!("hid" in navigator)) {
+      const usbBtn = document.getElementById("btnConnectUsb");
+      usbBtn.title = "Android / 移动浏览器不支持 WebHID，请用「蓝牙无线连接」或在电脑上使用 USB-C";
     }
     if ("hid" in navigator) {
       navigator.hid.addEventListener("disconnect", (e) => {
@@ -2662,71 +3130,119 @@
     } catch (e) { log(`读取标签失败: ${e.message}`); }
   });
 
-  // Layer & Fn controls
-  document.getElementById("btnLayerBase").addEventListener("click", () => { activeLayer = "base"; renderAll(); });
+  // Device channel mode & BT1/BT2/BT3 tabs
+  document.getElementById("btnModePerCh").addEventListener("click", () => {
+    if (!state.perChannel) {
+      state.perChannel = true;
+      syncEditorTabForSelection();
+      saveDraft(); renderAll();
+    }
+  });
+  document.getElementById("btnModeUnified").addEventListener("click", () => {
+    if (state.perChannel) {
+      state.perChannel = false; activeCh = 0;
+      syncEditorTabForSelection();
+      saveDraft(); renderAll();
+    }
+  });
+  for (let ch = 0; ch < 3; ch++) {
+    document.getElementById(`btnCh${ch}`).addEventListener("click", () => {
+      activeCh = ch;
+      if (activeLayer === "fn" && !curProf().fn.enabled) activeLayer = "base";
+      syncEditorTabForSelection();
+      renderAll();
+    });
+  }
+  document.getElementById("inpChName").addEventListener("input", (e) => {
+    curProf().name = e.target.value.slice(0, 14) || DEFAULT_CH_NAMES[activeCh];
+    saveDraft(); renderChannelBar(); renderDoubleTapPanel(); renderFlashPanel();
+  });
+  document.getElementById("btnCopyFromOther").addEventListener("click", () => {
+    const others = [0, 1, 2].filter(i => i !== activeCh);
+    const promptTxt = `要从哪个通道复制到当前「BT${activeCh + 1} · ${curProf().name}」？\n输入通道编号：${others.map(i => `${i + 1} (${state.profiles[i].name})`).join(" 或 ")}`;
+    const ans = prompt(promptTxt, String(others[0] + 1));
+    if (!ans) return;
+    const srcIdx = Number(ans.trim()) - 1;
+    if (!others.includes(srcIdx)) { alert("请输入有效的其他通道编号（1、2 或 3）"); return; }
+    state.profiles[activeCh] = cloneProfile(state.profiles[srcIdx], curProf().name);
+    saveDraft(); renderAll();
+  });
+  document.getElementById("btnResetCh").addEventListener("click", () => {
+    if (!confirm(`确定将当前通道「BT${activeCh + 1} · ${curProf().name}」恢复为联想原厂键位？（不影响另外两个通道）`)) return;
+    state.profiles[activeCh] = defaultProfile(curProf().name, false);
+    activeLayer = "base";
+    saveDraft(); renderAll();
+  });
+
+  // Layer & Fn controls (per active channel)
+  document.getElementById("btnLayerBase").addEventListener("click", () => { activeLayer = "base"; syncEditorTabForSelection(); renderAll(); });
   document.getElementById("btnLayerFn").addEventListener("click", () => {
     activeLayer = "fn";
-    if (selectedOff === state.fn.triggerOff) selectedOff = 0xEEA2;
+    if (selectedOff === curProf().fn.triggerOff) selectedOff = 0xEEA2;
+    syncEditorTabForSelection();
     renderAll();
   });
   document.getElementById("chkFnEnable").addEventListener("change", (e) => {
-    state.fn.enabled = e.target.checked;
-    if (state.fn.enabled && state.fn.keys.size === 0) applyFnClassicPreset();
-    if (!state.fn.enabled && activeLayer === "fn") activeLayer = "base";
+    const prof = curProf();
+    prof.fn.enabled = e.target.checked;
+    if (prof.fn.enabled && prof.fn.keys.size === 0) applyFnClassicPreset(prof);
+    if (!prof.fn.enabled && activeLayer === "fn") activeLayer = "base";
     saveDraft(); renderAll();
   });
   document.getElementById("selFnTrigger").addEventListener("change", (e) => {
+    const prof = curProf();
     const newOff = Number(e.target.value);
-    state.fn.triggerOff = newOff;
-    state.fn.keys.delete(newOff);
+    prof.fn.triggerOff = newOff;
+    prof.fn.keys.delete(newOff);
     if (activeLayer === "fn" && selectedOff === newOff) selectedOff = 0xEEA2;
     saveDraft(); renderAll();
   });
   document.getElementById("selFnTap").addEventListener("change", (e) => {
     const found = FN_TAP_CHOICES.find(c => c.id === e.target.value);
-    if (found) { state.fn.tap = { ...found.a }; saveDraft(); renderAll(); }
+    if (found) { curProf().fn.tap = { ...found.a }; saveDraft(); renderAll(); }
   });
   document.getElementById("selFnTimeout").addEventListener("change", (e) => {
-    state.fn.timeoutMs = Number(e.target.value);
+    curProf().fn.timeoutMs = Number(e.target.value);
     saveDraft(); renderAll();
   });
   document.getElementById("btnFnPresetClassic").addEventListener("click", () => {
-    state.fn.enabled = true;
-    applyFnClassicPreset();
+    const prof = curProf();
+    prof.fn.enabled = true;
+    applyFnClassicPreset(prof);
     activeLayer = "fn";
     saveDraft(); renderAll();
   });
   document.getElementById("btnFnClear").addEventListener("click", () => {
-    state.fn.keys = new Map();
+    curProf().fn.keys = new Map();
     saveDraft(); renderAll();
   });
 
-  // Double-Tap gesture controls
+  // Double-Tap gesture controls (per active channel)
   document.getElementById("chkDtEnable").addEventListener("change", (e) => {
-    state.dt.enabled = e.target.checked;
+    curProf().dt.enabled = e.target.checked;
     saveDraft(); renderAll();
   });
   document.getElementById("chkDtSkipApple").addEventListener("change", (e) => {
-    state.dt.skipApple = e.target.checked;
+    curProf().dt.skipApple = e.target.checked;
     saveDraft(); renderAll();
   });
   document.getElementById("selDtKey").addEventListener("change", (e) => {
-    state.dt.keyOff = Number(e.target.value);
+    curProf().dt.keyOff = Number(e.target.value);
     saveDraft(); renderAll();
   });
   document.getElementById("selDtWindow").addEventListener("change", (e) => {
-    state.dt.windowMs = Number(e.target.value);
+    curProf().dt.windowMs = Number(e.target.value);
     saveDraft(); renderAll();
   });
   document.getElementById("selDtStep").addEventListener("change", (e) => {
-    state.dt.stepMs = Number(e.target.value);
+    curProf().dt.stepMs = Number(e.target.value);
     saveDraft(); renderAll();
   });
   const onDtComboChange = () => {
     const k1 = Number(document.getElementById("selDtK1").value);
     const k2 = Number(document.getElementById("selDtK2").value);
     if (k1 === k2) { alert("双击组合快捷键的两个按键不能相同"); renderDoubleTapPanel(); return; }
-    state.dt.action = { t: "combo", k1, k2 };
+    curProf().dt.action = { t: "combo", k1, k2 };
     saveDraft(); renderAll();
   };
   document.getElementById("selDtK1").addEventListener("change", onDtComboChange);
@@ -2737,14 +3253,19 @@
     if (activeLayer === "fn") setCurrentKeyAssign(null);
     else setCurrentKeyAssign(stockAssign(KEY_BY_OFF.get(selectedOff)));
   });
+  document.getElementById("btnPresetDual").addEventListener("click", () => {
+    applyDualDevicePreset(); activeLayer = "base";
+    saveDraft(); setBanner("已载入「Mac 截图 + 平板搜索」三通道方案：<strong>BT1 (MacBook)</strong> 锁屏键=⌘+Shift+4 框选截图；<strong>BT2 (MagicPad)</strong> 互联=多任务、右Ctrl=回桌面、双击 Alt/cmd=Meta+S 搜索、锁屏保留原厂；<strong>BT3</strong> 原厂。");
+    renderAll();
+  });
   document.getElementById("btnPresetStock").addEventListener("click", () => {
-    state = stockState(); activeLayer = "base";
-    saveDraft(); setBanner("已切换为联想原厂方案（关闭 Fn 层与双击快捷键，恢复原厂键位与名称）。");
+    state = stockState(); activeLayer = "base"; activeCh = 0;
+    saveDraft(); setBanner("已切换为联想原厂方案（关闭三通道独立、Fn 层与双击，100% 纯数据还原出厂默认）。");
     renderAll();
   });
   document.getElementById("btnPresetMagic").addEventListener("click", () => {
     applyMagicPadPreset(); activeLayer = "base";
-    saveDraft(); setBanner("已载入「平板全功能方案」：互联 → 多任务，右 Ctrl → 回桌面，静音与音量全保留原厂。");
+    saveDraft(); setBanner("已载入「平板通用方案」（三通道统一纯数据）：互联 → 多任务，右 Ctrl → 回桌面，静音与音量全保留原厂。");
     renderAll();
   });
   document.getElementById("btnRestoreMeta").addEventListener("click", () => {
@@ -2777,23 +3298,16 @@
     const built = buildFirmware(state);
     if (built.error) { alert(built.error); return; }
     const lines = [];
-    for (const k of ALL_KEYS) {
-      if (state.fn.enabled && k.off === state.fn.triggerOff) continue;
-      if (!sameAssign(state.keys.get(k.off), stockAssign(k))) {
-        lines.push(`• ${keyName(k)}：${describe(stockAssign(k), STOCK_MACRO)} → ${describe(state.keys.get(k.off))}`);
+    if (state.perChannel) {
+      for (let ch = 0; ch < 3; ch++) {
+        const p = state.profiles[ch];
+        const pl = profileDiffLines(p);
+        if (pl.length) lines.push(`[BT${ch + 1} · ${p.name}]\n` + pl.map(x => `  • ${x}`).join("\n"));
       }
+    } else {
+      for (const x of profileDiffLines(state.profiles[0])) lines.push(`• ${x}`);
     }
-    if (state.fn.enabled) {
-      const tk = KEY_BY_OFF.get(state.fn.triggerOff);
-      lines.push(`• 长按 Fn 层：触发键「${keyName(tk)}」（轻点=${describe(state.fn.tap)}），共 ${state.fn.keys.size} 颗 Fn 按键`);
-    }
-    if (state.dt.enabled) {
-      const dk = KEY_BY_OFF.get(state.dt.keyOff);
-      lines.push(`• 双击快捷键：双击「${keyName(dk)}」→ ${describeDtAction(state.dt.action)}${state.dt.skipApple ? "（连 Mac/iPad 自动放行）" : ""}`);
-    }
-    if (state.macro.k1 !== STOCK_MACRO.k1 || state.macro.k2 !== STOCK_MACRO.k2) {
-      lines.push(`• 一键组合快捷键：${macroLabel(STOCK_MACRO)} → ${macroLabel(state.macro)}`);
-    }
+    if (state.macro.k1 !== STOCK_MACRO.k1 || state.macro.k2 !== STOCK_MACRO.k2) lines.push(`• 原厂锁屏宏：${macroLabel(state.macro)}`);
     if (state.meta.verTag !== STOCK_META.verTag) lines.push(`• 方案标签：${state.meta.verTag}`);
     if (state.meta.bleName !== STOCK_META.bleName) lines.push(`• 蓝牙名称：${state.meta.bleName}`);
     if (state.meta.usbName !== STOCK_META.usbName) lines.push(`• USB 名称：${state.meta.usbName}`);
@@ -2827,6 +3341,7 @@
     if (!file) return;
     try {
       state = stateFromJSON(JSON.parse(await file.text()));
+      activeCh = 0; activeLayer = "base";
       saveDraft(); setBanner(`已导入方案文件 <strong>${file.name}</strong>。`);
       renderAll();
     } catch (err) { alert(`导入失败：${err.message}`); }
@@ -2838,9 +3353,9 @@
     const g = guardImage(img);
     if (g.error) { alert(`无法读取：${g.error}\n仅支持由本工具或同一原厂固件生成的 .bin 文件。`); return; }
     state = stateFromImage(img);
+    activeCh = 0; activeLayer = "base";
     saveDraft();
-    const extra = [state.fn.enabled ? "长按 Fn 层" : "", state.dt.enabled ? "双击快捷键" : ""].filter(Boolean).join(" + ");
-    setBanner(`已从固件 <strong>${file.name}</strong> 读回完整方案${extra ? `（含${extra}配置）` : ""}。`);
+    setBanner(`已从固件 <strong>${file.name}</strong> 读回完整方案${state.perChannel ? "（BT1/BT2/BT3 三通道独立配置）" : ""}。`);
     log(`从 ${file.name} 读回方案（${img.length}B，差异 ${g.diff.length}B）`);
     renderAll();
   });
