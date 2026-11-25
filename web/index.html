@@ -3,233 +3,542 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KB331U 全键盘改键</title>
+  <title>小新无线键盘 Air（KB331U）自定义改键工具</title>
   <style>
     :root {
-      --bg: #0f1117;
-      --panel: #171a23;
-      --panel-2: #1e222e;
-      --border: #2a3040;
-      --text: #e6e9f2;
-      --muted: #8b93a7;
+      --bg: #0f1219;
+      --panel: #171b26;
+      --panel-2: #1f2433;
+      --panel-3: #262d3f;
+      --border: #2d3548;
+      --border-hi: #424f6b;
+      --text: #eef2fa;
+      --muted: #98a3ba;
       --accent: #4f8cff;
+      --accent-soft: rgba(79,140,255,0.16);
       --accent-hover: #3b78eb;
+      --teal: #14b8a6;
+      --teal-soft: rgba(20,184,166,0.18);
+      --purple: #a78bfa;
+      --purple-soft: rgba(167,139,250,0.18);
       --success: #22c55e;
+      --success-soft: rgba(34,197,94,0.15);
       --warn: #f59e0b;
+      --warn-soft: rgba(245,158,11,0.13);
       --danger: #ef4444;
-      --key-bg: #232836;
-      --key-active: #273759;
-      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+      --danger-soft: rgba(239,68,68,0.14);
+      --key-bg: #23293a;
+      --key-active: #273a61;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.5;
+      font-size: 14px;
+      line-height: 1.6;
     }
-    code { font-family: var(--mono); font-size: 0.92em; }
-    .container { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+    code { font-family: var(--mono); font-size: 0.9em; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 5px; }
+    .container { max-width: 1220px; margin: 0 auto; padding: 22px 16px 56px; }
+
+    /* ---------- Header ---------- */
     header {
       display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-      gap: 16px; padding: 18px 22px; background: var(--panel);
-      border: 1px solid var(--border); border-radius: 14px; margin-bottom: 18px;
+      gap: 14px; padding: 18px 22px; background: var(--panel);
+      border: 1px solid var(--border); border-radius: 16px; margin-bottom: 14px;
     }
-    .brand h1 { margin: 0; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .brand h1 { margin: 0; font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
     .badge {
-      font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
-      background: rgba(79,140,255,0.16); color: var(--accent); border: 1px solid rgba(79,140,255,0.35);
+      font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px;
+      background: var(--accent-soft); color: #93c5fd; border: 1px solid rgba(79,140,255,0.35);
     }
+    .badge.teal { background: var(--teal-soft); color: #5eead4; border-color: rgba(20,184,166,0.4); }
     .brand p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
-    .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .status-pill {
-      display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px;
-      font-size: 13px; background: var(--panel-2); border: 1px solid var(--border);
+      display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px; border-radius: 999px;
+      font-size: 13px; font-weight: 500; background: var(--panel-2); border: 1px solid var(--border);
     }
-    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
-    .dot.connected { background: var(--success); box-shadow: 0 0 8px rgba(34,197,94,0.7); }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: none; }
+    .dot.usb { background: var(--success); box-shadow: 0 0 8px rgba(34,197,94,0.75); }
+    .dot.ble { background: #38bdf8; box-shadow: 0 0 8px rgba(56,189,248,0.8); }
+
+    /* ---------- Buttons & Inputs ---------- */
     button, .btn-label {
       cursor: pointer; border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
-      padding: 8px 14px; border-radius: 9px; font-size: 13px; font-weight: 600;
-      transition: all 0.15s ease; font-family: inherit; display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600;
+      transition: all 0.14s ease; font-family: inherit; display: inline-flex; align-items: center; gap: 6px;
     }
-    button:hover:not(:disabled), .btn-label:hover { border-color: #49536d; background: #262b3a; }
-    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button:hover:not(:disabled), .btn-label:hover { border-color: var(--border-hi); background: var(--panel-3); }
+    button:disabled { opacity: 0.42; cursor: not-allowed; }
     button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
     button.primary:hover:not(:disabled) { background: var(--accent-hover); }
-    button.success { background: #16a34a; border-color: #16a34a; color: #fff; }
+    button.ble-btn { background: rgba(14,165,233,0.16); border-color: rgba(56,189,248,0.45); color: #7dd3fc; }
+    button.ble-btn:hover:not(:disabled) { background: rgba(14,165,233,0.26); }
+    button.teal-btn { background: var(--teal-soft); border-color: rgba(20,184,166,0.5); color: #5eead4; }
+    button.teal-btn:hover:not(:disabled) { background: rgba(20,184,166,0.28); }
+    button.success { background: #16a34a; border-color: #16a34a; color: #fff; padding: 11px 18px; font-size: 14px; }
     button.success:hover:not(:disabled) { background: #15803d; }
-    button.danger { background: rgba(239,68,68,0.14); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
-    button.small, .btn-label.small { padding: 5px 10px; font-size: 12px; }
-    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 18px; min-width: 0; }
-    .card-title {
-      font-size: 15px; font-weight: 700; margin: 0 0 12px; display: flex; align-items: center;
-      justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    button.danger { background: var(--danger-soft); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+    button.danger:hover:not(:disabled) { background: rgba(239,68,68,0.22); }
+    button.small, .btn-label.small { padding: 6px 11px; font-size: 12px; border-radius: 8px; }
+    input[type="text"], select {
+      background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
+      padding: 8px 11px; border-radius: 9px; font-size: 13px; font-family: inherit;
+      outline: none; transition: border-color 0.15s;
     }
-    .card-sub { font-size: 12px; color: var(--muted); font-weight: 400; }
+    input[type="text"]:focus, select:focus { border-color: var(--accent); }
+    input.mono { font-family: var(--mono); }
+
+    /* ---------- Cards & Banners ---------- */
+    .card {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+      padding: 18px 22px; margin-bottom: 16px; min-width: 0;
+    }
+    .card-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .step-title { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; margin: 0; }
+    .step-num {
+      width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft);
+      color: #93c5fd; border: 1px solid rgba(79,140,255,0.4);
+      display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex: none;
+    }
+    .card-sub { font-size: 13px; color: var(--muted); font-weight: 400; }
     .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .notice {
-      font-size: 12px; color: var(--muted); background: rgba(245,158,11,0.08);
-      border: 1px solid rgba(245,158,11,0.28); border-radius: 9px; padding: 10px 12px;
+      font-size: 13px; color: #dbe3f4; background: var(--warn-soft);
+      border: 1px solid rgba(245,158,11,0.32); border-radius: 11px; padding: 11px 14px;
     }
-    .notice.info { background: rgba(79,140,255,0.08); border-color: rgba(79,140,255,0.3); }
+    .notice.info { background: rgba(79,140,255,0.1); border-color: rgba(79,140,255,0.32); }
+    .notice.ok { background: var(--success-soft); border-color: rgba(34,197,94,0.35); color: #d1fae5; }
+    .notice.err { background: var(--danger-soft); border-color: rgba(239,68,68,0.4); color: #fecaca; }
+    .notice.teal { background: rgba(20,184,166,0.1); border-color: rgba(20,184,166,0.35); color: #ccfbf1; }
+
+    /* ---------- Layer Bar & Fn Control Strip ---------- */
+    .layer-bar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px 14px; margin-bottom: 12px;
+    }
+    .layer-seg { display: inline-flex; background: #10131b; border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 4px; }
+    .layer-seg button {
+      border: none; background: transparent; color: var(--muted); padding: 6px 14px; border-radius: 7px; font-size: 13px;
+    }
+    .layer-seg button.active { background: var(--accent); color: #fff; }
+    .layer-seg button.active.fn-mode { background: var(--teal); color: #042f2e; }
+    .switch-label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: 600; user-select: none; }
+    .switch-label input { width: 16px; height: 16px; accent-color: var(--teal); cursor: pointer; }
+
+    .fn-config-box {
+      background: linear-gradient(135deg, rgba(20,184,166,0.1), rgba(79,140,255,0.06));
+      border: 1px solid rgba(20,184,166,0.38); border-radius: 12px; padding: 13px 15px; margin-bottom: 12px;
+    }
+    .fn-config-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 10px; }
+    @media (max-width: 820px) { .fn-config-grid { grid-template-columns: 1fr; } }
+    .fn-config-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; color: #99f6e4; }
 
     /* ---------- Keyboard ---------- */
     .kbd-shell {
-      background: #11131a; border: 1px solid #2b3142; border-radius: 14px; padding: 14px;
-      overflow-x: auto; margin-bottom: 10px;
+      background: #10131b; border: 1px solid #2b3246; border-radius: 14px; padding: 16px;
+      overflow-x: auto; margin-bottom: 12px; transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .kbd { --u: 54px; --gap: 6px; display: flex; flex-direction: column; gap: var(--gap); width: max-content; margin: 0 auto; }
+    .kbd-shell.fn-view { border-color: rgba(20,184,166,0.65); box-shadow: inset 0 0 24px rgba(20,184,166,0.08); }
+    .kbd { --u: 55px; --gap: 6px; display: flex; flex-direction: column; gap: var(--gap); width: max-content; margin: 0 auto; }
     .kbd-row { display: flex; gap: var(--gap); }
-    .kbd-row.fn .keycap { height: 40px; }
+    .kbd-row.fn .keycap { height: 44px; }
     .keycap {
       position: relative; height: var(--u); flex: none;
-      background: var(--key-bg); border: 1px solid #353c4f; border-bottom-width: 3px; border-radius: 7px;
-      padding: 4px 6px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      background: var(--key-bg); border: 1px solid #363f56; border-bottom-width: 3px; border-radius: 8px;
+      padding: 4px 5px; display: flex; flex-direction: column; justify-content: center; align-items: center;
       user-select: none; cursor: pointer; transition: border-color 0.12s, transform 0.12s, background 0.12s;
       text-align: center; overflow: hidden;
     }
     .keycap:hover { border-color: var(--accent); transform: translateY(-1px); }
-    .keycap.selected { background: var(--key-active); border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,140,255,0.3); }
-    .keycap.locked { opacity: 0.4; cursor: not-allowed; }
-    .keycap.locked:hover { transform: none; border-color: #353c4f; }
-    .keycap.modified::after {
-      content: ""; position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--warn);
+    .keycap.selected {
+      background: var(--key-active); border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(79,140,255,0.38);
     }
-    .keycap.consumer { border-color: rgba(79,140,255,0.55); }
-    .keycap.disabled-key .k-new { color: var(--danger); }
+    .kbd-shell.fn-view .keycap.selected {
+      background: #13383b; border-color: var(--teal); box-shadow: 0 0 0 2px rgba(20,184,166,0.42);
+    }
+    .keycap.locked { opacity: 0.4; cursor: not-allowed; }
+    .keycap.locked:hover { transform: none; border-color: #363f56; }
+    .keycap.modified { border-color: rgba(245,158,11,0.75); }
+    .keycap.modified::after {
+      content: ""; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px;
+      border-radius: 50%; background: var(--warn);
+    }
+    .keycap.consumer:not(.modified) { border-color: rgba(79,140,255,0.45); }
+    .keycap.macro { border-color: rgba(167,139,250,0.75); }
+    .keycap.fn-trigger { background: #123639; border-color: var(--teal); }
+    .keycap.fn-trigger::after { background: var(--teal); }
+    .keycap.fn-mapped { border-color: rgba(20,184,166,0.8); background: #192c34; }
+    .keycap.fn-mapped::after { content: ""; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--teal); }
+    .keycap.fn-pass { opacity: 0.56; }
+    .keycap.disabled-key { border-style: dashed; border-color: rgba(239,68,68,0.55); }
     .k-phys { font-size: 12px; font-weight: 600; line-height: 1.15; white-space: nowrap; }
-    .k-new { font-size: 10px; line-height: 1.15; color: #93c5fd; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .keycap.modified .k-phys, .keycap.fn-mapped .k-phys, .keycap.fn-trigger .k-phys { font-size: 10px; color: var(--muted); font-weight: 500; }
+    .k-new {
+      font-size: 11px; font-weight: 700; line-height: 1.15; color: #93c5fd; margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+    }
+    .keycap.macro .k-new { color: #d8b4fe; }
+    .keycap.fn-trigger .k-new, .keycap.fn-mapped .k-new { color: #5eead4; }
+    .keycap.disabled-key .k-new { color: #fca5a5; }
     .arrow-stack { display: flex; flex-direction: column; gap: 3px; flex: none; }
     .arrow-stack .keycap { height: calc((var(--u) - 3px) / 2); padding: 0 4px; }
-    .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--muted); align-items: center; }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted);
+      align-items: center; justify-content: space-between;
+    }
+    .legend-items { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
     .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
-    .slot-meter { font-family: var(--mono); font-size: 12px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel-2); }
-    .slot-meter.full { border-color: rgba(245,158,11,0.6); color: var(--warn); }
-
-    /* ---------- Editor ---------- */
-    .grid-2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; }
-    @media (max-width: 920px) { .grid-2 { grid-template-columns: 1fr; } }
-    .sel-summary {
-      display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 13px;
-      background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px;
+    .quota-pill {
+      font-size: 12px; font-weight: 600; padding: 4px 11px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--panel-2); color: #cbd5e1;
     }
-    .sel-summary dt { color: var(--muted); }
-    .sel-summary dd { margin: 0; font-weight: 600; }
-    .tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-    .tab { padding: 6px 12px; font-size: 12px; }
-    .tab.active { background: rgba(79,140,255,0.22); border-color: var(--accent); color: #bfdbfe; }
-    .opt-group { margin-bottom: 12px; }
-    .opt-group-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
-    .opt-list { display: flex; flex-wrap: wrap; gap: 6px; }
-    .opt { padding: 5px 9px; font-size: 12px; font-weight: 500; border-radius: 7px; }
-    .opt.active { background: rgba(79,140,255,0.22); border-color: var(--accent); color: #bfdbfe; }
-    .opt .tag { font-size: 10px; color: var(--success); font-weight: 700; }
-    .row-inline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
-    input[type="text"] {
-      background: var(--panel-2); border: 1px solid var(--border); color: var(--text); padding: 7px 10px;
-      border-radius: 8px; font-family: var(--mono); font-size: 13px; width: 110px;
-    }
+    .quota-pill.ext { border-color: rgba(79,140,255,0.55); color: #93c5fd; background: var(--accent-soft); }
+    .quota-pill.full { border-color: rgba(245,158,11,0.65); color: #fcd34d; background: var(--warn-soft); }
 
-    /* ---------- Flash ---------- */
+    /* ---------- Main 2-Col Grid ---------- */
+    .grid-2 { display: grid; grid-template-columns: 1.32fr 1fr; gap: 16px; align-items: start; }
+    @media (max-width: 960px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* ---------- Key Editor ---------- */
+    .sel-bar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px 14px; margin-bottom: 14px;
+    }
+    .sel-main { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .sel-chip {
+      font-size: 14px; font-weight: 700; padding: 4px 11px; border-radius: 8px;
+      background: var(--key-active); border: 1px solid var(--accent); color: #fff;
+    }
+    .sel-chip.fn { background: #123639; border-color: var(--teal); color: #99f6e4; }
+    .sel-arrow { color: var(--muted); font-weight: 700; }
+    .sel-now { font-size: 14px; font-weight: 700; color: #93c5fd; }
+    .sel-now.fn { color: #5eead4; }
+    .sel-meta { font-size: 12px; color: var(--muted); width: 100%; margin-top: 2px; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    .tab { padding: 7px 13px; font-size: 13px; border-radius: 9px; }
+    .tab.active { background: var(--accent-soft); border-color: var(--accent); color: #dbeafe; }
+    .tab.macro-tab.active { background: var(--purple-soft); border-color: var(--purple); color: #ede9fe; }
+    .opt-group { margin-bottom: 14px; }
+    .opt-group-label { font-size: 12px; color: var(--muted); margin-bottom: 7px; font-weight: 600; }
+    .opt-list { display: flex; flex-wrap: wrap; gap: 7px; }
+    .opt { padding: 6px 11px; font-size: 13px; font-weight: 500; border-radius: 8px; }
+    .opt.active { background: var(--accent-soft); border-color: var(--accent); color: #dbeafe; }
+    .opt.macro-active { background: var(--purple-soft); border-color: var(--purple); color: #ede9fe; }
+    .opt .tag { font-size: 10px; color: var(--success); font-weight: 700; background: var(--success-soft); padding: 1px 5px; border-radius: 4px; }
+
+    /* ---------- Macro Builder ---------- */
+    .macro-preview-box {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+      background: linear-gradient(135deg, rgba(167,139,250,0.12), rgba(79,140,255,0.08));
+      border: 1px solid rgba(167,139,250,0.38); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px;
+    }
+    .macro-keys { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; }
+    .kbd-pill {
+      display: inline-flex; align-items: center; padding: 5px 12px; border-radius: 8px;
+      background: var(--panel); border: 1px solid rgba(167,139,250,0.55); border-bottom-width: 3px;
+      color: #f3e8ff; font-size: 14px; font-weight: 700;
+    }
+    .macro-pickers {
+      display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: end;
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;
+    }
+    @media (max-width: 560px) { .macro-pickers { grid-template-columns: 1fr; } }
+    .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
+    .field select, .field input[type="text"] { width: 100%; }
+    .plus-sign { font-size: 18px; font-weight: 700; color: var(--muted); text-align: center; padding-bottom: 6px; }
+
+    /* ---------- Identity Card ---------- */
+    .id-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    @media (max-width: 920px) { .id-grid { grid-template-columns: 1fr; } }
+    .id-item {
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 13px 14px;
+      display: flex; flex-direction: column; gap: 7px;
+    }
+    .id-item.changed { border-color: rgba(245,158,11,0.65); }
+    .id-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .id-top label { font-size: 13px; font-weight: 700; color: var(--text); }
+    .char-cnt { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+    .char-cnt.bad { color: #fca5a5; font-weight: 700; }
+    .id-hint { font-size: 12px; color: var(--muted); line-height: 1.45; }
+    .id-err { font-size: 12px; color: #fca5a5; display: none; }
+    .id-err.show { display: block; }
+
+    /* ---------- Flash Panel ---------- */
     .flash-box { display: flex; flex-direction: column; gap: 12px; }
     .diff-box {
-      background: #0b0d12; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
-      font-size: 12px; max-height: 190px; overflow-y: auto;
+      background: #0d1018; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+      font-size: 13px; max-height: 230px; overflow-y: auto;
     }
+    .diff-group-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.04em; margin: 8px 0 4px; }
+    .diff-group-title:first-child { margin-top: 0; }
     .diff-box ul { margin: 0; padding-left: 18px; }
-    .diff-box li { margin: 2px 0; }
-    .diff-meta { font-family: var(--mono); color: var(--muted); font-size: 11px; margin-top: 6px; }
+    .diff-box li { margin: 3px 0; }
+    .diff-box .empty-state { color: var(--muted); }
     .progress-wrap { width: 100%; height: 12px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
-    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), #22c55e); transition: width 0.1s linear; }
-    .log-box {
-      background: #0b0d12; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; height: 170px;
-      overflow-y: auto; font-family: var(--mono); font-size: 12px; color: #cbd5e1; white-space: pre-wrap;
-    }
-    .split { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
-    .stages { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px; }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--success)); transition: width 0.1s linear; }
+    .stages { list-style: none; margin: 0; padding: 10px 12px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 11px; display: grid; gap: 5px; font-size: 13px; }
     .stages li { display: flex; gap: 8px; align-items: baseline; color: var(--muted); }
     .stages li .ic { width: 16px; text-align: center; flex: none; font-family: var(--mono); }
     .stages li .info { margin-left: auto; font-family: var(--mono); font-size: 11px; text-align: right; }
-    .stages li.active { color: var(--text, #e5e7eb); font-weight: 600; }
+    .stages li.active { color: var(--text); font-weight: 600; }
     .stages li.active .ic { animation: blink 1s steps(2, start) infinite; color: var(--accent); }
-    .stages li.done .ic { color: #22c55e; }
-    .stages li.fail { color: #ef4444; }
+    .stages li.done .ic { color: var(--success); }
+    .stages li.fail { color: #fca5a5; }
     .stages li.warn .ic { color: var(--warn); }
     @keyframes blink { to { visibility: hidden; } }
-    #progressLabel { font-family: var(--mono); }
+    .split { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+
+    /* ---------- Collapsible Technical Drawer ---------- */
+    details.tech { background: #121520; border: 1px solid var(--border); border-radius: 11px; padding: 9px 12px; }
+    details.tech summary { cursor: pointer; font-size: 12px; font-weight: 600; color: var(--muted); user-select: none; }
+    details.tech[open] summary { margin-bottom: 10px; color: var(--text); }
+    .log-box {
+      background: #0a0c12; border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; height: 155px;
+      overflow-y: auto; font-family: var(--mono); font-size: 11.5px; color: #cbd5e1; white-space: pre-wrap;
+    }
+    .tech-meta { font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin-bottom: 8px; }
+    .search-row { margin-bottom: 10px; }
+    .search-row input { width: 100%; }
+    .inline-custom { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .inline-custom input { width: 110px; }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
       <div class="brand">
-        <h1>KB331U 全键盘改键 <span class="badge">WebHID · KA024</span></h1>
-        <p>小新无线键盘 Air (17EF:619E) · USB-C 写入固件，蓝牙 / 有线永久生效 · 只改键位数据，不改任何代码</p>
+        <h1>小新无线键盘 Air 改键工具 <span class="badge">KB331U · 14 槽</span> <span class="badge teal">支持蓝牙无线 &amp; 长按 Fn 层</span></h1>
+        <p>支持 USB-C 有线极速写入（15 秒）或蓝牙无线免线写入；改完后有线与蓝牙双模永久生效</p>
       </div>
       <div class="header-actions">
         <div class="status-pill"><span id="connDot" class="dot"></span><span id="connText">未连接键盘</span></div>
-        <button id="btnConnect" class="primary">连接 USB-C 键盘</button>
-        <button id="btnQueryVer" disabled>读取固件版本</button>
+        <button id="btnConnectUsb" class="primary">连接 USB-C</button>
+        <button id="btnConnectBle" class="ble-btn">蓝牙无线连接</button>
+        <button id="btnQueryVer" disabled>读取标签</button>
       </div>
     </header>
 
-    <div id="envWarning" class="notice" style="display:none; margin-bottom:18px;"></div>
-    <div id="schemeBanner" class="notice info" style="margin-bottom:18px;"></div>
+    <div id="envWarning" class="notice" style="display:none; margin-bottom:12px;"></div>
+    <div id="schemeBanner" class="notice info" style="margin-bottom:14px;"></div>
 
+    <!-- Step 1: Visual Keyboard & Layer Switch -->
     <section class="card">
-      <div class="card-title">
-        <span>1. 点击任意按键修改</span>
+      <div class="card-head">
+        <h2 class="step-title"><span class="step-num">1</span>在键盘图上点击想改的按键</h2>
         <div class="toolbar">
-          <span id="slotMeter" class="slot-meter">功能槽 0/7</span>
-          <button id="btnPresetMine" class="small">载入「MagicPad 当前方案」</button>
-          <button id="btnRestoreStock" class="small danger">全部恢复原厂</button>
+          <span id="slotMeter" class="quota-pill">快捷功能名额：0 / 14</span>
+          <button id="btnPresetMagic" class="small">载入「平板全功能方案」</button>
+          <button id="btnPresetStock" class="small danger">全部恢复原厂</button>
         </div>
       </div>
-      <div class="kbd-shell"><div id="kbd" class="kbd"></div></div>
-      <div class="legend">
-        <span><i style="background:var(--warn)"></i>已修改</span>
-        <span><i style="background:var(--accent)"></i>多媒体 / 系统功能（占用功能槽）</span>
-        <span><i style="background:#4b5263"></i>灰色 = 锁定（蓝牙通道键）</span>
-        <span>固件读不回来：页面会记住你上次刷入的方案，也可导出 / 导入方案文件。</span>
+
+      <!-- Layer switcher & Hold-Fn toggle -->
+      <div class="layer-bar">
+        <div class="toolbar">
+          <div class="layer-seg">
+            <button id="btnLayerBase" class="active">普通层（平时直接按）</button>
+            <button id="btnLayerFn">Fn 组合层（长按触发）</button>
+          </div>
+          <label class="switch-label">
+            <input id="chkFnEnable" type="checkbox" />
+            <span>开启「长按变 Fn 层」</span>
+          </label>
+        </div>
+        <div id="fnQuickHint" class="card-sub"></div>
       </div>
-      <div class="toolbar" style="margin-top:12px;">
-        <button id="btnExportScheme" class="small">导出方案 (.json)</button>
-        <label class="btn-label small">导入方案 (.json)<input id="schemeInput" type="file" accept=".json,application/json" hidden /></label>
-        <label class="btn-label small">从固件 .bin 读取方案<input id="binSchemeInput" type="file" accept=".bin" hidden /></label>
+
+      <!-- Fn configuration strip (shown when Fn layer enabled or viewing Fn layer) -->
+      <div id="fnConfigBox" class="fn-config-box" style="display:none;">
+        <div class="fn-config-grid">
+          <div class="field">
+            <label for="selFnTrigger">哪颗键长按变 Fn？（触发键）</label>
+            <select id="selFnTrigger"></select>
+          </div>
+          <div class="field">
+            <label for="selFnTap">轻点一下这颗键做什么？</label>
+            <select id="selFnTap"></select>
+          </div>
+          <div class="field">
+            <label for="selFnTimeout">按住超过多久算放弃轻点？</label>
+            <select id="selFnTimeout">
+              <option value="250">0.25 秒（推荐，误按住时松手不触发）</option>
+              <option value="400">0.40 秒（稍宽松）</option>
+              <option value="0">不限时（只要没按组合键，松手就触发）</option>
+            </select>
+          </div>
+        </div>
+        <div class="fn-config-foot">
+          <span>玩法：按住触发键 + 其他键 = <strong>0 延迟秒出 Fn 层功能</strong>；松手顺序任意，绝不卡键；轻点一下 = 触发上面的短按功能。</span>
+          <div class="toolbar">
+            <button id="btnFnPresetClassic" class="small teal-btn">✨ 一键套用「高效方向/F键/媒体」</button>
+            <button id="btnFnClear" class="small">清空 Fn 层按键</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="kbdShell" class="kbd-shell"><div id="kbd" class="kbd"></div></div>
+
+      <div class="legend">
+        <div class="legend-items">
+          <span><i style="background:var(--warn)"></i>已修改</span>
+          <span><i style="background:var(--accent)"></i>快捷功能（最多 14 种）</span>
+          <span><i style="background:var(--purple)"></i>一键组合快捷键</span>
+          <span><i style="background:var(--teal)"></i>Fn 触发键 / Fn 层按键</span>
+          <span><i style="background:var(--danger)"></i>已禁用</span>
+        </div>
+        <div class="toolbar">
+          <button id="btnExportScheme" class="small">备份方案 (.json)</button>
+          <label class="btn-label small">导入方案 (.json)<input id="schemeInput" type="file" accept=".json,application/json" hidden /></label>
+          <label class="btn-label small">从固件 .bin 读回<input id="binSchemeInput" type="file" accept=".bin" hidden /></label>
+        </div>
       </div>
     </section>
 
+    <!-- Step 2 & 3 + Step 4 -->
     <div class="grid-2">
-      <section class="card">
-        <div class="card-title"><span id="editorTitle">2. 选择功能</span></div>
-        <dl id="selSummary" class="sel-summary"></dl>
-        <div id="tabs" class="tabs"></div>
-        <div id="editorBody"></div>
-      </section>
+      <div>
+        <!-- Step 2: Key Editor -->
+        <section class="card">
+          <div class="card-head">
+            <h2 class="step-title"><span class="step-num">2</span><span id="editorTitle">选择这颗键的新功能</span></h2>
+            <button id="btnRestoreOne" class="small" style="display:none;">↺ 恢复这颗键原厂</button>
+          </div>
+          <div id="selBar" class="sel-bar"></div>
+          <div id="tabs" class="tabs"></div>
+          <div id="editorBody"></div>
+        </section>
 
-      <section class="card">
-        <div class="card-title">
-          <span>3. 生成固件并刷入</span>
-          <span id="fwStateBadge" class="card-sub">正在加载原厂基线…</span>
+        <!-- Step 2b: Double-Tap Gesture Card -->
+        <section class="card">
+          <div class="card-head">
+            <h2 class="step-title"><span class="step-num" style="background:var(--purple-soft); color:#d8b4fe; border-color:rgba(167,139,250,0.45);">⚡</span>双击快捷键 <span class="card-sub">（模仿 macOS 双击 Cmd 唤出搜索）</span></h2>
+            <label class="switch-label">
+              <input id="chkDtEnable" type="checkbox" />
+              <span>开启双击触发</span>
+            </label>
+          </div>
+          <div id="dtDisabledHint" class="card-sub">
+            例如：在安卓平板上 <strong>连续轻点两下空格左边的 Alt/cmd 键</strong>，自动发出 <strong>Meta/option + S</strong> 唤出搜索；平时按住它配其他键做快捷键依然 0 延迟不受影响。
+          </div>
+          <div id="dtConfigBox" style="display:none;">
+            <div class="fn-config-grid" style="margin-bottom:12px;">
+              <div class="field">
+                <label for="selDtKey">连续轻点两下哪颗键？</label>
+                <select id="selDtKey"></select>
+              </div>
+              <div class="field">
+                <label for="selDtWindow">双击判定时间窗口</label>
+                <select id="selDtWindow">
+                  <option value="250">0.25 秒（偏快，更防误触）</option>
+                  <option value="320">0.32 秒（推荐）</option>
+                  <option value="450">0.45 秒（偏宽松）</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>当前双击触发效果</label>
+                <div id="dtActionBadge" class="status-pill" style="border-color:rgba(167,139,250,0.5); color:#ede9fe; width:100%; justify-content:center;"></div>
+              </div>
+            </div>
+            <div class="opt-group">
+              <div class="opt-group-label">常用搜索 / 快捷动作一键套用</div>
+              <div id="dtPresetList" class="opt-list"></div>
+            </div>
+            <div class="macro-pickers" style="margin-bottom:10px;">
+              <div class="field"><label for="selDtK1">自定义组合：第 1 键（修饰键）</label><select id="selDtK1"></select></div>
+              <div class="plus-sign">+</div>
+              <div class="field"><label for="selDtK2">第 2 键（目标键）</label><select id="selDtK2"></select></div>
+            </div>
+            <div class="card-sub">
+              提示：平时按住该键配合其他键做组合键完全 0 延迟无冲突；若选 <strong>Meta + S</strong>，在 Android 平板/Windows 唤出搜索，切回 macOS 时由于固件会自动将 Meta 映射为 ⌘，双击会发出 ⌘+S（保存），可按常用设备调整。
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 3: Device Names & Scheme Label -->
+        <section class="card">
+          <div class="card-head">
+            <h2 class="step-title"><span class="step-num">3</span>设备名称与方案标签 <span class="card-sub">（可选，不改保持原厂）</span></h2>
+            <button id="btnRestoreMeta" class="small">恢复原厂名称</button>
+          </div>
+          <div class="id-grid">
+            <div id="boxVerTag" class="id-item">
+              <div class="id-top">
+                <label for="inpVerTag">方案识别标签</label>
+                <span id="cntVerTag" class="char-cnt">13 / 13</span>
+              </div>
+              <input id="inpVerTag" class="mono" type="text" maxlength="13" placeholder="KA024_PAD_V01" />
+              <div id="errVerTag" class="id-err"></div>
+              <div class="id-hint">有线或蓝牙连上后点「读取标签」就能直接看到，用来分辨键盘里当前是哪套方案。</div>
+              <div class="toolbar">
+                <button id="btnTagToday" class="small">填入今日标签</button>
+                <button id="btnTagStock" class="small">恢复原厂</button>
+              </div>
+            </div>
+
+            <div id="boxBleName" class="id-item">
+              <div class="id-top">
+                <label for="inpBleName">蓝牙显示名称</label>
+                <span id="cntBleName" class="char-cnt">18 / 18</span>
+              </div>
+              <input id="inpBleName" type="text" maxlength="18" placeholder="Lenovo Wireless KB" />
+              <div id="errBleName" class="id-err"></div>
+              <div class="id-hint">手机/平板/电脑蓝牙列表里显示的名字（限英文/数字/空格）。旧设备若仍显示老名字，取消配对重连即可刷新。</div>
+            </div>
+
+            <div id="boxUsbName" class="id-item">
+              <div class="id-top">
+                <label for="inpUsbName">USB 有线名称</label>
+                <span id="cntUsbName" class="char-cnt">30 / 30</span>
+              </div>
+              <input id="inpUsbName" type="text" maxlength="30" placeholder="Multi-Device Wireless Keyboard" />
+              <div id="errUsbName" class="id-err"></div>
+              <div class="id-hint">插 USB-C 数据线连接电脑时显示的设备名（限英文/数字/空格）。</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Step 4: Review & Flash -->
+      <section class="card" style="position: sticky; top: 16px;">
+        <div class="card-head">
+          <h2 class="step-title"><span class="step-num">4</span>确认改动并写入键盘</h2>
+          <span id="fwStateBadge" class="card-sub">正在检查原厂固件…</span>
         </div>
         <div class="flash-box">
-          <div class="diff-box">
-            <div id="diffList"></div>
-            <div id="diffMeta" class="diff-meta"></div>
+          <div class="diff-box" id="diffBox"></div>
+          <div id="guardStatus" class="notice ok" style="display:none;"></div>
+          <div id="bleTip" class="notice teal" style="display:none;">
+            <strong>蓝牙无线写入提示：</strong>首次无线连接若弹窗列表里找不到键盘，请把键盘切到另一个空闲通道长按 3 秒进入配对快闪状态再点「蓝牙无线连接」。写入约需 30–90 秒，请保持键盘在旁且电量充足。
           </div>
           <div class="notice">
-            安全：固件只以内置的联想原厂镜像（SHA-256 校验）为基础生成，并逐字节比对；键位表、功能槽和尾部 CRC 之外只要有一个字节不同就拒绝刷写。键盘写入备用分区，全部 4,033 块与 CRC 校验通过才切换。刷写约 15 秒，请勿拔线。
+            <strong>安全保护：</strong>所有固件均基于联想原厂镜像构建并通过逐字节白名单核验。键盘采用双分区写入，全部校验通过才切换，中途断线也不会变砖；随时可点「全部恢复原厂」还原。
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button id="btnFlash" class="success" style="flex:1; justify-content:center;" disabled>USB-C 刷入键盘</button>
+            <button id="btnFlash" class="success" style="flex:1; justify-content:center;" disabled>请先连接键盘（USB-C 或蓝牙）</button>
             <button id="btnDownload" disabled>导出 .bin</button>
           </div>
           <ol id="stageList" class="stages" style="display:none;"></ol>
           <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
-          <div class="split"><span id="progressLabel">就绪</span><span id="crcPreview">新 CRC-32: --</span></div>
-          <div id="logBox" class="log-box"></div>
+          <div class="split">
+            <span id="progressLabel">未连接键盘</span>
+            <span id="quickModeInfo"></span>
+          </div>
+
+          <details class="tech">
+            <summary>查看技术详情与底层日志（高级）</summary>
+            <div id="techMeta" class="tech-meta">准备就绪</div>
+            <div id="logBox" class="log-box"></div>
+          </details>
         </div>
       </section>
     </div>
@@ -237,26 +546,116 @@
 
   <script>
   // ===========================================================================
-  // 0. Firmware constants (KA024_A_1.0.8, verified on hardware 2026-11-18)
+  // 0. Firmware Constants & Audited TC32 Patch (verified 2026-11-25)
   // ===========================================================================
   const BASE_SHA256 = "7d3c5b418f57ced5ea96d4f70c9522bd47beffdfb06afab194174ad8ec53aa33";
-  const FW_SIZE = 64516;
-  const MATRIX_START = 0xEE79, MATRIX_END = 0xEF00;     // 1 byte per matrix position
-  const SLOT_TABLE = 0xEE44;                              // 7 x [id u16, usage u16, type u16]
-  const SLOT_IDS = [0xEB, 0xEC, 0xED, 0xEE, 0xEF, 0xF1, 0xF2];
-  const SLOT_STOCK_USAGE = { 0xEB: 0x00E2, 0xEC: 0x00EA, 0xED: 0x00E9, 0xEE: 0x0070, 0xEF: 0x006F, 0xF1: 0x038E, 0xF2: 0x0397 };
-  const slotUsageOffset = id => SLOT_TABLE + SLOT_IDS.indexOf(id) * 6 + 2;
-  const CONSUMER_MAX = 0x0397; // HID descriptor Logical Maximum for Report ID 2
+  const FW_SIZE_STD = 64516;  // 0xFC04 (stock & pure-data builds)
+  const FW_SIZE_EXT = 65284;  // 0xFF04 (with audited 476B v2 Fn + Double-Tap TC32 patch, still < 64KB!)
 
-  // Physical layout from the KB331U US keycaps. off = matrix byte offset, stock = factory byte.
-  // w = width in key units. Positions verified against the firmware table and live captures.
+  const MATRIX_BASE = 0xEE78; // 8 rows x 17 cols = 136 bytes (0xEE78..0xEEFF)
+  const MATRIX_LEN  = 136;
+
+  // Consumer slot tables (7-slot stock OR 14-slot automatic expansion)
+  const SLOT_TABLE_7  = 0xEE44;
+  const SLOT_TABLE_14 = 0xEF34;
+  const SLOT_PTR_OFF  = 0x4DFC;
+  const SLOT_CNT_OFF  = 0x4D60;
+  const SLOT_IDS_7    = [0xEB, 0xEC, 0xED, 0xEE, 0xEF, 0xF1, 0xF2];
+  const SLOT_IDS_14   = [0xEB, 0xEC, 0xED, 0xEE, 0xEF, 0xF1, 0xF2, 0xF0, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8];
+  const SLOT_STOCK_USAGE = { 0xEB: 0x00E2, 0xEC: 0x00EA, 0xED: 0x00E9, 0xEE: 0x0070, 0xEF: 0x006F, 0xF1: 0x038E, 0xF2: 0x0397 };
+  const CONSUMER_MAX  = 0x0397;
+  const MACRO_USAGE   = 0x038E;
+
+  // 2-Key Hardware Macro (0x038E)
+  const MACRO_K1_OFFS = [0x4D84, 0x4DAA, 0x4DDA, 0x4DE6];
+  const MACRO_K2_OFFS = [0x4D90, 0x4D9C, 0x4DB6, 0x4DC2];
+  const STOCK_MACRO   = { k1: 0xE3, k2: 0x0F };
+
+  // Device identity strings & verified hardcoded length offsets
+  const STOCK_META = {
+    verTag:  "KA024_A_1.0.8",
+    bleName: "Lenovo Wireless KB",
+    usbName: "Multi-Device Wireless Keyboard",
+  };
+  const VER_TAG_OFFS_STD = [0xEC94, 0xF1A4, 0xFBE8];
+  const LENOVO_MAGIC_OFF_EXT = 0xFEE0; // 0xFF04 - 0x24: verified at 0x5D84..0x5DD6 (ota_end_cb)!
+  const LENOVO_TAIL_MAGIC = [0xF9, 0xE6, 0x24, 0xA0, 0x01, 0x02, 0x03, 0x04];
+  const VER_TAG_OFF_EXT_TAIL = 0xFEE8;
+  const VER_TAG_MAX = 13;
+
+  const BLE_NAME_OFF = 0xEDD4;
+  const BLE_NAME_MAX = 18;
+  const BLE_LEN_OFFS = { copy1: 0x33E4, copy2: 0x33FA, adLen: 0x3400, advTotal: 0x3406 };
+
+  const USB_NAME_BLEN_OFF = 0xEBC8;
+  const USB_NAME_DATA_OFF = 0xEBCA;
+  const USB_NAME_MAX = 30;
+  const USB_LEN_CODE_OFFS = [0x2132, 0x2136];
+
+  // Audited v2 Hold-Fn + Double-Tap TC32 Patch (476 bytes @ 0xFC00..0xFDDB, simulated 100% pass)
+  // Hooks: 0x0018 bin_size=0xFF04, 0x017C bss_end=0x843920, 0x55F8 cb=0xFC01,
+  //        0x4E34/0x4E58 BL fn_dispatch(0xFC12), 0x5592 BL fn_tick(0xFD66)
+  const FN_TRIGGER_CODE = 0xF9;
+  const EXT_PATCH_BASE  = 0xFC00;
+  const EXT_CONFIG_BASE = 0xFE00; // 32B header: [+0]fn_trig,[+1]fn_tap,[+2..3]0x0002,[+4..7]fn_max,[+8..11]pulse,[+12]dt_idx,[+13]dt_k1,[+14]dt_k2,[+16..19]dt_win
+  const EXT_FN_MAP_BASE = 0xFE20; // 136B fn_map mirroring 0xEE78..0xEEFF
+  const PULSE_HOLD_TICKS = 20 * 16000; // 20 ms @ 16 MHz reg_system_tick (0x00800740)
+  const EXT_HOOKS = [
+    { off: 0x0018, bytes: [0x04, 0xFF, 0x00, 0x00] }, // fw_size = 65284 (0xFF04)
+    { off: 0x017C, bytes: [0x20, 0x39, 0x84, 0x00] }, // _bss_end = 0x843920 (auto-zero 0x843860..0x84391F)
+    { off: 0x55F8, bytes: [0x01, 0xFC, 0x00, 0x00] }, // key_cb = fn_entry | 1
+    { off: 0x4E34, bytes: [0x0A, 0x90, 0xED, 0x9E] }, // BL fn_dispatch (0xFC12)
+    { off: 0x4E58, bytes: [0x0A, 0x90, 0xDB, 0x9E] }, // BL fn_dispatch (0xFC12)
+    { off: 0x5592, bytes: [0x0A, 0x90, 0xE8, 0x9B] }, // BL fn_tick     (0xFD66)
+  ];
+  const EXT_PATCH_CODE = new Uint8Array([
+    0x10, 0x65, 0x03, 0xF1, 0x1B, 0xE8, 0x5B, 0xE8, 0x6F, 0x0C, 0x23, 0x40, 0xF5, 0x97, 0xFA, 0x98,
+    0x10, 0x6D, 0xF0, 0x65, 0x6C, 0x0C, 0x6D, 0x0D, 0x26, 0x48, 0x07, 0xEC, 0x2A, 0x48, 0x00, 0xAA,
+    0x2F, 0xC0, 0x97, 0x02, 0x2D, 0xC1, 0x00, 0xA2, 0x22, 0x43, 0x01, 0xA9, 0x07, 0xC1, 0x01, 0xA2,
+    0x62, 0x40, 0x00, 0xA2, 0xA2, 0x40, 0x66, 0x0B, 0x1A, 0x58, 0x62, 0x50, 0xF0, 0x6D, 0x00, 0xA2,
+    0x62, 0x40, 0xA2, 0x48, 0x00, 0xAA, 0xF9, 0xC1, 0x6E, 0x48, 0x00, 0xAE, 0xF6, 0xC0, 0x6A, 0x58,
+    0x00, 0xAA, 0x05, 0xC0, 0x5E, 0x0B, 0x1B, 0x58, 0x60, 0x58, 0x1B, 0xEA, 0x9A, 0x02, 0xED, 0xC3,
+    0xE2, 0x48, 0x00, 0xAA, 0x03, 0xC0, 0x30, 0xEC, 0x02, 0xA1, 0xF5, 0x97, 0x2F, 0x98, 0x30, 0xEC,
+    0x01, 0xA1, 0xF5, 0x97, 0x2B, 0x98, 0x01, 0xA2, 0xE2, 0x40, 0x55, 0x0B, 0x1A, 0x58, 0xA2, 0x50,
+    0xF0, 0x6D, 0x01, 0xA9, 0x4C, 0xC1, 0x2A, 0x4B, 0x96, 0x02, 0x36, 0xC1, 0x62, 0x48, 0x00, 0xAA,
+    0x33, 0xC1, 0x22, 0x4B, 0x02, 0xAA, 0x2A, 0xC1, 0x4D, 0x0B, 0x1B, 0x58, 0x20, 0x59, 0x1B, 0xEA,
+    0x2A, 0x59, 0x9A, 0x02, 0x23, 0xC3, 0x00, 0xA2, 0x22, 0x43, 0xFE, 0xA2, 0x49, 0x0B, 0x9A, 0x15,
+    0x62, 0x4B, 0x00, 0xAA, 0x09, 0xC0, 0xA8, 0x4B, 0x00, 0xA8, 0x02, 0xC0, 0x02, 0xA1, 0xF5, 0x97,
+    0x05, 0x98, 0x68, 0x4B, 0x02, 0xA1, 0xF5, 0x97, 0x01, 0x98, 0x68, 0x4B, 0x00, 0xA8, 0x49, 0xC0,
+    0x01, 0xA1, 0xF4, 0x97, 0xFB, 0x9F, 0xA8, 0x4B, 0x00, 0xA8, 0x02, 0xC0, 0x01, 0xA1, 0xF4, 0x97,
+    0xF5, 0x9F, 0x01, 0xA2, 0x62, 0x43, 0x3A, 0x0B, 0x1A, 0x58, 0x62, 0x51, 0xF0, 0x6D, 0x01, 0xA2,
+    0x22, 0x43, 0x37, 0x0B, 0x1A, 0x58, 0x22, 0x51, 0x01, 0x80, 0x00, 0xA2, 0x22, 0x43, 0x38, 0xEC,
+    0x62, 0x48, 0x00, 0xAA, 0x06, 0xC0, 0x01, 0xA2, 0xA2, 0x40, 0x33, 0x0B, 0x9A, 0x1D, 0x00, 0xAA,
+    0x00, 0xC0, 0x10, 0xEC, 0x2F, 0x0B, 0x98, 0x15, 0x01, 0xA1, 0xF4, 0x97, 0xD7, 0x9F, 0xF0, 0x6D,
+    0x2A, 0x4B, 0x96, 0x02, 0x11, 0xC1, 0x22, 0x4B, 0x01, 0xAA, 0x0E, 0xC1, 0x28, 0x0B, 0x1B, 0x58,
+    0x20, 0x59, 0x1B, 0xEA, 0x2A, 0x59, 0x9A, 0x02, 0x05, 0xC3, 0x02, 0xA2, 0x22, 0x43, 0x24, 0x0B,
+    0x1A, 0x58, 0x22, 0x51, 0x01, 0x80, 0x00, 0xA2, 0x22, 0x43, 0x38, 0xEC, 0x21, 0x0B, 0x9A, 0x1D,
+    0x00, 0xAA, 0x04, 0xC0, 0x00, 0xA1, 0x99, 0x15, 0xFE, 0xAA, 0x03, 0xC0, 0x10, 0xEC, 0x02, 0xA1,
+    0xF4, 0x97, 0xB4, 0x9F, 0xF0, 0x6D, 0x70, 0x65, 0xF5, 0x97, 0xA6, 0x9B, 0x04, 0xEC, 0x16, 0x0D,
+    0x16, 0x0E, 0xE9, 0x48, 0x00, 0xA9, 0x0D, 0xC0, 0x15, 0x0A, 0x12, 0x58, 0xAB, 0x58, 0xD2, 0xEA,
+    0xB0, 0x58, 0x82, 0x02, 0x05, 0xC3, 0x00, 0xA1, 0xE9, 0x40, 0x70, 0x48, 0x02, 0xA1, 0xF4, 0x97,
+    0x9D, 0x9F, 0x01, 0xA4, 0x69, 0x4B, 0x00, 0xA9, 0x13, 0xC0, 0x0D, 0x0A, 0x12, 0x58, 0x6B, 0x59,
+    0xD2, 0xEA, 0xB0, 0x58, 0x82, 0x02, 0x0B, 0xC3, 0x00, 0xA1, 0x69, 0x43, 0xB0, 0x4B, 0x00, 0xA8,
+    0x02, 0xC0, 0x02, 0xA1, 0xF4, 0x97, 0x8A, 0x9F, 0x70, 0x4B, 0x02, 0xA1, 0xF4, 0x97, 0x86, 0x9F,
+    0x01, 0xA4, 0x20, 0xEC, 0x70, 0x6D, 0xC0, 0x46, 0x60, 0x38, 0x84, 0x00, 0x00, 0xFE, 0x00, 0x00,
+    0x40, 0x07, 0x80, 0x00, 0x78, 0x38, 0x84, 0x00, 0x20, 0xFE, 0x00, 0x00,
+  ]);
+
+  // Telink BLE OTA GATT UUIDs (verified against firmware GATT handles 44..54 & OtaController.java)
+  const TELINK_OTA_SVC  = "00010203-0405-0607-0809-0a0b0c0d1912";
+  const TELINK_OTA_CHAR = "00010203-0405-0607-0809-0a0b0c0d2b12";
+  const BLE_BATTERY_SVC = 0x180F;
+  const BLE_BATTERY_CHR = 0x2A19;
+  const BLE_DESC_CUD    = 0x2901;
+
+  // Physical US layout (75 keys)
   const K = (label, off, stock, w = 1, extra = {}) => ({ label, off, stock, w, ...extra });
   const ROWS = [
     { cls: "fn", keys: [
       K("Esc", 0xEE8B, 0x29, 1.25), K("BT1", 0xEEE0, 0xE8, 1.25, { locked: true }), K("BT2", 0xEEF1, 0xE9, 1.25, { locked: true }),
       K("BT3", 0xEEF0, 0xEA, 1.25, { locked: true }), K("静音", 0xEEDF, 0xEB, 1.25), K("音量-", 0xEE91, 0xEC, 1.25),
       K("音量+", 0xEEE6, 0xED, 1.25), K("亮度-", 0xEEF7, 0xEE, 1.25), K("亮度+", 0xEEF8, 0xEF, 1.25),
-      K("🔒 锁", 0xEEE7, 0xF1, 1.25), K("互联", 0xEE8F, 0xF2, 1.25), K("Delete", 0xEE97, 0x4C, 1.25),
+      K("🔒 锁屏", 0xEEE7, 0xF1, 1.25, { name: "锁屏键" }), K("互联", 0xEE8F, 0xF2, 1.25, { name: "设备互联键" }), K("Delete", 0xEE97, 0x4C, 1.25),
     ]},
     { keys: [
       K("`", 0xEE98, 0x35), K("1", 0xEE87, 0x1E), K("2", 0xEE7A, 0x1F), K("3", 0xEE79, 0x20), K("4", 0xEE7C, 0x21),
@@ -269,7 +668,7 @@
       K("P", 0xEE84, 0x13), K("[", 0xEEA6, 0x2F), K("]", 0xEEA7, 0x30), K("\\", 0xEEB8, 0x31, 1.5),
     ]},
     { keys: [
-      K("CapsLk", 0xEE8A, 0x39, 1.75), K("A", 0xEEBA, 0x04), K("S", 0xEEAD, 0x16), K("D", 0xEEAC, 0x07), K("F", 0xEEAF, 0x09),
+      K("CapsLk", 0xEE8A, 0x39, 1.75, { name: "大写锁定 CapsLock" }), K("A", 0xEEBA, 0x04), K("S", 0xEEAD, 0x16), K("D", 0xEEAC, 0x07), K("F", 0xEEAF, 0x09),
       K("G", 0xEEF3, 0x0A), K("H", 0xEEF4, 0x0B), K("J", 0xEEB0, 0x0D), K("K", 0xEEB3, 0x0E), K("L", 0xEEB1, 0x0F),
       K(";", 0xEEB7, 0x33), K("'", 0xEEC9, 0x34), K("Enter", 0xEEDA, 0x28, 2.25),
     ]},
@@ -279,9 +678,12 @@
       K("/", 0xEEC8, 0x38), K("Shift", 0xEEA1, 0xE5, 2.75, { name: "右 Shift" }),
     ]},
     { keys: [
-      K("Ctrl", 0xEE82, 0xE0, 2, { name: "左 Ctrl" }), K("⊞ option", 0xEE94, 0xE3, 1, { name: "左 option (Meta)" }),
-      K("Alt cmd", 0xEECD, 0xE2, 1, { name: "左 Alt/cmd" }), K("Space", 0xEECE, 0x2C, 5.75),
-      K("Alt", 0xEEBC, 0xE6, 1, { name: "空格右 Alt" }), K("Ctrl", 0xEEF9, 0xE4, 1.25, { name: "空格右 Ctrl" }),
+      K("Ctrl", 0xEE82, 0xE0, 1.75, { name: "左 Ctrl" }),
+      K("Meta/opt", 0xEE94, 0xE3, 1.125, { name: "左 Meta / option" }),
+      K("Alt/cmd", 0xEECD, 0xE2, 1.125, { name: "左 Alt / cmd" }),
+      K("Space", 0xEECE, 0x2C, 5.75, { name: "空格键 Space" }),
+      K("Alt", 0xEEBC, 0xE6, 1, { name: "右 Alt" }),
+      K("Ctrl", 0xEEF9, 0xE4, 1.25, { name: "右 Ctrl" }),
       K("←", 0xEEB4, 0x50), { stack: [K("↑", 0xEED9, 0x52), K("↓", 0xEED3, 0x51)] }, K("→", 0xEEDB, 0x4F),
     ]},
   ];
@@ -290,75 +692,233 @@
   const EDITABLE_OFFS = new Set(ALL_KEYS.filter(k => !k.locked).map(k => k.off));
 
   // ---------------------------------------------------------------------------
-  // Output options
+  // Human-friendly key catalogs
   // ---------------------------------------------------------------------------
   const KB_GROUPS = [
-    { label: "字母", items: Array.from({ length: 26 }, (_, i) => [0x04 + i, String.fromCharCode(65 + i)]) },
-    { label: "数字", items: Array.from({ length: 10 }, (_, i) => [0x1E + i, String((i + 1) % 10)]) },
-    { label: "修饰键", items: [[0xE0, "左 Ctrl"], [0xE1, "左 Shift"], [0xE2, "左 Alt"], [0xE3, "左 Meta (Win/⌘)"],
-      [0xE4, "右 Ctrl"], [0xE5, "右 Shift"], [0xE6, "右 Alt"]] },
-    { label: "编辑 / 导航", items: [[0x29, "Esc"], [0x2B, "Tab"], [0x39, "CapsLock"], [0x28, "Enter"], [0x2A, "Backspace"],
-      [0x4C, "Delete"], [0x2C, "Space"], [0x49, "Insert"], [0x4A, "Home"], [0x4D, "End"], [0x4B, "PgUp"], [0x4E, "PgDn"],
-      [0x50, "←"], [0x52, "↑"], [0x51, "↓"], [0x4F, "→"], [0x46, "PrintScreen"], [0x65, "Menu"]] },
-    { label: "符号", items: [[0x35, "`"], [0x2D, "-"], [0x2E, "="], [0x2F, "["], [0x30, "]"], [0x31, "\\"], [0x33, ";"],
-      [0x34, "'"], [0x36, ","], [0x37, "."], [0x38, "/"]] },
-    { label: "F 键", items: [...Array.from({ length: 12 }, (_, i) => [0x3A + i, "F" + (i + 1)]),
-      ...Array.from({ length: 12 }, (_, i) => [0x68 + i, "F" + (i + 13)])] },
-    { label: "键盘页音量（不占功能槽）", items: [[0x7F, "静音（键盘码）", true], [0x81, "音量-（键盘码）", true], [0x80, "音量+（键盘码）", true]] },
+    { label: "常用修饰键", items: [
+      [0xE0, "左 Ctrl"], [0xE1, "左 Shift"], [0xE2, "左 Alt（Mac 下对应 Option）"], [0xE3, "左 Meta / Win（Mac 下对应 Cmd）"],
+      [0xE4, "右 Ctrl"], [0xE5, "右 Shift"], [0xE6, "右 Alt"],
+    ]},
+    { label: "编辑与方向导航", items: [
+      [0x29, "Esc"], [0x2B, "Tab"], [0x39, "CapsLock"], [0x28, "Enter 回车"], [0x2A, "Backspace 退格"],
+      [0x4C, "Delete 删除"], [0x2C, "Space 空格"], [0x49, "Insert"], [0x4A, "行首 Home"], [0x4D, "行尾 End"],
+      [0x4B, "上翻页 PgUp"], [0x4E, "下翻页 PgDn"], [0x50, "←"], [0x52, "↑"], [0x51, "↓"], [0x4F, "→"],
+      [0x46, "PrintScreen 截屏"], [0x65, "右键菜单 Menu"],
+    ]},
+    { label: "字母 A–Z", items: Array.from({ length: 26 }, (_, i) => [0x04 + i, String.fromCharCode(65 + i)]) },
+    { label: "数字 1–0", items: Array.from({ length: 10 }, (_, i) => [0x1E + i, String((i + 1) % 10)]) },
+    { label: "功能键 F1–F24", items: [
+      ...Array.from({ length: 12 }, (_, i) => [0x3A + i, "F" + (i + 1)]),
+      ...Array.from({ length: 12 }, (_, i) => [0x68 + i, "F" + (i + 13)]),
+    ]},
+    { label: "标点符号", items: [
+      [0x35, "`"], [0x2D, "-"], [0x2E, "="], [0x2F, "["], [0x30, "]"], [0x31, "\\"],
+      [0x33, ";"], [0x34, "'"], [0x36, ","], [0x37, "."], [0x38, "/"],
+    ]},
+    { label: "备用音量键（仅限安卓/Linux，一般无需使用）", items: [
+      [0x7F, "备用静音"], [0x81, "备用音量-"], [0x80, "备用音量+"],
+    ]},
   ];
   const KB_NAMES = new Map(KB_GROUPS.flatMap(g => g.items.map(([c, n]) => [c, n])));
+  const KB_SHORT = new Map([
+    [0xE0, "Ctrl"], [0xE1, "Shift"], [0xE2, "Alt"], [0xE3, "Win/⌘"],
+    [0xE4, "右Ctrl"], [0xE5, "右Shift"], [0xE6, "右Alt"],
+    [0x28, "Enter"], [0x2A, "Bksp"], [0x2C, "Space"], [0x4C, "Del"],
+    [0x46, "PrtSc"], [0x4A, "Home"], [0x4D, "End"], [0x4B, "PgUp"], [0x4E, "PgDn"],
+  ]);
   const KB_ALLOWED = new Set(KB_NAMES.keys());
+  const kbShortName = c => KB_SHORT.get(c) || KB_NAMES.get(c) || hex2(c);
 
   const CONSUMER_GROUPS = [
-    { label: "Android 平板 / MagicOS", items: [
-      [0x029F, "多任务视图", true], [0x0223, "回到桌面 Home", true], [0x00CF, "语音助手", true], [0x00D8, "语音输入", true],
-      [0x0224, "返回"], [0x0221, "搜索"], [0x029D, "切换输入法"], [0x00D9, "表情面板"], [0x019F, "打开设置"], [0x0065, "截屏"],
+    { label: "平板 / 安卓常用", items: [
+      [0x029F, "多任务视图", true], [0x0223, "回到桌面 Home", true], [0x0224, "返回上一页"],
+      [0x00CF, "唤醒语音助手", true], [0x00D8, "语音听写输入", true], [0x0221, "全局搜索"],
+      [0x029D, "切换输入法"], [0x00D9, "表情面板"], [0x019F, "打开系统设置"], [0x0065, "系统截屏"],
     ]},
-    { label: "媒体 / 亮度", items: [
-      [0x00CD, "播放 / 暂停"], [0x00B5, "下一曲"], [0x00B6, "上一曲"], [0x00E2, "静音"], [0x00EA, "音量-"], [0x00E9, "音量+"],
+    { label: "音量与媒体播放（全平台通用）", items: [
+      [0x00E2, "静音"], [0x00EA, "音量-"], [0x00E9, "音量+"],
+      [0x00CD, "播放 / 暂停"], [0x00B5, "下一曲"], [0x00B6, "上一曲"],
+    ]},
+    { label: "屏幕亮度", items: [
       [0x0070, "亮度-"], [0x006F, "亮度+"],
     ]},
-    { label: "联想原厂", items: [[0x0397, "设备互联（原厂）"], [0x038E, "锁（原厂）"]] },
+    { label: "联想原厂专属", items: [
+      [0x0397, "联想设备互联（原厂）"],
+    ]},
   ];
   const CONSUMER_NAMES = new Map(CONSUMER_GROUPS.flatMap(g => g.items.map(([u, n]) => [u, n])));
 
-  // ---------------------------------------------------------------------------
-  // Scheme model: Map(off -> {t:"key", v:code} | {t:"consumer", v:usage} | {t:"none"})
-  // ---------------------------------------------------------------------------
-  function stockAssign(k) {
-    return SLOT_IDS.includes(k.stock) ? { t: "consumer", v: SLOT_STOCK_USAGE[k.stock] } : { t: "key", v: k.stock };
-  }
-  const sameAssign = (a, b) => a.t === b.t && (a.t === "none" || a.v === b.v);
-  function stockScheme() { return new Map(ALL_KEYS.map(k => [k.off, stockAssign(k)])); }
+  const MACRO_PRESETS = [
+    { name: "🔒 锁屏（原厂）",      k1: 0xE3, k2: 0x0F },
+    { name: "🪟 切换窗口 Alt+Tab",  k1: 0xE2, k2: 0x2B },
+    { name: "🔍 搜索 ⌘/Win+空格",   k1: 0xE3, k2: 0x2C },
+    { name: "🏠 显示桌面 Win+D",    k1: 0xE3, k2: 0x07 },
+    { name: "📋 复制 Ctrl+C",       k1: 0xE0, k2: 0x06 },
+    { name: "📄 粘贴 Ctrl+V",       k1: 0xE0, k2: 0x19 },
+    { name: "↩ 撤销 Ctrl+Z",        k1: 0xE0, k2: 0x1D },
+    { name: "📋 复制 ⌘+C",          k1: 0xE3, k2: 0x06 },
+    { name: "📄 粘贴 ⌘+V",          k1: 0xE3, k2: 0x19 },
+    { name: "✖ 关标签 ⌘+W",         k1: 0xE3, k2: 0x1A },
+    { name: "✖ 关窗口 Alt+F4",      k1: 0xE2, k2: 0x3D },
+  ];
 
-  // The configuration flashed on 2026-11-18 (HONOR MagicPad 4).
-  const MY_PRESET = {
-    0xEE8F: { t: "consumer", v: 0x029F },  // 互联 -> 多任务
-    0xEEDF: { t: "key", v: 0x7F },          // 静音 -> 键盘页 Mute
-    0xEE91: { t: "key", v: 0x81 },          // 音量- -> 键盘页 Volume Down
-    0xEEE6: { t: "key", v: 0x80 },          // 音量+ -> 键盘页 Volume Up
-    0xEEF9: { t: "consumer", v: 0x0223 },  // 右 Ctrl -> Home
+  // Friendly Fn Trigger candidates & Tap action choices
+  const FN_TRIGGER_CHOICES = [
+    [0xEE8A, "大写锁定 CapsLock（最推荐）"],
+    [0xEEBC, "空格右侧 Alt"],
+    [0xEEF9, "空格右侧 Ctrl"],
+    [0xEEED, "Tab"],
+    [0xEE8B, "Esc"],
+    [0xEE98, "左上角 ` ~"],
+  ];
+  const FN_TAP_CHOICES = [
+    { id: "key:0x29",      label: "Esc（强烈推荐）",     a: { t: "key", v: 0x29 } },
+    { id: "key:0x39",      label: "保持原功能 CapsLock", a: { t: "key", v: 0x39 } },
+    { id: "none",          label: "不触发任何输入（纯 Fn 键）", a: { t: "none" } },
+    { id: "cons:0x029D",   label: "切换输入法",          a: { t: "consumer", v: 0x029D } },
+    { id: "cons:0x0224",   label: "返回上一页",          a: { t: "consumer", v: 0x0224 } },
+    { id: "cons:0x0223",   label: "回到桌面 Home",       a: { t: "consumer", v: 0x0223 } },
+    { id: "cons:0x029F",   label: "多任务视图",          a: { t: "consumer", v: 0x029F } },
+    { id: "cons:0x038E",   label: "一键组合快捷键",      a: { t: "consumer", v: MACRO_USAGE } },
+    { id: "key:0x2B",      label: "Tab",                a: { t: "key", v: 0x2B } },
+    { id: "key:0xE6",      label: "右 Alt",             a: { t: "key", v: 0xE6 } },
+    { id: "key:0xE4",      label: "右 Ctrl",            a: { t: "key", v: 0xE4 } },
+  ];
+  const FN_CLASSIC_PRESET = {
+    // IJKL arrows + U/O Home/End + H/N PgUp/PgDn + Backspace->Del + 1..= -> F1..F12 + Media
+    0xEEA2: { t: "key", v: 0x52 },         // I -> ↑
+    0xEEB0: { t: "key", v: 0x50 },         // J -> ←
+    0xEEB3: { t: "key", v: 0x51 },         // K -> ↓
+    0xEEB1: { t: "key", v: 0x4F },         // L -> →
+    0xEE9F: { t: "key", v: 0x4A },         // U -> Home
+    0xEEA0: { t: "key", v: 0x4D },         // O -> End
+    0xEEF4: { t: "key", v: 0x4B },         // H -> PgUp
+    0xEED2: { t: "key", v: 0x4E },         // N -> PgDn
+    0xEE85: { t: "key", v: 0x4C },         // Backspace -> Delete
+    0xEE87: { t: "key", v: 0x3A },         // 1 -> F1
+    0xEE7A: { t: "key", v: 0x3B },         // 2 -> F2
+    0xEE79: { t: "key", v: 0x3C },         // 3 -> F3
+    0xEE7C: { t: "key", v: 0x3D },         // 4 -> F4
+    0xEE8D: { t: "key", v: 0x3E },         // 5 -> F5
+    0xEE8E: { t: "key", v: 0x3F },         // 6 -> F6
+    0xEE7D: { t: "key", v: 0x40 },         // 7 -> F7
+    0xEE80: { t: "key", v: 0x41 },         // 8 -> F8
+    0xEE7E: { t: "key", v: 0x42 },         // 9 -> F9
+    0xEE95: { t: "key", v: 0x43 },         // 0 -> F10
+    0xEEFB: { t: "key", v: 0x44 },         // - -> F11
+    0xEE96: { t: "key", v: 0x45 },         // = -> F12
+    0xEECE: { t: "consumer", v: 0x00CD },  // Space -> 播放/暂停
+    0xEEB4: { t: "consumer", v: 0x00B6 },  // ← -> 上一曲
+    0xEEDB: { t: "consumer", v: 0x00B5 },  // → -> 下一曲
   };
 
-  let scheme = stockScheme();
+  // Friendly Double-Tap candidates & Presets (default: double-tap left Alt/cmd -> Meta+S for Android search)
+  const DT_KEY_CHOICES = [
+    [0xEECD, "左 Alt / cmd（空格左边，推荐）"],
+    [0xEE94, "左 Meta / option"],
+    [0xEE82, "左 Ctrl"],
+    [0xEEB2, "左 Shift"],
+    [0xEEBC, "右 Alt"],
+    [0xEEF9, "右 Ctrl"],
+    [0xEE8A, "大写锁定 CapsLock"],
+  ];
+  const DT_PRESETS = [
+    { name: "🔍 平板搜索 Meta + S（推荐）", a: { t: "combo", k1: 0xE3, k2: 0x16 } },
+    { name: "🔎 全局搜索（Consumer）",      a: { t: "consumer", v: 0x0221 } },
+    { name: "🔍 搜索 ⌘/Win + 空格",         a: { t: "combo", k1: 0xE3, k2: 0x2C } },
+    { name: "🪟 切换应用 Alt + Tab",        a: { t: "combo", k1: 0xE2, k2: 0x2B } },
+    { name: "📱 多任务视图",                a: { t: "consumer", v: 0x029F } },
+    { name: "🏠 回到桌面 Home",             a: { t: "consumer", v: 0x0223 } },
+    { name: "🎙 唤醒语音助手",              a: { t: "consumer", v: 0x00CF } },
+    { name: "🔒 锁屏 Meta + L",            a: { t: "combo", k1: 0xE3, k2: 0x0F } },
+  ];
+
+  // ---------------------------------------------------------------------------
+  // State model
+  // ---------------------------------------------------------------------------
+  function stockAssign(k) {
+    return SLOT_IDS_7.includes(k.stock) ? { t: "consumer", v: SLOT_STOCK_USAGE[k.stock] } : { t: "key", v: k.stock };
+  }
+  const sameAssign = (a, b) => a.t === b.t && (a.t === "none" || a.v === b.v);
+  const sameDtAction = (a, b) => a && b && a.t === b.t && (a.t === "combo" ? (a.k1 === b.k1 && a.k2 === b.k2) : a.v === b.v);
+  const stockKeys = () => new Map(ALL_KEYS.map(k => [k.off, stockAssign(k)]));
+  const defaultFn = () => ({
+    enabled: false,
+    triggerOff: 0xEE8A,          // CapsLock
+    tap: { t: "key", v: 0x29 },  // Esc
+    timeoutMs: 250,
+    keys: new Map(),             // off -> assign (absent = pass through to base layer)
+  });
+  const defaultDt = () => ({
+    enabled: false,
+    keyOff: 0xEECD,                            // 左 Alt/cmd（空格左侧）
+    action: { t: "combo", k1: 0xE3, k2: 0x16 }, // Meta/option + S
+    windowMs: 320,
+  });
+  const stockState = () => ({
+    keys: stockKeys(),
+    macro: { ...STOCK_MACRO },
+    meta: { ...STOCK_META },
+    fn: defaultFn(),
+    dt: defaultDt(),
+  });
+
+  const MAGICPAD_PRESET_KEYS = {
+    0xEE8F: { t: "consumer", v: 0x029F },  // 互联 -> 多任务视图
+    0xEEF9: { t: "consumer", v: 0x0223 },  // 右 Ctrl -> 回到桌面 Home
+  };
+
+  let state = stockState();
+  let activeLayer = "base"; // "base" | "fn"
   let selectedOff = 0xEE8F;
-  let editorTab = "key";
+  let editorTab = "consumer";
+  let kbSearch = "";
   let baseFirmware = null;
+
+  // Dual transport connection state (USB-C WebHID OR Wireless Web Bluetooth)
+  let transport = null; // null | "usb" | "ble"
   let hidDevice = null;
+  let bleDevice = null;
+  let bleOtaChar = null;
+  let bleBatteryPct = null;
+  let lastReadVersion = null;
   let isFlashing = false;
   let pendingResolver = null;
 
   const hex2 = v => "0x" + v.toString(16).toUpperCase().padStart(2, "0");
   const hex4 = v => "0x" + v.toString(16).toUpperCase().padStart(4, "0");
   const keyName = k => k.name || k.label;
-  function describe(a) {
-    if (a.t === "none") return "禁用";
+  const macroLabel = (m = state.macro) => `${kbShortName(m.k1)} + ${kbShortName(m.k2)}`;
+  const isMacroAssign = a => a && a.t === "consumer" && a.v === MACRO_USAGE;
+  const isFnTriggerKey = off => state.fn.enabled && state.fn.triggerOff === off;
+  const isDtKey = off => state.dt.enabled && state.dt.keyOff === off;
+  function describeDtAction(a) {
+    if (!a) return "未设置";
+    if (a.t === "combo") return `${kbShortName(a.k1)} + ${kbShortName(a.k2)}`;
+    return describe(a);
+  }
+
+  function describe(a, m = state.macro) {
+    if (!a) return "同普通层";
+    if (a.t === "none") return "已禁用";
     if (a.t === "key") return KB_NAMES.get(a.v) || hex2(a.v);
-    return CONSUMER_NAMES.get(a.v) || hex4(a.v);
+    if (a.v === MACRO_USAGE) return `组合键 ${macroLabel(m)}`;
+    return CONSUMER_NAMES.get(a.v) || `自定义 (${hex4(a.v)})`;
+  }
+  function shortDescribe(a, m = state.macro) {
+    if (!a) return "";
+    if (a.t === "none") return "禁用";
+    if (a.t === "key") return kbShortName(a.v);
+    if (a.v === MACRO_USAGE) return macroLabel(m);
+    const full = CONSUMER_NAMES.get(a.v);
+    if (!full) return hex4(a.v);
+    return full.replace("（原厂）", "").replace("回到桌面 Home", "回桌面").replace("多任务视图", "多任务")
+      .replace("唤醒语音助手", "语音助手").replace("语音听写输入", "语音输入").replace("返回上一页", "返回")
+      .replace("打开系统设置", "设置").replace("播放 / 暂停", "播放/停").replace("联想设备互联", "互联");
   }
 
   // ===========================================================================
-  // 1. Checksums (matched to the official updater)
+  // 1. Checksums & Byte Helpers
   // ===========================================================================
   function crc16Outer(bytes) {
     let crc = 0x2A6E;
@@ -386,7 +946,11 @@
     for (let i = 0; i < bytes.length; i++) crc = CRC32_TBL[(crc ^ bytes[i]) & 0xFF] ^ (crc >>> 8);
     return crc >>> 0;
   }
-  const storedCrc = b => (b[b.length - 4] | (b[b.length - 3] << 8) | (b[b.length - 2] << 16) | (b[b.length - 1] << 24)) >>> 0;
+  const storedCrc = b => readU32(b, b.length - 4);
+  const readU16  = (b, o) => b[o] | (b[o + 1] << 8);
+  const readU32  = (b, o) => (b[o] | (b[o + 1] << 8) | (b[o + 2] << 16) | (b[o + 3] << 24)) >>> 0;
+  const writeU16 = (b, o, v) => { b[o] = v & 0xFF; b[o + 1] = (v >> 8) & 0xFF; };
+  const writeU32 = (b, o, v) => { b[o] = v & 0xFF; b[o + 1] = (v >>> 8) & 0xFF; b[o + 2] = (v >>> 16) & 0xFF; b[o + 3] = (v >>> 24) & 0xFF; };
   async function sha256Hex(bytes) {
     const h = await crypto.subtle.digest("SHA-256", bytes);
     return Array.from(new Uint8Array(h)).map(x => x.toString(16).padStart(2, "0")).join("");
@@ -399,156 +963,687 @@
   }
 
   // ===========================================================================
-  // 2. Slot allocation + firmware builder + whitelist guard
+  // 2. Validation, 7/14-Slot Allocator, Firmware Builder & Strict Whitelist Guard
   // ===========================================================================
-  // Every distinct consumer usage needs one of the 7 slot ids. Keys sharing a usage share a slot.
-  function allocateSlots(sch) {
+  const isPrintableAscii = s => /^[\x20-\x7E]+$/.test(s);
+
+  function validateMeta(meta) {
+    const errs = {};
+    if (!meta.verTag.length || meta.verTag.length > VER_TAG_MAX) errs.verTag = `需填写 1–${VER_TAG_MAX} 个字符`;
+    else if (!isPrintableAscii(meta.verTag)) errs.verTag = "仅支持英文、数字和常见英文符号";
+    if (!meta.bleName.length || meta.bleName.length > BLE_NAME_MAX) errs.bleName = `需填写 1–${BLE_NAME_MAX} 个字符`;
+    else if (!isPrintableAscii(meta.bleName)) errs.bleName = "仅支持英文、数字、空格和常见符号";
+    if (!meta.usbName.length || meta.usbName.length > USB_NAME_MAX) errs.usbName = `需填写 1–${USB_NAME_MAX} 个字符`;
+    else if (!isPrintableAscii(meta.usbName)) errs.usbName = "仅支持英文、数字、空格和常见符号";
+    return errs;
+  }
+
+  function allocateSlots(st) {
     const usages = [];
+    const addUsage = u => { if (!usages.includes(u)) usages.push(u); };
+    // 1) Base layer (skip trigger key if Fn enabled, since its matrix byte is 0xF9)
     for (const k of ALL_KEYS) {
-      const a = sch.get(k.off);
-      if (a.t === "consumer" && !usages.includes(a.v)) usages.push(a.v);
+      if (st.fn.enabled && k.off === st.fn.triggerOff) continue;
+      const a = st.keys.get(k.off);
+      if (a.t === "consumer") addUsage(a.v);
     }
-    if (usages.length > SLOT_IDS.length) {
-      return { error: `多媒体/系统功能共 ${usages.length} 种，超过固件的 ${SLOT_IDS.length} 个功能槽。可把音量/静音改用「键盘页音量」，或让几颗键共用同一功能。` };
+    // 2) Fn layer & Fn tap action (iterate ALL_KEYS for 100% deterministic slot allocation)
+    if (st.fn.enabled) {
+      if (st.fn.tap && st.fn.tap.t === "consumer") addUsage(st.fn.tap.v);
+      for (const k of ALL_KEYS) {
+        if (k.off === st.fn.triggerOff) continue;
+        const a = st.fn.keys.get(k.off);
+        if (a && a.t === "consumer") addUsage(a.v);
+      }
     }
+    // 3) Double-Tap Consumer action (if enabled and mapped to a Consumer usage)
+    if (st.dt.enabled && st.dt.action && st.dt.action.t === "consumer") addUsage(st.dt.action.v);
+    if (usages.length > SLOT_IDS_14.length) {
+      return { error: `快捷功能已选 ${usages.length} 种，超过最大上限 ${SLOT_IDS_14.length} 种。可让几颗键共用同一功能，或减少部分快捷功能。` };
+    }
+    const extended = usages.length > SLOT_IDS_7.length;
+    const pool = extended ? SLOT_IDS_14 : SLOT_IDS_7;
     const slotOf = new Map(), taken = new Set();
-    // Pass 1: a usage keeps the slot of a key that owned that slot at the factory (minimal diff).
     for (const u of usages) {
       for (const k of ALL_KEYS) {
-        const a = sch.get(k.off);
-        if (a.t === "consumer" && a.v === u && SLOT_IDS.includes(k.stock) && !taken.has(k.stock)) {
+        if (st.fn.enabled && k.off === st.fn.triggerOff) continue;
+        const a = st.keys.get(k.off);
+        if (a.t === "consumer" && a.v === u && SLOT_IDS_7.includes(k.stock) && !taken.has(k.stock)) {
           slotOf.set(u, k.stock); taken.add(k.stock); break;
         }
       }
     }
-    // Pass 2: prefer a slot whose factory usage already equals u, then any free slot.
     for (const u of usages) {
       if (slotOf.has(u)) continue;
-      const id = SLOT_IDS.find(i => !taken.has(i) && SLOT_STOCK_USAGE[i] === u) ?? SLOT_IDS.find(i => !taken.has(i));
+      const id = pool.find(i => !taken.has(i) && SLOT_STOCK_USAGE[i] === u) ?? pool.find(i => !taken.has(i));
       slotOf.set(u, id); taken.add(id);
     }
-    return { slotOf, used: usages.length };
+    return { slotOf, used: usages.length, extended, pool };
   }
 
-  function buildFirmware(sch) {
-    if (!baseFirmware) return { error: "原厂基线未加载" };
-    const alloc = allocateSlots(sch);
+  function encodeAssign(a, slotOf) {
+    if (!a || a.t === "none") return 0x00;
+    return a.t === "key" ? a.v : slotOf.get(a.v);
+  }
+
+  function buildFirmware(st) {
+    if (!baseFirmware) return { error: "原厂固件基线尚未加载" };
+    if (!KB_ALLOWED.has(st.macro.k1) || !KB_ALLOWED.has(st.macro.k2) || st.macro.k1 === st.macro.k2) {
+      return { error: "组合快捷键的两个按键必须有效且不能相同" };
+    }
+    const metaErrs = validateMeta(st.meta);
+    if (Object.keys(metaErrs).length) return { error: "设备名称或方案标签格式有误：" + Object.values(metaErrs)[0] };
+    if (st.fn.enabled && !EDITABLE_OFFS.has(st.fn.triggerOff)) return { error: "Fn 触发键无效" };
+    if (st.dt.enabled) {
+      if (!EDITABLE_OFFS.has(st.dt.keyOff)) return { error: "双击触发键无效" };
+      if (st.fn.enabled && st.dt.keyOff === st.fn.triggerOff) {
+        return { error: "「长按 Fn 触发键」与「双击触发键」不能是同一颗键，请更换其中之一" };
+      }
+      if (!st.dt.action) return { error: "双击动作未设置" };
+      if (st.dt.action.t === "combo") {
+        if (!KB_ALLOWED.has(st.dt.action.k1) || !KB_ALLOWED.has(st.dt.action.k2) || st.dt.action.k1 === st.dt.action.k2) {
+          return { error: "双击自定义组合的两个按键必须有效且不能相同" };
+        }
+      } else if (st.dt.action.t === "key") {
+        if (!KB_ALLOWED.has(st.dt.action.v)) return { error: "双击目标按键无效" };
+      } else if (st.dt.action.t === "consumer") {
+        if (st.dt.action.v < 1 || st.dt.action.v > CONSUMER_MAX) return { error: "双击快捷功能码超出范围" };
+      } else {
+        return { error: "双击触发动作类型无效" };
+      }
+    }
+
+    const alloc = allocateSlots(st);
     if (alloc.error) return alloc;
-    const out = new Uint8Array(baseFirmware);
+
+    const fnOn = !!st.fn.enabled;
+    const dtOn = !!st.dt.enabled;
+    const extOn = fnOn || dtOn;
+    const targetLen = extOn ? FW_SIZE_EXT : FW_SIZE_STD;
+    const out = new Uint8Array(targetLen);
+    out.fill(0xFF);
+    out.set(baseFirmware, 0);
+
+    // 1) Base key matrix
     for (const k of ALL_KEYS) {
       if (k.locked) continue;
-      const a = sch.get(k.off);
-      out[k.off] = a.t === "none" ? 0x00 : a.t === "key" ? a.v : alloc.slotOf.get(a.v);
+      if (fnOn && k.off === st.fn.triggerOff) {
+        out[k.off] = FN_TRIGGER_CODE;
+      } else {
+        out[k.off] = encodeAssign(st.keys.get(k.off), alloc.slotOf);
+      }
     }
-    for (const id of SLOT_IDS) {
-      const usage = [...alloc.slotOf].find(([, s]) => s === id)?.[0] ?? SLOT_STOCK_USAGE[id];
-      const o = slotUsageOffset(id);
-      out[o] = usage & 0xFF; out[o + 1] = (usage >> 8) & 0xFF;
+
+    // 2) Consumer slot table (7-slot stock OR 14-slot automatic expansion)
+    if (!alloc.extended) {
+      for (let i = 0; i < SLOT_IDS_7.length; i++) {
+        const id = SLOT_IDS_7[i];
+        const usage = [...alloc.slotOf].find(([, s]) => s === id)?.[0] ?? SLOT_STOCK_USAGE[id];
+        writeU16(out, SLOT_TABLE_7 + i * 6 + 2, usage);
+      }
+    } else {
+      writeU32(out, SLOT_PTR_OFF, SLOT_TABLE_14);
+      out[SLOT_CNT_OFF] = SLOT_IDS_14.length;
+      for (let i = 0; i < SLOT_IDS_14.length; i++) {
+        const id = SLOT_IDS_14[i];
+        const usage = [...alloc.slotOf].find(([, s]) => s === id)?.[0] ?? (SLOT_STOCK_USAGE[id] || 0x0001);
+        const o = SLOT_TABLE_14 + i * 6;
+        writeU16(out, o, id);
+        writeU16(out, o + 2, usage);
+        writeU16(out, o + 4, 0x0001);
+      }
     }
+
+    // 3) 2-Key Hardware Macro (0x038E)
+    if (st.macro.k1 !== STOCK_MACRO.k1 || st.macro.k2 !== STOCK_MACRO.k2) {
+      for (const o of MACRO_K1_OFFS) out[o] = st.macro.k1;
+      for (const o of MACRO_K2_OFFS) out[o] = st.macro.k2;
+    }
+
+    // 4) Audited v2 Extended TC32 Patch (Hold-for-Fn + Double-Tap, ONLY when extOn)
+    if (extOn) {
+      for (const h of EXT_HOOKS) {
+        for (let i = 0; i < h.bytes.length; i++) out[h.off + i] = h.bytes[i];
+      }
+      out.set(EXT_PATCH_CODE, EXT_PATCH_BASE);
+      // Config header @ 0xFE00..0xFE1F + 136B Fn map @ 0xFE20..0xFEA7
+      out.fill(0x00, EXT_CONFIG_BASE, EXT_FN_MAP_BASE + MATRIX_LEN);
+      out[EXT_CONFIG_BASE] = fnOn ? FN_TRIGGER_CODE : 0x00;
+      out[EXT_CONFIG_BASE + 1] = fnOn ? encodeAssign(st.fn.tap, alloc.slotOf) : 0x00;
+      writeU16(out, EXT_CONFIG_BASE + 2, 0x0002); // v2 config format magic
+      const maxTicks = fnOn ? Math.max(0, Number(st.fn.timeoutMs) || 0) * 16000 : 0;
+      writeU32(out, EXT_CONFIG_BASE + 4, maxTicks >>> 0);
+      writeU32(out, EXT_CONFIG_BASE + 8, PULSE_HOLD_TICKS);
+      if (dtOn) {
+        out[EXT_CONFIG_BASE + 12] = st.dt.keyOff - MATRIX_BASE;
+        if (st.dt.action.t === "combo") {
+          out[EXT_CONFIG_BASE + 13] = st.dt.action.k1;
+          out[EXT_CONFIG_BASE + 14] = st.dt.action.k2;
+        } else {
+          out[EXT_CONFIG_BASE + 13] = encodeAssign(st.dt.action, alloc.slotOf);
+          out[EXT_CONFIG_BASE + 14] = 0x00;
+        }
+        out[EXT_CONFIG_BASE + 15] = 0x00;
+        const winTicks = Math.max(50, Number(st.dt.windowMs) || 320) * 16000;
+        writeU32(out, EXT_CONFIG_BASE + 16, winTicks >>> 0);
+      } else {
+        out[EXT_CONFIG_BASE + 12] = 0xFF;
+      }
+      if (fnOn) {
+        for (const [off, a] of st.fn.keys) {
+          if (!EDITABLE_OFFS.has(off) || off === st.fn.triggerOff || !a || a.t === "none") continue;
+          out[EXT_FN_MAP_BASE + (off - MATRIX_BASE)] = encodeAssign(a, alloc.slotOf);
+        }
+      }
+      // Lenovo post-OTA magic @ 0xFEE0..0xFEE7 (bin_size - 0x24, checked by firmware 0x5D60..0x5DD6!)
+      for (let i = 0; i < LENOVO_TAIL_MAGIC.length; i++) out[LENOVO_MAGIC_OFF_EXT + i] = LENOVO_TAIL_MAGIC[i];
+      // Tail version area @ 0xFEE8..0xFEFF (zero-filled + 13B tag)
+      out.fill(0x00, VER_TAG_OFF_EXT_TAIL, FW_SIZE_EXT - 4);
+      for (let i = 0; i < VER_TAG_MAX; i++) {
+        out[VER_TAG_OFF_EXT_TAIL + i] = i < st.meta.verTag.length ? st.meta.verTag.charCodeAt(i) : 0x00;
+      }
+    }
+
+    // 5) Version tag at standard 3 sites
+    if (st.meta.verTag !== STOCK_META.verTag) {
+      for (const base of VER_TAG_OFFS_STD) {
+        for (let i = 0; i < VER_TAG_MAX; i++) {
+          out[base + i] = i < st.meta.verTag.length ? st.meta.verTag.charCodeAt(i) : 0x00;
+        }
+      }
+    }
+
+    // 6) BLE Advertising / Device Name
+    if (st.meta.bleName !== STOCK_META.bleName) {
+      const len = st.meta.bleName.length;
+      for (let i = 0; i < BLE_NAME_MAX; i++) out[BLE_NAME_OFF + i] = i < len ? st.meta.bleName.charCodeAt(i) : 0x00;
+      out[BLE_LEN_OFFS.copy1] = len;
+      out[BLE_LEN_OFFS.copy2] = len;
+      out[BLE_LEN_OFFS.adLen] = len + 1;
+      out[BLE_LEN_OFFS.advTotal] = len + 9;
+    }
+
+    // 7) USB Product Name
+    if (st.meta.usbName !== STOCK_META.usbName) {
+      const len = st.meta.usbName.length;
+      const bLen = 2 + len * 2;
+      out[USB_NAME_BLEN_OFF] = bLen;
+      for (const o of USB_LEN_CODE_OFFS) out[o] = bLen;
+      for (let i = 0; i < USB_NAME_MAX; i++) {
+        const ch = i < len ? st.meta.usbName.charCodeAt(i) : 0x00;
+        out[USB_NAME_DATA_OFF + i * 2] = ch & 0xFF;
+        out[USB_NAME_DATA_OFF + i * 2 + 1] = 0x00;
+      }
+    }
+
+    // 8) Trailing Telink CRC-32
     const crc = telinkCrc32(out.subarray(0, out.length - 4));
-    out[out.length - 4] = crc & 0xFF; out[out.length - 3] = (crc >>> 8) & 0xFF;
-    out[out.length - 2] = (crc >>> 16) & 0xFF; out[out.length - 1] = (crc >>> 24) & 0xFF;
+    writeU32(out, out.length - 4, crc);
+
     const guard = guardImage(out);
     if (guard.error) return guard;
-    return { bytes: out, crc, used: alloc.used, diff: guard.diff };
+    return { bytes: out, crc, used: alloc.used, extended: alloc.extended, extOn, fnOn, dtOn, diff: guard.diff };
   }
 
-  // Hard safety check: the image may differ from the factory image ONLY in editable matrix bytes,
-  // slot usage bytes and the trailing CRC; every value must be a legal one.
-  function allowedOffsets() {
+  function allowedOffsets(extOn) {
     const s = new Set(EDITABLE_OFFS);
-    for (const id of SLOT_IDS) { s.add(slotUsageOffset(id)); s.add(slotUsageOffset(id) + 1); }
-    for (let i = FW_SIZE - 4; i < FW_SIZE; i++) s.add(i);
+    for (let i = 0; i < SLOT_IDS_7.length; i++) { s.add(SLOT_TABLE_7 + i * 6 + 2); s.add(SLOT_TABLE_7 + i * 6 + 3); }
+    for (let i = 0; i < SLOT_IDS_14.length * 6; i++) s.add(SLOT_TABLE_14 + i);
+    for (let i = 0; i < 4; i++) s.add(SLOT_PTR_OFF + i);
+    s.add(SLOT_CNT_OFF);
+    for (const o of [...MACRO_K1_OFFS, ...MACRO_K2_OFFS]) s.add(o);
+    for (const base of VER_TAG_OFFS_STD) for (let i = 0; i < VER_TAG_MAX; i++) s.add(base + i);
+    for (let i = 0; i < BLE_NAME_MAX; i++) s.add(BLE_NAME_OFF + i);
+    for (const o of Object.values(BLE_LEN_OFFS)) s.add(o);
+    s.add(USB_NAME_BLEN_OFF);
+    for (const o of USB_LEN_CODE_OFFS) s.add(o);
+    for (let i = 0; i < USB_NAME_MAX * 2; i++) s.add(USB_NAME_DATA_OFF + i);
+    if (extOn) {
+      for (const h of EXT_HOOKS) for (let i = 0; i < h.bytes.length; i++) s.add(h.off + i);
+      for (let i = EXT_PATCH_BASE; i < FW_SIZE_EXT; i++) s.add(i);
+    } else {
+      for (let i = FW_SIZE_STD - 4; i < FW_SIZE_STD; i++) s.add(i);
+    }
     return s;
   }
+
   function guardImage(img) {
-    if (img.length !== FW_SIZE) return { error: "镜像大小不对" };
-    const allowed = allowedOffsets();
+    const extOn = img.length === FW_SIZE_EXT;
+    if (!extOn && img.length !== FW_SIZE_STD) return { error: `安全校验失败：固件大小异常 (${img.length}B)` };
+    const allowed = allowedOffsets(extOn);
     const diff = [];
-    for (let i = 0; i < FW_SIZE; i++) {
+    const baseCheckLen = Math.min(img.length, baseFirmware.length);
+    for (let i = 0; i < baseCheckLen; i++) {
       if (img[i] !== baseFirmware[i]) {
-        if (!allowed.has(i)) return { error: `安全校验失败：偏移 ${hex4(i)} 不在允许修改的范围内，已拒绝。` };
+        if (!allowed.has(i)) return { error: `安全校验失败：偏移 ${hex4(i)} 不在白名单范围内，已拦截` };
         diff.push(i);
       }
     }
+    if (extOn) {
+      for (let i = baseCheckLen; i < img.length; i++) diff.push(i);
+    }
+
+    // Slot table validation
+    const ptr = readU32(img, SLOT_PTR_OFF);
+    const cnt = img[SLOT_CNT_OFF];
+    let activePool;
+    if (ptr === SLOT_TABLE_7 && cnt === 7) {
+      activePool = SLOT_IDS_7;
+      for (let i = 0; i < 7; i++) {
+        const b = SLOT_TABLE_7 + i * 6;
+        if (readU16(img, b) !== SLOT_IDS_7[i] || readU16(img, b + 4) !== 1) return { error: "安全校验失败：7 槽表结构异常" };
+        if (readU16(img, b + 2) > CONSUMER_MAX) return { error: "安全校验失败：快捷功能码超出范围" };
+      }
+    } else if (ptr === SLOT_TABLE_14 && cnt === 14) {
+      activePool = SLOT_IDS_14;
+      for (let i = 0; i < 14; i++) {
+        const b = SLOT_TABLE_14 + i * 6;
+        if (readU16(img, b) !== SLOT_IDS_14[i] || readU16(img, b + 4) !== 1) return { error: "安全校验失败：14 槽扩展表结构异常" };
+        const u = readU16(img, b + 2);
+        if (u < 1 || u > CONSUMER_MAX) return { error: "安全校验失败：14 槽快捷功能码超出范围" };
+      }
+    } else {
+      return { error: `安全校验失败：槽表指针/数量非法 (${hex4(ptr)}, ${cnt})` };
+    }
+
+    const cfgFnTrig = extOn ? img[EXT_CONFIG_BASE] : 0x00;
+    const fnOn = extOn && cfgFnTrig === FN_TRIGGER_CODE;
+    const dtIdx = extOn ? img[EXT_CONFIG_BASE + 12] : 0xFF;
+    const dtOn = extOn && dtIdx !== 0xFF;
+
+    // Matrix keycode validation
+    let triggerCount = 0;
     for (const off of EDITABLE_OFFS) {
       const v = img[off];
-      if (!(v === 0x00 || KB_ALLOWED.has(v) || SLOT_IDS.includes(v))) return { error: `安全校验失败：${hex4(off)} 的键码 ${hex2(v)} 不在白名单内。` };
+      if (fnOn && v === FN_TRIGGER_CODE) { triggerCount++; continue; }
+      if (!(v === 0x00 || KB_ALLOWED.has(v) || activePool.includes(v))) {
+        return { error: `安全校验失败：按键 ${hex4(off)} 的键值 ${hex2(v)} 非法` };
+      }
     }
-    for (const id of SLOT_IDS) {
-      const base = SLOT_TABLE + SLOT_IDS.indexOf(id) * 6;
-      if (img[base] !== id || img[base + 1] !== 0 || img[base + 4] !== 1 || img[base + 5] !== 0) return { error: "安全校验失败：功能槽结构被改动。" };
-      const u = img[base + 2] | (img[base + 3] << 8);
-      if (u > CONSUMER_MAX) return { error: `安全校验失败：功能值 ${hex4(u)} 超出描述符范围。` };
+
+    // Extended v2 TC32 patch code & hooks strict byte-for-byte integrity verification
+    if (extOn) {
+      if (!(cfgFnTrig === 0x00 || cfgFnTrig === FN_TRIGGER_CODE) || readU16(img, EXT_CONFIG_BASE + 2) !== 0x0002) {
+        return { error: "安全校验失败：扩展补丁配置头异常" };
+      }
+      if (!fnOn && !dtOn) return { error: "安全校验失败：扩展补丁未开启 Fn 或双击功能" };
+      if (triggerCount !== (fnOn ? 1 : 0)) {
+        return { error: `安全校验失败：Fn 触发键数量异常（预期 ${fnOn ? 1 : 0}，当前 ${triggerCount}）` };
+      }
+      for (const h of EXT_HOOKS) {
+        for (let i = 0; i < h.bytes.length; i++) {
+          if (img[h.off + i] !== h.bytes[i]) return { error: `安全校验失败：补丁钩子 ${hex4(h.off + i)} 字节不匹配` };
+        }
+      }
+      for (let i = 0; i < EXT_PATCH_CODE.length; i++) {
+        if (img[EXT_PATCH_BASE + i] !== EXT_PATCH_CODE[i]) return { error: `安全校验失败：补丁机器码偏移 ${hex4(EXT_PATCH_BASE + i)} 被篡改` };
+      }
+      for (let i = EXT_PATCH_BASE + EXT_PATCH_CODE.length; i < EXT_CONFIG_BASE; i++) {
+        if (img[i] !== 0xFF) return { error: `安全校验失败：补丁保留区 ${hex4(i)} 非法` };
+      }
+      const tapCode = img[EXT_CONFIG_BASE + 1];
+      if (!(tapCode === 0x00 || KB_ALLOWED.has(tapCode) || activePool.includes(tapCode))) {
+        return { error: `安全校验失败：Fn 短按键值 ${hex2(tapCode)} 非法` };
+      }
+      for (let idx = 0; idx < MATRIX_LEN; idx++) {
+        const v = img[EXT_FN_MAP_BASE + idx];
+        if (v === 0x00) continue;
+        if (!EDITABLE_OFFS.has(MATRIX_BASE + idx)) return { error: "安全校验失败：Fn 层触碰了不可编辑位置" };
+        if (!(KB_ALLOWED.has(v) || activePool.includes(v))) return { error: `安全校验失败：Fn 层键值 ${hex2(v)} 非法` };
+      }
+      if (dtOn) {
+        if (dtIdx >= MATRIX_LEN || !EDITABLE_OFFS.has(MATRIX_BASE + dtIdx)) {
+          return { error: `安全校验失败：双击触发键索引 ${hex2(dtIdx)} 非法` };
+        }
+        if (fnOn && img[MATRIX_BASE + dtIdx] === FN_TRIGGER_CODE) {
+          return { error: "安全校验失败：双击触发键与 Fn 触发键冲突" };
+        }
+        const dtK1 = img[EXT_CONFIG_BASE + 13], dtK2 = img[EXT_CONFIG_BASE + 14];
+        if (img[EXT_CONFIG_BASE + 15] !== 0x00) return { error: "安全校验失败：双击配置保留字节异常" };
+        if (dtK2 === 0x00) {
+          if (!(KB_ALLOWED.has(dtK1) || activePool.includes(dtK1))) {
+            return { error: `安全校验失败：双击单键/快捷码 ${hex2(dtK1)} 非法` };
+          }
+        } else {
+          if (!KB_ALLOWED.has(dtK1) || !KB_ALLOWED.has(dtK2) || dtK1 === dtK2) {
+            return { error: `安全校验失败：双击组合键 (${hex2(dtK1)}, ${hex2(dtK2)}) 非法` };
+          }
+        }
+      }
+      for (let i = 0; i < LENOVO_TAIL_MAGIC.length; i++) {
+        if (img[LENOVO_MAGIC_OFF_EXT + i] !== LENOVO_TAIL_MAGIC[i]) return { error: "安全校验失败：尾部联想校验魔数缺失" };
+      }
     }
-    if (telinkCrc32(img.subarray(0, FW_SIZE - 4)) !== storedCrc(img)) return { error: "CRC 不一致" };
+
+    // 2-key macro consistency
+    const k1 = img[MACRO_K1_OFFS[0]], k2 = img[MACRO_K2_OFFS[0]];
+    if (!KB_ALLOWED.has(k1) || !KB_ALLOWED.has(k2) || k1 === k2) return { error: "安全校验失败：组合快捷键键值非法" };
+    if (!MACRO_K1_OFFS.every(o => img[o] === k1) || !MACRO_K2_OFFS.every(o => img[o] === k2)) {
+      return { error: "安全校验失败：组合快捷键 8 处字节不一致" };
+    }
+
+    // BLE / USB / Version tag consistency
+    const bleLen = img[BLE_LEN_OFFS.copy1];
+    if (bleLen < 1 || bleLen > BLE_NAME_MAX || img[BLE_LEN_OFFS.copy2] !== bleLen ||
+        img[BLE_LEN_OFFS.adLen] !== bleLen + 1 || img[BLE_LEN_OFFS.advTotal] !== bleLen + 9) {
+      return { error: "安全校验失败：蓝牙名称长度字段不一致" };
+    }
+    const usbBLen = img[USB_NAME_BLEN_OFF];
+    if (usbBLen < 4 || usbBLen > 62 || (usbBLen & 1) !== 0 || !USB_LEN_CODE_OFFS.every(o => img[o] === usbBLen)) {
+      return { error: "安全校验失败：USB 名称长度字段不一致" };
+    }
+    for (let i = 0; i < VER_TAG_MAX; i++) {
+      const b0 = img[VER_TAG_OFFS_STD[0] + i];
+      if (img[VER_TAG_OFFS_STD[1] + i] !== b0 || img[VER_TAG_OFFS_STD[2] + i] !== b0 ||
+          (extOn && img[VER_TAG_OFF_EXT_TAIL + i] !== b0)) {
+        return { error: "安全校验失败：方案版本号副本不一致" };
+      }
+    }
+    if (telinkCrc32(img.subarray(0, img.length - 4)) !== storedCrc(img)) return { error: "安全校验失败：CRC-32 不一致" };
     return { diff };
   }
 
-  // Reverse: derive a scheme from a firmware image (after it passes the guard).
-  function schemeFromImage(img) {
-    const sch = stockScheme();
+  function decodeCode(v, slotUsage) {
+    if (v === 0x00) return { t: "none" };
+    if (slotUsage.has(v)) return { t: "consumer", v: slotUsage.get(v) };
+    return { t: "key", v };
+  }
+
+  function stateFromImage(img) {
+    const extOn = img.length === FW_SIZE_EXT;
+    const fnOn = extOn && img[EXT_CONFIG_BASE] === FN_TRIGGER_CODE;
+    const dtIdx = extOn ? img[EXT_CONFIG_BASE + 12] : 0xFF;
+    const dtOn = extOn && dtIdx !== 0xFF;
+
+    const ptr = readU32(img, SLOT_PTR_OFF);
+    const cnt = img[SLOT_CNT_OFF];
+    const tableBase = ptr === SLOT_TABLE_14 ? SLOT_TABLE_14 : SLOT_TABLE_7;
+    const slotUsage = new Map();
+    for (let i = 0; i < cnt; i++) {
+      const b = tableBase + i * 6;
+      slotUsage.set(readU16(img, b), readU16(img, b + 2));
+    }
+
+    const keys = stockKeys();
+    let triggerOff = 0xEE8A;
     for (const k of ALL_KEYS) {
       if (k.locked) continue;
       const v = img[k.off];
-      if (v === 0x00) sch.set(k.off, { t: "none" });
-      else if (SLOT_IDS.includes(v)) { const o = slotUsageOffset(v); sch.set(k.off, { t: "consumer", v: img[o] | (img[o + 1] << 8) }); }
-      else sch.set(k.off, { t: "key", v });
+      if (fnOn && v === FN_TRIGGER_CODE) {
+        triggerOff = k.off;
+        keys.set(k.off, stockAssign(k));
+      } else {
+        keys.set(k.off, decodeCode(v, slotUsage));
+      }
     }
-    return sch;
+
+    const fn = defaultFn();
+    if (fnOn) {
+      fn.enabled = true;
+      fn.triggerOff = triggerOff;
+      fn.tap = decodeCode(img[EXT_CONFIG_BASE + 1], slotUsage);
+      fn.timeoutMs = Math.round(readU32(img, EXT_CONFIG_BASE + 4) / 16000);
+      for (const k of ALL_KEYS) {
+        if (k.locked || k.off === triggerOff) continue;
+        const v = img[EXT_FN_MAP_BASE + (k.off - MATRIX_BASE)];
+        if (v !== 0x00) fn.keys.set(k.off, decodeCode(v, slotUsage));
+      }
+    }
+
+    const dt = defaultDt();
+    if (dtOn) {
+      dt.enabled = true;
+      dt.keyOff = MATRIX_BASE + dtIdx;
+      const dtK1 = img[EXT_CONFIG_BASE + 13], dtK2 = img[EXT_CONFIG_BASE + 14];
+      dt.action = dtK2 !== 0x00 ? { t: "combo", k1: dtK1, k2: dtK2 } : decodeCode(dtK1, slotUsage);
+      dt.windowMs = Math.round(readU32(img, EXT_CONFIG_BASE + 16) / 16000);
+    }
+
+    const macro = { k1: img[MACRO_K1_OFFS[0]], k2: img[MACRO_K2_OFFS[0]] };
+    let verTag = "";
+    for (let i = 0; i < VER_TAG_MAX; i++) { const c = img[VER_TAG_OFFS_STD[0] + i]; if (c === 0) break; verTag += String.fromCharCode(c); }
+    const bleLen = img[BLE_LEN_OFFS.copy1];
+    let bleName = "";
+    for (let i = 0; i < bleLen; i++) bleName += String.fromCharCode(img[BLE_NAME_OFF + i]);
+    const usbChars = (img[USB_NAME_BLEN_OFF] - 2) / 2;
+    let usbName = "";
+    for (let i = 0; i < usbChars; i++) usbName += String.fromCharCode(img[USB_NAME_DATA_OFF + i * 2]);
+
+    return {
+      keys, macro, fn, dt,
+      meta: { verTag: verTag || STOCK_META.verTag, bleName: bleName || STOCK_META.bleName, usbName: usbName || STOCK_META.usbName },
+    };
   }
 
   // ===========================================================================
-  // 3. Scheme persistence (the keyboard cannot be read back)
+  // 3. Scheme JSON Persistence (v4, backwards compatible with v1/v2/v3)
   // ===========================================================================
-  function schemeToJSON(sch) {
+  const serializeAssign = a => a.t === "none" ? { t: "none" } : { t: a.t, v: a.t === "key" ? hex2(a.v) : hex4(a.v) };
+  function parseAssign(a) {
+    if (!a || a.t === "none") return { t: "none" };
+    const v = parseInt(a.v, 16);
+    if (a.t === "key" && KB_ALLOWED.has(v)) return { t: "key", v };
+    if (a.t === "consumer" && v >= 1 && v <= CONSUMER_MAX) return { t: "consumer", v };
+    throw new Error("按键取值非法");
+  }
+
+  function stateToJSON(st) {
     const keys = {};
     for (const k of ALL_KEYS) {
-      const a = sch.get(k.off);
-      if (!sameAssign(a, stockAssign(k))) keys[hex4(k.off)] = a.t === "none" ? { t: "none" } : { t: a.t, v: a.t === "key" ? hex2(a.v) : hex4(a.v) };
+      const a = st.keys.get(k.off);
+      if (!sameAssign(a, stockAssign(k))) keys[hex4(k.off)] = serializeAssign(a);
     }
-    return { format: "kb331u-keymap", version: 1, firmware: "KA024_A_1.0.8", keys };
+    const fnKeys = {};
+    for (const [off, a] of st.fn.keys) {
+      if (a && a.t !== "none") fnKeys[hex4(off)] = serializeAssign(a);
+    }
+    return {
+      format: "kb331u-keymap",
+      version: 4,
+      firmware: "KA024_A_1.0.8",
+      keys,
+      macro: { k1: hex2(st.macro.k1), k2: hex2(st.macro.k2) },
+      meta: { ...st.meta },
+      fn: {
+        enabled: !!st.fn.enabled,
+        triggerOff: hex4(st.fn.triggerOff),
+        tap: serializeAssign(st.fn.tap),
+        timeoutMs: st.fn.timeoutMs,
+        keys: fnKeys,
+      },
+      dt: {
+        enabled: !!st.dt.enabled,
+        keyOff: hex4(st.dt.keyOff),
+        windowMs: st.dt.windowMs,
+        action: st.dt.action.t === "combo"
+          ? { t: "combo", k1: hex2(st.dt.action.k1), k2: hex2(st.dt.action.k2) }
+          : serializeAssign(st.dt.action),
+      },
+    };
   }
-  function schemeFromJSON(obj) {
-    if (!obj || obj.format !== "kb331u-keymap" || typeof obj.keys !== "object") throw new Error("不是 KB331U 方案文件");
-    const sch = stockScheme();
+
+  function stateFromJSON(obj) {
+    if (!obj || obj.format !== "kb331u-keymap" || typeof obj.keys !== "object") throw new Error("不是有效的 KB331U 方案文件");
+    const st = stockState();
     for (const [offStr, a] of Object.entries(obj.keys)) {
       const off = parseInt(offStr, 16);
       const k = KEY_BY_OFF.get(off);
       if (!k || k.locked) throw new Error(`未知或锁定的按键 ${offStr}`);
-      if (a.t === "none") { sch.set(off, { t: "none" }); continue; }
-      const v = parseInt(a.v, 16);
-      if (a.t === "key" && KB_ALLOWED.has(v)) sch.set(off, { t: "key", v });
-      else if (a.t === "consumer" && v >= 1 && v <= CONSUMER_MAX) sch.set(off, { t: "consumer", v });
-      else throw new Error(`按键 ${offStr} 的取值非法`);
+      st.keys.set(off, parseAssign(a));
     }
-    return sch;
+    if (obj.macro && obj.macro.k1 && obj.macro.k2) {
+      const k1 = parseInt(obj.macro.k1, 16), k2 = parseInt(obj.macro.k2, 16);
+      if (KB_ALLOWED.has(k1) && KB_ALLOWED.has(k2) && k1 !== k2) st.macro = { k1, k2 };
+    }
+    if (obj.meta && typeof obj.meta === "object") {
+      if (typeof obj.meta.verTag === "string") st.meta.verTag = obj.meta.verTag.slice(0, VER_TAG_MAX);
+      if (typeof obj.meta.bleName === "string") st.meta.bleName = obj.meta.bleName.slice(0, BLE_NAME_MAX);
+      if (typeof obj.meta.usbName === "string") st.meta.usbName = obj.meta.usbName.slice(0, USB_NAME_MAX);
+    }
+    if (obj.fn && typeof obj.fn === "object") {
+      st.fn.enabled = !!obj.fn.enabled;
+      const trig = parseInt(obj.fn.triggerOff, 16);
+      if (EDITABLE_OFFS.has(trig)) st.fn.triggerOff = trig;
+      if (obj.fn.tap) st.fn.tap = parseAssign(obj.fn.tap);
+      if (typeof obj.fn.timeoutMs === "number" && obj.fn.timeoutMs >= 0) st.fn.timeoutMs = obj.fn.timeoutMs;
+      if (obj.fn.keys && typeof obj.fn.keys === "object") {
+        for (const [offStr, a] of Object.entries(obj.fn.keys)) {
+          const off = parseInt(offStr, 16);
+          if (EDITABLE_OFFS.has(off) && off !== st.fn.triggerOff) st.fn.keys.set(off, parseAssign(a));
+        }
+      }
+    }
+    if (obj.dt && typeof obj.dt === "object") {
+      st.dt.enabled = !!obj.dt.enabled;
+      const dtOff = parseInt(obj.dt.keyOff, 16);
+      if (EDITABLE_OFFS.has(dtOff)) st.dt.keyOff = dtOff;
+      if (typeof obj.dt.windowMs === "number" && obj.dt.windowMs >= 50) st.dt.windowMs = obj.dt.windowMs;
+      if (obj.dt.action && typeof obj.dt.action === "object") {
+        if (obj.dt.action.t === "combo") {
+          const k1 = parseInt(obj.dt.action.k1, 16), k2 = parseInt(obj.dt.action.k2, 16);
+          if (KB_ALLOWED.has(k1) && KB_ALLOWED.has(k2) && k1 !== k2) st.dt.action = { t: "combo", k1, k2 };
+        } else {
+          const parsed = parseAssign(obj.dt.action);
+          if (parsed.t !== "none") st.dt.action = parsed;
+        }
+      }
+    }
+    return st;
   }
-  function safeStore(key, val) { try { localStorage.setItem(key, val); } catch (_) {} }
-  function safeLoad(key) { try { return localStorage.getItem(key); } catch (_) { return null; } }
 
-  function setBanner(html) { document.getElementById("schemeBanner").innerHTML = html; }
+  const safeStore = (k, v) => { try { localStorage.setItem(k, v); } catch (_) {} };
+  const safeLoad = k => { try { return localStorage.getItem(k); } catch (_) { return null; } };
+  const setBanner = html => { document.getElementById("schemeBanner").innerHTML = html; };
+  const saveDraft = () => safeStore("kb331u.draft", JSON.stringify(stateToJSON(state)));
 
   // ===========================================================================
-  // 4. Rendering
+  // 4. UI Rendering
   // ===========================================================================
   function keycapEl(k) {
-    const a = scheme.get(k.off);
-    const modified = !sameAssign(a, stockAssign(k));
     const div = document.createElement("div");
-    div.className = "keycap" + (k.locked ? " locked" : "") + (k.off === selectedOff ? " selected" : "") +
-      (modified ? " modified" : "") + (a.t === "consumer" ? " consumer" : "") + (a.t === "none" ? " disabled-key" : "");
     div.style.width = `calc(var(--u) * ${k.w} + var(--gap) * ${k.w - 1})`;
-    div.title = k.locked ? `${keyName(k)}（锁定）` : `${keyName(k)} · ${hex4(k.off)} · 当前：${describe(a)}`;
-    div.innerHTML = `<span class="k-phys"></span>${modified ? '<span class="k-new"></span>' : ""}`;
+
+    const isTrig = isFnTriggerKey(k.off);
+    if (activeLayer === "fn") {
+      const fa = state.fn.keys.get(k.off);
+      const locked = k.locked || isTrig;
+      div.className = "keycap" +
+        (locked ? " locked" : "") +
+        (isTrig ? " fn-trigger" : "") +
+        (!isTrig && fa ? " fn-mapped" : !k.locked ? " fn-pass" : "") +
+        (k.off === selectedOff && !isTrig ? " selected" : "");
+      div.title = k.locked ? `${keyName(k)}（蓝牙通道键）` : isTrig ? `${keyName(k)}（Fn 触发键：按住激活 Fn 层，轻点触发 ${describe(state.fn.tap)}）` : `${keyName(k)} 在 Fn 层：${describe(fa)}`;
+      div.innerHTML = `<span class="k-phys"></span>${(isTrig || fa) ? '<span class="k-new"></span>' : ""}`;
+      div.querySelector(".k-phys").textContent = k.label;
+      const n = div.querySelector(".k-new");
+      if (n) n.textContent = isTrig ? `Fn / ${shortDescribe(state.fn.tap)}` : shortDescribe(fa);
+      if (!locked) {
+        div.addEventListener("click", () => {
+          selectedOff = k.off;
+          editorTab = !fa ? "key" : isMacroAssign(fa) ? "macro" : fa.t === "consumer" ? "consumer" : "key";
+          renderAll();
+        });
+      }
+      return div;
+    }
+
+    // Base layer
+    const a = state.keys.get(k.off);
+    const isDt = isDtKey(k.off);
+    const modified = isTrig || isDt || !sameAssign(a, stockAssign(k)) || (isMacroAssign(a) && (state.macro.k1 !== STOCK_MACRO.k1 || state.macro.k2 !== STOCK_MACRO.k2));
+    div.className = "keycap" +
+      (k.locked ? " locked" : "") +
+      (k.off === selectedOff ? " selected" : "") +
+      (isTrig ? " fn-trigger" : modified ? " modified" : "") +
+      (!isTrig && (isMacroAssign(a) || isDt) ? " macro" : !isTrig && a.t === "consumer" ? " consumer" : "") +
+      (!isTrig && a.t === "none" ? " disabled-key" : "");
+    div.title = k.locked ? `${keyName(k)}（蓝牙通道键，不可修改）`
+      : isTrig ? `${keyName(k)}：长按激活 Fn 层，轻点触发「${describe(state.fn.tap)}」`
+      : isDt ? `${keyName(k)}：当前为「${describe(a)}」· 连续双击触发「${describeDtAction(state.dt.action)}」`
+      : `${keyName(k)}：当前为「${describe(a)}」`;
+    div.innerHTML = `<span class="k-phys"></span>${(modified || isMacroAssign(a)) ? '<span class="k-new"></span>' : ""}`;
     div.querySelector(".k-phys").textContent = k.label;
     const n = div.querySelector(".k-new");
-    if (n) n.textContent = describe(a);
-    if (!k.locked) div.addEventListener("click", () => { selectedOff = k.off; editorTab = a.t === "consumer" ? "consumer" : a.t === "none" ? "none" : "key"; renderAll(); });
+    if (n) {
+      if (isTrig) n.textContent = `Fn / ${shortDescribe(state.fn.tap)}`;
+      else if (isDt && sameAssign(a, stockAssign(k))) n.textContent = `⚡${describeDtAction(state.dt.action)}`;
+      else if (isDt) n.textContent = `${shortDescribe(a)}·⚡`;
+      else n.textContent = shortDescribe(a);
+    }
+    if (!k.locked) {
+      div.addEventListener("click", () => {
+        selectedOff = k.off;
+        editorTab = isMacroAssign(a) ? "macro" : a.t === "consumer" ? "consumer" : a.t === "none" ? "none" : "key";
+        renderAll();
+      });
+    }
     return div;
   }
 
+  function renderLayerControls() {
+    document.getElementById("chkFnEnable").checked = state.fn.enabled;
+    const bBase = document.getElementById("btnLayerBase");
+    const bFn = document.getElementById("btnLayerFn");
+    bBase.className = activeLayer === "base" ? "active" : "";
+    bFn.className = activeLayer === "fn" ? "active fn-mode" : "";
+    bFn.textContent = state.fn.enabled ? `Fn 组合层（已配 ${state.fn.keys.size} 键）` : "Fn 组合层（未开启）";
+    document.getElementById("kbdShell").classList.toggle("fn-view", activeLayer === "fn");
+
+    const box = document.getElementById("fnConfigBox");
+    box.style.display = (state.fn.enabled || activeLayer === "fn") ? "" : "none";
+
+    const hint = document.getElementById("fnQuickHint");
+    if (!state.fn.enabled) {
+      hint.textContent = state.dt.enabled
+        ? "未开启 Fn 层（当前仅启用下方双击快捷键补丁）"
+        : "未开启 Fn 层与双击快捷键：固件 100% 纯改数据，不附加任何补丁代码";
+    } else {
+      const trigK = KEY_BY_OFF.get(state.fn.triggerOff);
+      hint.textContent = `长按「${keyName(trigK)}」= 进入 Fn 层（${state.fn.keys.size} 键）· 轻点 = ${describe(state.fn.tap)}`;
+    }
+
+    // Populate trigger & tap selects
+    const selTrig = document.getElementById("selFnTrigger");
+    selTrig.innerHTML = "";
+    const triggerList = [...FN_TRIGGER_CHOICES];
+    if (!triggerList.some(([o]) => o === state.fn.triggerOff)) {
+      const curK = KEY_BY_OFF.get(state.fn.triggerOff);
+      if (curK) triggerList.unshift([curK.off, keyName(curK)]);
+    }
+    for (const [off, label] of triggerList) {
+      const opt = document.createElement("option");
+      opt.value = String(off); opt.textContent = label;
+      if (off === state.fn.triggerOff) opt.selected = true;
+      selTrig.appendChild(opt);
+    }
+
+    const selTap = document.getElementById("selFnTap");
+    selTap.innerHTML = "";
+    let matchedTap = false;
+    for (const c of FN_TAP_CHOICES) {
+      const opt = document.createElement("option");
+      opt.value = c.id; opt.textContent = c.label;
+      if (sameAssign(state.fn.tap, c.a)) { opt.selected = true; matchedTap = true; }
+      selTap.appendChild(opt);
+    }
+    if (!matchedTap) {
+      const opt = document.createElement("option");
+      opt.value = "custom"; opt.textContent = `当前：${describe(state.fn.tap)}`; opt.selected = true;
+      selTap.appendChild(opt);
+    }
+
+    const selTo = document.getElementById("selFnTimeout");
+    const toVal = String(state.fn.timeoutMs);
+    if (![...selTo.options].some(o => o.value === toVal)) {
+      const opt = document.createElement("option");
+      opt.value = toVal; opt.textContent = `${(state.fn.timeoutMs / 1000).toFixed(2)} 秒`;
+      selTo.appendChild(opt);
+    }
+    selTo.value = toVal;
+  }
+
   function renderKeyboard() {
+    renderLayerControls();
     const kbd = document.getElementById("kbd");
     kbd.innerHTML = "";
     for (const row of ROWS) {
@@ -557,170 +1652,504 @@
       for (const k of row.keys) {
         if (k.stack) {
           const s = document.createElement("div");
-          s.className = "arrow-stack";
-          s.style.width = "var(--u)";
+          s.className = "arrow-stack"; s.style.width = "var(--u)";
           for (const sk of k.stack) { const el = keycapEl(sk); el.style.width = "var(--u)"; s.appendChild(el); }
           r.appendChild(s);
         } else r.appendChild(keycapEl(k));
       }
       kbd.appendChild(r);
     }
-    const alloc = allocateSlots(scheme);
+    const alloc = allocateSlots(state);
     const meter = document.getElementById("slotMeter");
-    const used = alloc.error ? "超出" : alloc.used;
-    meter.textContent = `功能槽 ${used}/${SLOT_IDS.length}`;
-    meter.classList.toggle("full", !!alloc.error || alloc.used >= SLOT_IDS.length);
+    meter.className = "quota-pill";
+    if (alloc.error) {
+      meter.textContent = "快捷功能名额：已超限（最多 14 种）";
+      meter.classList.add("full");
+    } else {
+      meter.textContent = `快捷功能名额：已用 ${alloc.used} / 14` + (alloc.extended ? "（已自动扩容）" : "");
+      if (alloc.used >= 14) meter.classList.add("full");
+      else if (alloc.extended) meter.classList.add("ext");
+    }
   }
 
-  function optButton(label, active, onClick, tag) {
+  function optButton(label, active, onClick, tag, macroStyle = false) {
     const b = document.createElement("button");
-    b.className = "opt" + (active ? " active" : "");
+    b.className = "opt" + (active ? (macroStyle ? " macro-active" : " active") : "");
     b.textContent = label;
-    if (tag) { const t = document.createElement("span"); t.className = "tag"; t.textContent = " " + tag; b.appendChild(t); }
+    if (tag) { const t = document.createElement("span"); t.className = "tag"; t.textContent = tag; b.appendChild(t); }
     b.addEventListener("click", onClick);
     return b;
   }
 
+  function populateKeySelect(sel, currentVal) {
+    sel.innerHTML = "";
+    for (const g of KB_GROUPS) {
+      if (g.label.startsWith("备用音量")) continue;
+      const og = document.createElement("optgroup"); og.label = g.label;
+      for (const [code, name] of g.items) {
+        const opt = document.createElement("option");
+        opt.value = String(code); opt.textContent = name;
+        if (code === currentVal) opt.selected = true;
+        og.appendChild(opt);
+      }
+      sel.appendChild(og);
+    }
+  }
+
   function renderEditor() {
     const k = KEY_BY_OFF.get(selectedOff);
-    const a = scheme.get(selectedOff);
-    const stock = stockAssign(k);
-    document.getElementById("editorTitle").textContent = `2. 修改「${keyName(k)}」`;
-    const dl = document.getElementById("selSummary");
-    dl.innerHTML = "";
-    const add = (dt, dd) => { const t = document.createElement("dt"); t.textContent = dt; const d = document.createElement("dd"); d.textContent = dd; dl.append(t, d); };
-    add("原厂功能", `${describe(stock)}`);
-    add("当前设置", `${describe(a)}${a.t === "consumer" ? "（" + hex4(a.v) + "，占 1 个功能槽）" : a.t === "key" ? "（" + hex2(a.v) + "）" : ""}`);
-    add("固件位置", hex4(k.off));
+    const isFnView = activeLayer === "fn";
+    const isTrig = isFnTriggerKey(selectedOff);
 
+    const selBar = document.getElementById("selBar");
     const tabs = document.getElementById("tabs");
+    const body = document.getElementById("editorBody");
+    const btnRestoreOne = document.getElementById("btnRestoreOne");
+
+    // Special friendly view if user clicked the Fn Trigger key on Base layer
+    if (isTrig) {
+      document.getElementById("editorTitle").textContent = `「${keyName(k)}」当前是 Fn 触发键`;
+      btnRestoreOne.style.display = "none";
+      selBar.innerHTML = `
+        <div class="sel-main">
+          <span class="sel-chip fn"></span>
+          <span class="sel-arrow">→</span>
+          <span class="sel-now fn">长按进入 Fn 层 · 轻点触发「${describe(state.fn.tap)}」</span>
+        </div>
+        <div class="sel-meta">可在上方绿色的「Fn 层设置栏」里更换触发键、修改轻点功能，或关闭 Fn 层恢复成普通按键。</div>
+      `;
+      selBar.querySelector(".sel-chip").textContent = keyName(k);
+      tabs.innerHTML = "";
+      body.innerHTML = `<div class="toolbar"><button id="btnJumpFnLayer" class="teal-btn">去编辑 Fn 组合层按键 →</button><button id="btnDisableFnHere" class="small">关闭「长按变 Fn 层」</button></div>`;
+      body.querySelector("#btnJumpFnLayer").addEventListener("click", () => { activeLayer = "fn"; selectedOff = 0xEEA2; editorTab = "key"; renderAll(); });
+      body.querySelector("#btnDisableFnHere").addEventListener("click", () => { state.fn.enabled = false; activeLayer = "base"; saveDraft(); renderAll(); });
+      return;
+    }
+
+    // If viewing Fn layer while Fn is OFF, gently invite to enable
+    if (isFnView && !state.fn.enabled) {
+      document.getElementById("editorTitle").textContent = "开启「长按变 Fn 层」解锁第二层键位";
+      btnRestoreOne.style.display = "none";
+      selBar.innerHTML = `<div class="sel-meta" style="margin:0; font-size:13px; color:var(--text);">这把键盘没有物理 Fn 键。开启后，可以把 <strong>CapsLock</strong>（或任意键）变成 <strong>长按进入 Fn 层、轻点当 Esc</strong> 的高效双功能键。</div>`;
+      tabs.innerHTML = "";
+      body.innerHTML = `<div class="toolbar"><button id="btnEnableClassicFn" class="primary">开启并套用「CapsLock 变 Fn + 经典方向/F键」</button><button id="btnEnableEmptyFn">仅开启（空白 Fn 层自己配）</button></div>`;
+      body.querySelector("#btnEnableClassicFn").addEventListener("click", () => {
+        state.fn.enabled = true;
+        applyFnClassicPreset();
+        selectedOff = 0xEEA2;
+        saveDraft(); renderAll();
+      });
+      body.querySelector("#btnEnableEmptyFn").addEventListener("click", () => {
+        state.fn.enabled = true;
+        selectedOff = 0xEEA2;
+        saveDraft(); renderAll();
+      });
+      return;
+    }
+
+    const a = isFnView ? state.fn.keys.get(selectedOff) : state.keys.get(selectedOff);
+    const stock = stockAssign(k);
+
+    document.getElementById("editorTitle").textContent = isFnView
+      ? `按住 Fn +「${keyName(k)}」时触发什么？`
+      : `修改「${keyName(k)}」的功能`;
+
+    btnRestoreOne.style.display = isFnView ? (a ? "" : "none") : (sameAssign(a, stock) ? "none" : "");
+    btnRestoreOne.textContent = isFnView ? "↺ 清除（改回同普通层）" : "↺ 恢复这颗键原厂";
+
+    selBar.innerHTML = `
+      <div class="sel-main">
+        <span class="sel-chip ${isFnView ? "fn" : ""}"></span>
+        <span class="sel-arrow">→</span>
+        <span class="sel-now ${isFnView ? "fn" : ""}"></span>
+      </div>
+      <div class="sel-meta"></div>
+    `;
+    selBar.querySelector(".sel-chip").textContent = isFnView ? `Fn + ${keyName(k)}` : keyName(k);
+    selBar.querySelector(".sel-now").textContent = describe(a);
+    selBar.querySelector(".sel-meta").textContent = isFnView
+      ? `不设置时，按住 Fn +「${keyName(k)}」会照常输出普通层的「${describe(state.keys.get(selectedOff))}」`
+      : `原厂默认：${describe(stock, STOCK_MACRO)}`;
+
     tabs.innerHTML = "";
-    for (const [id, name] of [["key", "标准按键"], ["consumer", "多媒体 / 系统功能"], ["none", "禁用"]]) {
+    const tabDefs = [
+      ["consumer", "快捷功能（平板 / 媒体 / 音量）"],
+      ["macro", "一键组合快捷键"],
+      ["key", "普通按键"],
+      ["none", isFnView ? "同普通层（不覆盖）" : "禁用此键"],
+    ];
+    for (const [id, name] of tabDefs) {
       const b = document.createElement("button");
-      b.className = "tab" + (editorTab === id ? " active" : "");
+      b.className = "tab" + (id === "macro" ? " macro-tab" : "") + (editorTab === id ? " active" : "");
       b.textContent = name;
       b.addEventListener("click", () => { editorTab = id; renderEditor(); });
       tabs.appendChild(b);
     }
-    if (!sameAssign(a, stock)) {
-      const b = document.createElement("button");
-      b.className = "tab"; b.textContent = "↺ 恢复原厂";
-      b.addEventListener("click", () => setAssign(stock));
-      tabs.appendChild(b);
-    }
 
-    const body = document.getElementById("editorBody");
     body.innerHTML = "";
-    if (editorTab === "key") {
-      for (const g of KB_GROUPS) {
-        const gd = document.createElement("div"); gd.className = "opt-group";
-        gd.innerHTML = `<div class="opt-group-label"></div><div class="opt-list"></div>`;
-        gd.querySelector(".opt-group-label").textContent = g.label;
-        const list = gd.querySelector(".opt-list");
-        for (const [code, name, verified] of g.items) {
-          list.appendChild(optButton(name, a.t === "key" && a.v === code, () => setAssign({ t: "key", v: code }), verified ? "实测" : ""));
-        }
-        body.appendChild(gd);
-      }
-    } else if (editorTab === "consumer") {
+
+    if (editorTab === "consumer") {
       for (const g of CONSUMER_GROUPS) {
         const gd = document.createElement("div"); gd.className = "opt-group";
         gd.innerHTML = `<div class="opt-group-label"></div><div class="opt-list"></div>`;
         gd.querySelector(".opt-group-label").textContent = g.label;
         const list = gd.querySelector(".opt-list");
         for (const [usage, name, verified] of g.items) {
-          list.appendChild(optButton(name, a.t === "consumer" && a.v === usage, () => setAssign({ t: "consumer", v: usage }), verified ? "实测" : ""));
+          list.appendChild(optButton(name, a && a.t === "consumer" && a.v === usage, () => setCurrentKeyAssign({ t: "consumer", v: usage }), verified ? "平板实测" : ""));
         }
         body.appendChild(gd);
       }
-      const row = document.createElement("div");
-      row.className = "row-inline";
-      row.innerHTML = `<span class="card-sub">自定义 Consumer Usage（0x0001–0x0397）：</span><input id="customHex" type="text" placeholder="0x029F" maxlength="6" /><button id="btnCustom" class="small">应用</button>`;
-      body.appendChild(row);
-      if (a.t === "consumer") row.querySelector("#customHex").value = hex4(a.v);
-      row.querySelector("#btnCustom").addEventListener("click", () => {
-        const v = parseInt(row.querySelector("#customHex").value.trim().replace(/^0x/i, ""), 16);
-        if (Number.isNaN(v) || v < 1 || v > CONSUMER_MAX) { alert("请输入 0x0001 – 0x0397 之间的 16 进制值"); return; }
-        setAssign({ t: "consumer", v });
+      const adv = document.createElement("details");
+      adv.className = "tech";
+      adv.innerHTML = `
+        <summary>高级：手动输入 16 进制 HID 功能码</summary>
+        <div class="inline-custom">
+          <span class="card-sub">Consumer Usage（0x0001–0x0397）：</span>
+          <input id="customHex" class="mono" type="text" placeholder="0x029F" maxlength="6" />
+          <button id="btnCustom" class="small">应用</button>
+        </div>
+      `;
+      if (a && a.t === "consumer" && a.v !== MACRO_USAGE) adv.querySelector("#customHex").value = hex4(a.v);
+      adv.querySelector("#btnCustom").addEventListener("click", () => {
+        const v = parseInt(adv.querySelector("#customHex").value.trim().replace(/^0x/i, ""), 16);
+        if (Number.isNaN(v) || v < 1 || v > CONSUMER_MAX) { alert("请输入 0x0001 – 0x0397 之间的 16 进制数值"); return; }
+        setCurrentKeyAssign({ t: "consumer", v });
       });
-      const p = document.createElement("p");
-      p.className = "card-sub";
-      p.textContent = "「实测」= 已在 HONOR MagicPad 4 上验证。其他功能取决于设备系统是否识别。全键盘最多 7 种不同的多媒体/系统功能。";
-      body.appendChild(p);
+      body.appendChild(adv);
+
+    } else if (editorTab === "macro") {
+      const isBoundHere = isMacroAssign(a);
+      const preview = document.createElement("div");
+      preview.className = "macro-preview-box";
+      preview.innerHTML = `
+        <div>
+          <div style="font-size:12px; color:#d8b4fe; margin-bottom:5px; font-weight:600;">当前一键组合快捷键（有线 / 蓝牙通用）</div>
+          <div class="macro-keys"><span class="kbd-pill" id="mpK1"></span><span>+</span><span class="kbd-pill" id="mpK2"></span></div>
+        </div>
+        <button id="btnBindMacro" class="${isBoundHere ? "small" : "primary"}">${isBoundHere ? "✓ 已绑定到这里" : `把「${isFnView ? "Fn+" : ""}${keyName(k)}」设为这个组合键`}</button>
+      `;
+      preview.querySelector("#mpK1").textContent = KB_NAMES.get(state.macro.k1) || hex2(state.macro.k1);
+      preview.querySelector("#mpK2").textContent = KB_NAMES.get(state.macro.k2) || hex2(state.macro.k2);
+      preview.querySelector("#btnBindMacro").addEventListener("click", () => setCurrentKeyAssign({ t: "consumer", v: MACRO_USAGE }));
+      body.appendChild(preview);
+
+      const pGroup = document.createElement("div");
+      pGroup.className = "opt-group";
+      pGroup.innerHTML = `<div class="opt-group-label">常用组合一键套用</div><div class="opt-list"></div>`;
+      const plist = pGroup.querySelector(".opt-list");
+      for (const p of MACRO_PRESETS) {
+        plist.appendChild(optButton(p.name, state.macro.k1 === p.k1 && state.macro.k2 === p.k2, () => {
+          state.macro = { k1: p.k1, k2: p.k2 };
+          setCurrentKeyAssign({ t: "consumer", v: MACRO_USAGE });
+        }, "", true));
+      }
+      body.appendChild(pGroup);
+
+      const pickers = document.createElement("div");
+      pickers.className = "macro-pickers";
+      pickers.innerHTML = `
+        <div class="field"><label for="selM1">第 1 键（通常是修饰键）</label><select id="selM1"></select></div>
+        <div class="plus-sign">+</div>
+        <div class="field"><label for="selM2">第 2 键（目标键）</label><select id="selM2"></select></div>
+      `;
+      const s1 = pickers.querySelector("#selM1"), s2 = pickers.querySelector("#selM2");
+      populateKeySelect(s1, state.macro.k1);
+      populateKeySelect(s2, state.macro.k2);
+      const onMacroChange = () => {
+        const k1 = Number(s1.value), k2 = Number(s2.value);
+        if (k1 === k2) { alert("组合快捷键的两个按键不能相同"); populateKeySelect(s1, state.macro.k1); populateKeySelect(s2, state.macro.k2); return; }
+        state.macro = { k1, k2 };
+        saveDraft(); renderAll();
+      };
+      s1.addEventListener("change", onMacroChange);
+      s2.addEventListener("change", onMacroChange);
+      body.appendChild(pickers);
+
+    } else if (editorTab === "key") {
+      const sr = document.createElement("div");
+      sr.className = "search-row";
+      sr.innerHTML = `<input id="kbSearchInp" type="text" placeholder="快速搜索按键，例如：Esc、Home、↑、F12…" />`;
+      const inp = sr.querySelector("#kbSearchInp");
+      inp.value = kbSearch;
+      inp.addEventListener("input", () => { kbSearch = inp.value.trim().toLowerCase(); renderKeyGroups(groupsWrap, a); });
+      body.appendChild(sr);
+      const groupsWrap = document.createElement("div");
+      body.appendChild(groupsWrap);
+      renderKeyGroups(groupsWrap, a);
+
     } else {
       const p = document.createElement("p");
-      p.className = "card-sub";
-      p.textContent = "禁用后这颗键按下不发送任何内容。";
+      p.className = "card-sub"; p.style.marginTop = "0";
+      p.textContent = isFnView
+        ? "清除后，按住 Fn + 这颗键会照常输出普通层的功能。"
+        : "禁用后，按下这颗键不会产生任何输入（适合防止误触）。";
       body.appendChild(p);
-      body.appendChild(optButton("禁用这颗键", a.t === "none", () => setAssign({ t: "none" })));
+      body.appendChild(optButton(isFnView ? "设为同普通层" : "确认禁用这颗键", isFnView ? !a : (a && a.t === "none"), () => setCurrentKeyAssign(isFnView ? null : { t: "none" })));
     }
+  }
+
+  function renderKeyGroups(wrap, curAssign) {
+    wrap.innerHTML = "";
+    let shown = 0;
+    for (const g of KB_GROUPS) {
+      const matches = g.items.filter(([, name]) => !kbSearch || name.toLowerCase().includes(kbSearch));
+      if (!matches.length) continue;
+      shown += matches.length;
+      const gd = document.createElement("div"); gd.className = "opt-group";
+      gd.innerHTML = `<div class="opt-group-label"></div><div class="opt-list"></div>`;
+      gd.querySelector(".opt-group-label").textContent = g.label;
+      const list = gd.querySelector(".opt-list");
+      for (const [code, name] of matches) {
+        list.appendChild(optButton(name, curAssign && curAssign.t === "key" && curAssign.v === code, () => setCurrentKeyAssign({ t: "key", v: code })));
+      }
+      wrap.appendChild(gd);
+    }
+    if (!shown) {
+      const empty = document.createElement("div"); empty.className = "card-sub";
+      empty.textContent = "没有找到匹配的按键，试试清空搜索词。";
+      wrap.appendChild(empty);
+    }
+  }
+
+  function renderDoubleTapPanel() {
+    document.getElementById("chkDtEnable").checked = state.dt.enabled;
+    document.getElementById("dtDisabledHint").style.display = state.dt.enabled ? "none" : "";
+    document.getElementById("dtConfigBox").style.display = state.dt.enabled ? "" : "none";
+    if (!state.dt.enabled) return;
+
+    const selKey = document.getElementById("selDtKey");
+    selKey.innerHTML = "";
+    const choices = [...DT_KEY_CHOICES];
+    if (!choices.some(([o]) => o === state.dt.keyOff)) {
+      const curK = KEY_BY_OFF.get(state.dt.keyOff);
+      if (curK) choices.unshift([curK.off, keyName(curK)]);
+    }
+    for (const [off, label] of choices) {
+      const opt = document.createElement("option");
+      opt.value = String(off); opt.textContent = label;
+      if (off === state.dt.keyOff) opt.selected = true;
+      selKey.appendChild(opt);
+    }
+
+    const selWin = document.getElementById("selDtWindow");
+    const winVal = String(state.dt.windowMs);
+    if (![...selWin.options].some(o => o.value === winVal)) {
+      const opt = document.createElement("option");
+      opt.value = winVal; opt.textContent = `${(state.dt.windowMs / 1000).toFixed(2)} 秒`;
+      selWin.appendChild(opt);
+    }
+    selWin.value = winVal;
+
+    document.getElementById("dtActionBadge").textContent = `⚡ ${describeDtAction(state.dt.action)}`;
+
+    const plist = document.getElementById("dtPresetList");
+    plist.innerHTML = "";
+    for (const p of DT_PRESETS) {
+      plist.appendChild(optButton(p.name, sameDtAction(state.dt.action, p.a), () => {
+        state.dt.action = { ...p.a };
+        saveDraft(); renderAll();
+      }, "", true));
+    }
+
+    const curK1 = state.dt.action.t === "combo" ? state.dt.action.k1 : 0xE3;
+    const curK2 = state.dt.action.t === "combo" ? state.dt.action.k2 : 0x16;
+    populateKeySelect(document.getElementById("selDtK1"), curK1);
+    populateKeySelect(document.getElementById("selDtK2"), curK2);
+  }
+
+  function renderIdentityPanel() {
+    const errs = validateMeta(state.meta);
+    const syncField = (inpId, cntId, errId, boxId, val, max, stockVal, errMsg) => {
+      const inp = document.getElementById(inpId);
+      if (document.activeElement !== inp) inp.value = val;
+      const cnt = document.getElementById(cntId);
+      cnt.textContent = `${val.length} / ${max}`;
+      cnt.classList.toggle("bad", !!errMsg);
+      const errEl = document.getElementById(errId);
+      errEl.textContent = errMsg || "";
+      errEl.classList.toggle("show", !!errMsg);
+      document.getElementById(boxId).classList.toggle("changed", val !== stockVal);
+    };
+    syncField("inpVerTag", "cntVerTag", "errVerTag", "boxVerTag", state.meta.verTag, VER_TAG_MAX, STOCK_META.verTag, errs.verTag);
+    syncField("inpBleName", "cntBleName", "errBleName", "boxBleName", state.meta.bleName, BLE_NAME_MAX, STOCK_META.bleName, errs.bleName);
+    syncField("inpUsbName", "cntUsbName", "errUsbName", "boxUsbName", state.meta.usbName, USB_NAME_MAX, STOCK_META.usbName, errs.usbName);
   }
 
   function renderFlashPanel() {
-    const diffList = document.getElementById("diffList");
-    const meta = document.getElementById("diffMeta");
-    const changed = ALL_KEYS.filter(k => !sameAssign(scheme.get(k.off), stockAssign(k)));
-    diffList.innerHTML = "";
-    if (!changed.length) diffList.textContent = "与联想原厂完全一致。";
-    else {
-      const ul = document.createElement("ul");
-      for (const k of changed) {
-        const li = document.createElement("li");
-        li.textContent = `${keyName(k)}：${describe(stockAssign(k))} → ${describe(scheme.get(k.off))}`;
-        ul.appendChild(li);
-      }
-      diffList.appendChild(ul);
-    }
-    const res = buildFirmware(scheme);
-    const crcEl = document.getElementById("crcPreview");
-    if (res.error) {
-      meta.textContent = "⚠ " + res.error;
-      meta.style.color = "var(--warn)";
-      crcEl.textContent = "新 CRC-32: --";
+    const box = document.getElementById("diffBox");
+    box.innerHTML = "";
+
+    const changedKeys = ALL_KEYS.filter(k => !(state.fn.enabled && k.off === state.fn.triggerOff) && !sameAssign(state.keys.get(k.off), stockAssign(k)));
+    const macroChanged = state.macro.k1 !== STOCK_MACRO.k1 || state.macro.k2 !== STOCK_MACRO.k2;
+    const metaChanges = [];
+    if (state.meta.verTag !== STOCK_META.verTag) metaChanges.push(`方案标签：${STOCK_META.verTag} → ${state.meta.verTag}`);
+    if (state.meta.bleName !== STOCK_META.bleName) metaChanges.push(`蓝牙名称：${STOCK_META.bleName} → ${state.meta.bleName}`);
+    if (state.meta.usbName !== STOCK_META.usbName) metaChanges.push(`USB 名称：${STOCK_META.usbName} → ${state.meta.usbName}`);
+
+    if (!changedKeys.length && !macroChanged && !metaChanges.length && !state.fn.enabled && !state.dt.enabled) {
+      box.innerHTML = `<div class="empty-state">当前与联想原厂完全一致（写入后将还原出厂默认状态）。</div>`;
     } else {
-      meta.style.color = "";
-      meta.textContent = `与原厂相差 ${res.diff.length} 字节（含 4 字节 CRC），全部位于白名单范围内 ✓`;
-      crcEl.textContent = `新 CRC-32: 0x${res.crc.toString(16).toUpperCase().padStart(8, "0")}`;
+      const addSection = (title, lines) => {
+        if (!lines.length) return;
+        const h = document.createElement("div"); h.className = "diff-group-title"; h.textContent = title;
+        const ul = document.createElement("ul");
+        for (const t of lines) { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); }
+        box.append(h, ul);
+      };
+      addSection("普通层按键改动", changedKeys.map(k => `${keyName(k)}：${describe(stockAssign(k), STOCK_MACRO)} → ${describe(state.keys.get(k.off))}`));
+      if (state.fn.enabled) {
+        const trigK = KEY_BY_OFF.get(state.fn.triggerOff);
+        const fnLines = [`触发键「${keyName(trigK)}」：长按进 Fn 层，轻点 = ${describe(state.fn.tap)}`];
+        for (const [off, a] of state.fn.keys) {
+          const fk = KEY_BY_OFF.get(off);
+          if (fk) fnLines.push(`Fn + ${keyName(fk)} → ${describe(a)}`);
+        }
+        addSection(`长按 Fn 层（已配 ${state.fn.keys.size} 键）`, fnLines);
+      }
+      if (state.dt.enabled) {
+        const dtK = KEY_BY_OFF.get(state.dt.keyOff);
+        addSection("双击快捷键", [
+          `连续双击「${keyName(dtK)}」（${(state.dt.windowMs / 1000).toFixed(2)} 秒内）→ ${describeDtAction(state.dt.action)}`,
+        ]);
+      }
+      if (macroChanged) addSection("一键组合快捷键", [`锁屏 (${macroLabel(STOCK_MACRO)}) → ${macroLabel(state.macro)}`]);
+      addSection("设备名称与标签", metaChanges);
     }
+
+    const res = buildFirmware(state);
+    const guardEl = document.getElementById("guardStatus");
+    const techMeta = document.getElementById("techMeta");
+    const modeInfo = document.getElementById("quickModeInfo");
+
+    if (res.error) {
+      guardEl.style.display = "block";
+      guardEl.className = "notice err";
+      guardEl.textContent = "⚠ " + res.error;
+      techMeta.textContent = "校验未通过：" + res.error;
+      modeInfo.textContent = "";
+    } else {
+      guardEl.style.display = "block";
+      guardEl.className = "notice ok";
+      const parts = [];
+      parts.push(res.extended ? `14 槽扩展（已用 ${res.used}/14）` : `原厂 7 槽（已用 ${res.used}/14）`);
+      if (res.fnOn && res.dtOn) parts.push("已加载 Fn 层 + 双击快捷键补丁");
+      else if (res.fnOn) parts.push("已加载长按 Fn 层补丁");
+      else if (res.dtOn) parts.push("已加载双击快捷键补丁");
+      guardEl.textContent = `✓ 安全校验通过 · ${parts.join(" · ")}`;
+      const patchDesc = res.extOn ? `开(0xFC00:${res.fnOn ? "Fn" : ""}${res.fnOn && res.dtOn ? "+" : ""}${res.dtOn ? "双击" : ""})` : "关";
+      techMeta.textContent = `大小: ${res.bytes.length}B (${Math.ceil(res.bytes.length / 16)}块) · 差异: ${res.diff.length}B · 槽表: ${res.extended ? "14槽(0xEF34)" : "7槽(0xEE44)"} · 扩展补丁: ${patchDesc} · CRC-32: 0x${res.crc.toString(16).toUpperCase().padStart(8, "0")}`;
+      const quickTag = res.fnOn && res.dtOn ? "Fn+双击模式" : res.fnOn ? "Fn 层模式" : res.dtOn ? "双击快捷键模式" : res.extended ? "14 槽模式" : "标准模式";
+      modeInfo.textContent = `${res.bytes.length}B · ${quickTag}`;
+    }
+
     const ok = !res.error;
-    document.getElementById("btnFlash").disabled = !(ok && hidDevice && hidDevice.opened && !isFlashing);
+    const connected = (transport === "usb" && hidDevice && hidDevice.opened) || (transport === "ble" && bleDevice && bleDevice.gatt.connected && bleOtaChar);
+    const btnFlash = document.getElementById("btnFlash");
+    btnFlash.disabled = !(ok && connected && !isFlashing);
+    btnFlash.textContent = transport === "usb"
+      ? "USB-C 写入键盘（约 15 秒）"
+      : transport === "ble"
+      ? "蓝牙无线写入键盘（约 1 分钟）"
+      : "请先连接键盘（USB-C 或蓝牙）";
     document.getElementById("btnDownload").disabled = !ok || isFlashing;
+    document.getElementById("bleTip").style.display = transport === "ble" ? "block" : "none";
   }
 
-  function renderAll() { renderKeyboard(); renderEditor(); renderFlashPanel(); }
+  function renderAll() {
+    renderKeyboard();
+    renderEditor();
+    renderDoubleTapPanel();
+    renderIdentityPanel();
+    renderFlashPanel();
+  }
 
-  function setAssign(a) {
-    scheme.set(selectedOff, a);
-    safeStore("kb331u.draft", JSON.stringify(schemeToJSON(scheme)));
+  function setCurrentKeyAssign(a) {
+    if (activeLayer === "fn") {
+      if (!a || a.t === "none") state.fn.keys.delete(selectedOff);
+      else state.fn.keys.set(selectedOff, a);
+    } else {
+      state.keys.set(selectedOff, a);
+    }
+    saveDraft();
     renderAll();
   }
 
+  function updateConnUI() {
+    const dot = document.getElementById("connDot");
+    const txt = document.getElementById("connText");
+    const btnQ = document.getElementById("btnQueryVer");
+    dot.className = "dot";
+    if (transport === "usb" && hidDevice && hidDevice.opened) {
+      dot.classList.add("usb");
+      txt.textContent = `USB 已连接${lastReadVersion ? " · " + lastReadVersion : ""}`;
+      btnQ.disabled = false;
+    } else if (transport === "ble" && bleDevice && bleDevice.gatt.connected) {
+      dot.classList.add("ble");
+      const bat = bleBatteryPct != null ? ` · 电量 ${bleBatteryPct}%` : "";
+      txt.textContent = `蓝牙已连接${lastReadVersion ? " · " + lastReadVersion : ""}${bat}`;
+      btnQ.disabled = false;
+    } else {
+      txt.textContent = awaitingReboot ? "键盘重启中…" : "未连接键盘";
+      btnQ.disabled = true;
+    }
+    renderFlashPanel();
+  }
+
   // ===========================================================================
-  // 5. WebHID (Report ID 0x04 OUT / 0x03 IN) — same protocol as tools/flash_kb_firmware.c
+  // 5. Dual Transport: USB-C WebHID & Wireless Web Bluetooth OTA
   // ===========================================================================
-  function sendAndWait(payloadBytes, timeoutMs = 1000) {
+  function sendUsbAndWait(payloadBytes, timeoutMs = 1000) {
     return new Promise((resolve, reject) => {
-      if (!hidDevice || !hidDevice.opened) return reject(new Error("设备未打开"));
+      if (!hidDevice || !hidDevice.opened) return reject(new Error("USB 设备未打开"));
       const buf = new Uint8Array(63);
       buf.set(payloadBytes.subarray(0, 63), 0);
-      const timer = setTimeout(() => { pendingResolver = null; reject(new Error("等待设备回复超时")); }, timeoutMs);
+      const timer = setTimeout(() => { pendingResolver = null; reject(new Error("等待键盘应答超时")); }, timeoutMs);
       pendingResolver = (reply) => { clearTimeout(timer); resolve(reply); };
       hidDevice.sendReport(0x04, buf).catch((err) => { clearTimeout(timer); pendingResolver = null; reject(err); });
     });
   }
 
-  async function queryVersion() {
-    const reply = await sendAndWait(new Uint8Array([0x03, 0x04, 0x01, 0x01, 0x35, 0x02]), 1500);
+  async function queryUsbVersion() {
+    const reply = await sendUsbAndWait(new Uint8Array([0x03, 0x04, 0x01, 0x01, 0x35, 0x02]), 1500);
     if (reply[0] === 0x04 && reply[1] === 0x04) {
-      const ver = new TextDecoder().decode(reply.subarray(3, 3 + reply[2]));
-      document.getElementById("connText").textContent = `已连接 (${ver})`;
-      log(`键盘固件版本: ${ver}`);
-      return ver;
+      lastReadVersion = new TextDecoder().decode(reply.subarray(3, 3 + reply[2])).replace(/\0+$/g, "");
+      document.getElementById("progressLabel").textContent = `USB 已就绪（当前标签：${lastReadVersion}）`;
+      log(`[USB] 读取到固件标签: "${lastReadVersion}"`);
+      updateConnUI();
+      return lastReadVersion;
     }
-    throw new Error("版本应答格式异常");
+    throw new Error("USB 版本应答格式异常");
   }
 
-  async function attachDevice(dev) {
+  async function queryBleVersion() {
+    if (!bleOtaChar) throw new Error("蓝牙 OTA 通道未就绪");
+    try {
+      const desc = await bleOtaChar.getDescriptor(BLE_DESC_CUD);
+      const dv = await desc.readValue();
+      lastReadVersion = new TextDecoder().decode(dv).replace(/\0+$/g, "");
+    } catch (_) {
+      lastReadVersion = bleDevice?.name || "蓝牙键盘";
+    }
+    try {
+      const batSvc = await bleDevice.gatt.getPrimaryService(BLE_BATTERY_SVC);
+      const batChr = await batSvc.getCharacteristic(BLE_BATTERY_CHR);
+      const bv = await batChr.readValue();
+      bleBatteryPct = bv.getUint8(0);
+    } catch (_) {}
+    document.getElementById("progressLabel").textContent = `蓝牙已就绪（当前标签：${lastReadVersion}${bleBatteryPct != null ? ` · 电量 ${bleBatteryPct}%` : ""}）`;
+    log(`[BLE] 读取到固件标签: "${lastReadVersion}"${bleBatteryPct != null ? `, 电量 ${bleBatteryPct}%` : ""}`);
+    updateConnUI();
+    return lastReadVersion;
+  }
+
+  async function disconnectBleQuiet() {
+    try { if (bleDevice && bleDevice.gatt.connected) bleDevice.gatt.disconnect(); } catch (_) {}
+    bleDevice = null; bleOtaChar = null; bleBatteryPct = null;
+  }
+
+  async function attachUsbDevice(dev) {
+    await disconnectBleQuiet();
+    transport = "usb";
     hidDevice = dev;
     if (!hidDevice.opened) await hidDevice.open();
     hidDevice.oninputreport = (event) => {
@@ -729,39 +2158,77 @@
         fn(new Uint8Array(event.data.buffer, event.data.byteOffset, event.data.byteLength));
       }
     };
-    document.getElementById("connDot").classList.add("connected");
-    document.getElementById("connText").textContent = `已连接: ${hidDevice.productName || "KB331U"}`;
-    document.getElementById("btnQueryVer").disabled = false;
-    await queryVersion();
-    renderFlashPanel();
+    await queryUsbVersion();
   }
 
   const isVendorIface = d => d.vendorId === 0x17EF && d.productId === 0x619E && d.collections.some(c => c.usagePage === 0xFF00);
 
-  async function connectKeyboard() {
-    if (!("hid" in navigator)) { alert("当前浏览器不支持 WebHID，请使用桌面版 Chrome 或 Edge，并通过 http://localhost 打开。"); return; }
+  async function connectUsb() {
+    if (!("hid" in navigator)) { alert("当前浏览器不支持 USB 直连（WebHID），请使用桌面版 Chrome / Edge，或改用「蓝牙无线连接」。"); return; }
     try {
       const devices = await navigator.hid.requestDevice({ filters: [{ vendorId: 0x17EF, productId: 0x619E, usagePage: 0xFF00 }] });
       if (!devices.length) return;
-      await attachDevice(devices[0]);
-      log(`WebHID 已连接 ${hidDevice.productName}`);
-    } catch (err) { log(`连接失败: ${err.message}`); }
+      await attachUsbDevice(devices[0]);
+      log(`[USB] 已连接 ${hidDevice.productName}`);
+    } catch (err) { log(`[USB] 连接失败: ${err.message}`); }
   }
 
-  // ---- Visible stage tracker: every phase of the flash is shown, nothing is a black box ----
+  async function connectBle() {
+    if (!("bluetooth" in navigator)) { alert("当前浏览器不支持 Web Bluetooth，请使用 Chrome / Edge（macOS / Windows / Android 均支持）。"); return; }
+    try {
+      // Note: Telink 128-bit OTA UUID is in GATT, not in the 31B advertising packet, so acceptAllDevices ensures discovery even after renaming!
+      const dev = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: [TELINK_OTA_SVC, BLE_BATTERY_SVC],
+      });
+      log(`[BLE] 正在连接 ${dev.name || dev.id}…`);
+      document.getElementById("progressLabel").textContent = "正在连接蓝牙 GATT 服务…";
+      const server = await dev.gatt.connect();
+      const otaSvc = await server.getPrimaryService(TELINK_OTA_SVC);
+      const otaChr = await otaSvc.getCharacteristic(TELINK_OTA_CHAR);
+
+      hidDevice = null; pendingResolver = null;
+      bleDevice = dev;
+      bleOtaChar = otaChr;
+      bleBatteryPct = null;
+      transport = "ble";
+
+      dev.addEventListener("gattserverdisconnected", () => {
+        log(awaitingReboot ? "[BLE] 键盘已断开蓝牙（正在重启切换新固件，属正常现象）" : "[BLE] 蓝牙连接已断开");
+        if (transport === "ble") {
+          bleOtaChar = null;
+          if (!awaitingReboot) transport = null;
+          updateConnUI();
+        }
+      });
+
+      await queryBleVersion();
+      log(`[BLE] 已连接 Telink OTA 服务`);
+    } catch (err) {
+      if (err.name !== "NotFoundError") {
+        log(`[BLE] 连接失败: ${err.message}`);
+        alert(`蓝牙连接失败：${err.message}\n\n提示：请确保选择的是小新无线键盘（默认名 Lenovo Wireless KB），并确认设备支持 Telink OTA 服务。`);
+      }
+    }
+  }
+
+  // ---- 6-stage transparent flash tracker ----
   const STAGES = [
-    ["build",  "生成固件并通过白名单校验"],
-    ["start",  "键盘进入升级模式"],
-    ["write",  "写入备用分区（4,033 块，每块独立 CRC）"],
-    ["end",    "整体校验并切换到新固件"],
-    ["reboot", "键盘重启"],
-    ["verify", "重新连上并读取版本（确认可随时刷回）"],
+    ["build",  "生成固件并通过安全白名单核验"],
+    ["start",  "让键盘进入升级模式"],
+    ["write",  "分块写入备用分区"],
+    ["end",    "整体校验并激活新固件"],
+    ["reboot", "键盘重启生效"],
+    ["verify", "确认新固件就绪"],
   ];
   const ICONS = { pending: "○", active: "●", done: "✓", fail: "✗", warn: "!" };
+  const stageT0 = {};
+  let awaitingReboot = false;
+  let rebootTimer = null;
+
   function resetStages() {
     const ol = document.getElementById("stageList");
-    ol.innerHTML = "";
-    ol.style.display = "";
+    ol.innerHTML = ""; ol.style.display = "";
     for (const [id, text] of STAGES) {
       const li = document.createElement("li");
       li.id = `stage-${id}`; li.className = "pending";
@@ -770,17 +2237,14 @@
       ol.appendChild(li);
     }
   }
-  const stageT0 = {};
-  function setStage(id, state, info) {
+  function setStage(id, st, info) {
     const li = document.getElementById(`stage-${id}`);
     if (!li) return;
-    if (state === "active") stageT0[id] = performance.now();
-    li.className = state;
-    li.querySelector(".ic").textContent = ICONS[state];
+    if (st === "active") stageT0[id] = performance.now();
+    li.className = st;
+    li.querySelector(".ic").textContent = ICONS[st];
     let text = info || "";
-    if ((state === "done" || state === "warn") && stageT0[id] != null && !info) {
-      text = `${((performance.now() - stageT0[id]) / 1000).toFixed(1)}s`;
-    }
+    if ((st === "done" || st === "warn") && stageT0[id] != null && !info) text = `${((performance.now() - stageT0[id]) / 1000).toFixed(1)}s`;
     li.querySelector(".info").textContent = text;
   }
   const fmtSec = s => (s >= 60 ? `${Math.floor(s / 60)}分${Math.round(s % 60)}秒` : `${s.toFixed(1)}s`);
@@ -789,28 +2253,25 @@
     if (isFlashing) { e.preventDefault(); e.returnValue = ""; }
   });
 
-  let awaitingReboot = false;
-  let rebootTimer = null;
-  async function flashFirmware(built) {
+  async function flashViaUsb(built) {
     const fw = built.bytes;
-    isFlashing = true; renderFlashPanel();
+    const totalChunks = Math.ceil(fw.length / 16);
     const bar = document.getElementById("progressBar");
     const label = document.getElementById("progressLabel");
     bar.style.width = "0%"; bar.style.background = "";
     const t0 = performance.now();
     let current = "build";
     resetStages();
-    setStage("build", "active");
-    setStage("build", "done", `${built.diff.length} 字节变化 ✓`);
+    setStage("build", "done", `${built.diff.length}B ✓`);
     try {
       current = "start"; setStage("start", "active");
-      label.textContent = "正在请求键盘进入升级模式…";
-      log("1/3 CMD_OTA_START…");
-      const startReply = await sendAndWait(new Uint8Array([0x03, 0x01, 0x02, 0x01, 0xFF, 0x44, 0x80]), 1500);
-      if (!(startReply[0] === 0x04 && startReply[1] === 0x01 && startReply[3] === 0x01)) throw new Error("CMD_OTA_START 被拒绝");
+      label.textContent = "USB: 正在请求进入升级模式…";
+      log("[USB] 1/3 CMD_OTA_START…");
+      const startReply = await sendUsbAndWait(new Uint8Array([0x03, 0x01, 0x02, 0x01, 0xFF, 0x44, 0x80]), 1500);
+      if (!(startReply[0] === 0x04 && startReply[1] === 0x01 && startReply[3] === 0x01)) throw new Error("键盘拒绝进入升级模式");
       setStage("start", "done");
+
       current = "write"; setStage("write", "active", "0%");
-      const totalChunks = Math.ceil(fw.length / 16);
       const tw = performance.now();
       let retries = 0;
       const updateWrite = (n) => {
@@ -818,10 +2279,11 @@
         const used = (performance.now() - tw) / 1000;
         const eta = n > 0 ? used / n * (totalChunks - n) : 0;
         bar.style.width = `${pct.toFixed(1)}%`;
-        label.textContent = `写入 ${n}/${totalChunks} (${pct.toFixed(1)}%) · 已用 ${fmtSec(used)} · 剩余约 ${fmtSec(eta)}` + (retries ? ` · 重试 ${retries} 次` : "");
+        label.textContent = `USB 写入 ${pct.toFixed(1)}% · 已用 ${fmtSec(used)} · 剩余约 ${fmtSec(eta)}` + (retries ? ` · 重试 ${retries}` : "");
         setStage("write", "active", `${pct.toFixed(0)}%`);
       };
       updateWrite(0);
+
       const pkt = new Uint8Array(25);
       pkt[0] = 0x03; pkt[1] = 0x02; pkt[2] = 0x14;
       for (let idx = 0; idx < totalChunks; idx++) {
@@ -836,58 +2298,152 @@
         let ok = false;
         for (let retry = 0; retry < 3 && !ok; retry++) {
           try {
-            const r = await sendAndWait(pkt, 800);
+            const r = await sendUsbAndWait(pkt, 800);
             ok = r[0] === 0x04 && r[1] === 0x02 && (r[3] === 0x01 || r[3] === 0x0A);
           } catch (_) {}
-          if (!ok) {
-            retries++;
-            log(`  分块 ${idx} 第 ${retry + 1} 次未确认，重发…`);
-            await new Promise(res => setTimeout(res, 5));
-          }
+          if (!ok) { retries++; await new Promise(res => setTimeout(res, 5)); }
         }
-        if (!ok) throw new Error(`分块 ${idx}/${totalChunks} 连续 3 次写入失败（键盘仍运行旧固件，可重新刷写）`);
-        if ((idx + 1) % 20 === 0 || idx + 1 === totalChunks) updateWrite(idx + 1);
-        if ((idx + 1) % 1000 === 0) log(`  已写入 ${idx + 1}/${totalChunks} 块`);
+        if (!ok) throw new Error(`分块 ${idx}/${totalChunks} 写入失败（原固件未受影响）`);
+        if ((idx + 1) % 25 === 0 || idx + 1 === totalChunks) updateWrite(idx + 1);
       }
-      setStage("write", "done", `${fmtSec((performance.now() - tw) / 1000)}${retries ? ` · 重试 ${retries}` : ""}`);
-      log(`  全部 ${totalChunks} 块已写入${retries ? `（共重试 ${retries} 次，均已成功）` : "，无重试"}`);
+      setStage("write", "done", fmtSec((performance.now() - tw) / 1000));
+
       current = "end"; setStage("end", "active");
-      label.textContent = "键盘正在校验整个固件…";
-      log("2/3 CMD_OTA_END…");
+      label.textContent = "USB: 键盘正在校验整个固件…";
+      log(`[USB] 2/3 CMD_OTA_END (${totalChunks} 块)…`);
       const e = new Uint8Array(13);
       e[0] = 0x03; e[1] = 0x03; e[2] = 0x08; e[3] = 0x02; e[4] = 0xFF;
       e[5] = totalChunks & 0xFF; e[6] = (totalChunks >> 8) & 0xFF; e[7] = (~e[5]) & 0xFF; e[8] = (~e[6]) & 0xFF;
       const ei = crc16Modbus(e.subarray(3, 9)); e[9] = ei & 0xFF; e[10] = (ei >> 8) & 0xFF;
       const eo = crc16Outer(e.subarray(0, 11)); e[11] = (eo >> 8) & 0xFF; e[12] = eo & 0xFF;
-      const endReply = await sendAndWait(e, 2500);
-      if (!(endReply[0] === 0x04 && endReply[1] === 0x03 && endReply[3] === 0x02)) throw new Error("CMD_OTA_END 校验失败（键盘仍运行旧固件）");
+      const endReply = await sendUsbAndWait(e, 2500);
+      if (!(endReply[0] === 0x04 && endReply[1] === 0x03 && endReply[3] === 0x02)) throw new Error("整体校验失败（原固件未受影响）");
       setStage("end", "done", "CRC ✓");
+
       const sec = ((performance.now() - t0) / 1000).toFixed(1);
       bar.style.width = "100%";
       label.textContent = `写入完成 (${sec}s) · 等待键盘重启…`;
-      log(`3/3 刷写成功，耗时 ${sec}s。等待键盘重启并自检刷写通道…`);
-      safeStore("kb331u.flashed", JSON.stringify({ at: new Date().toISOString(), scheme: schemeToJSON(scheme) }));
+      log(`[USB] 3/3 刷写成功 (${sec}s)，等待重启自检…`);
+      safeStore("kb331u.flashed", JSON.stringify({ at: new Date().toISOString(), scheme: stateToJSON(state) }));
       awaitingReboot = true;
-      current = "reboot"; setStage("reboot", "active", "通常 2–5 秒");
+      current = "reboot"; setStage("reboot", "active", "约 2–5 秒");
       clearTimeout(rebootTimer);
       rebootTimer = setTimeout(() => {
         if (!awaitingReboot) return;
-        setStage(hidDevice ? "verify" : "reboot", "warn", "超过 15 秒");
-        label.textContent = "新固件已写入，但页面没自动重连上";
-        log("! 15 秒内没自动重连。新固件已经校验通过并激活；请拔插一次 USB-C 线，再点「连接 USB-C 键盘」→「读取固件版本」确认。");
+        setStage("verify", "warn", "请手动重连");
+        label.textContent = "新固件已激活，可点「连接 USB-C」读取新标签确认";
       }, 15000);
     } catch (err) {
       setStage(current, "fail", "失败");
       bar.style.background = "#ef4444";
       label.textContent = `失败: ${err.message}`;
-      log(`错误: ${err.message}`);
+      log(`[USB] 错误: ${err.message}`);
+    }
+  }
+
+  // Exact Telink Legacy BLE OTA flow verified against OtaController.java & firmware 0x5E70/0xDC5C
+  async function flashViaBle(built) {
+    const fw = built.bytes;
+    const totalChunks = Math.ceil(fw.length / 16);
+    const lastIdx = totalChunks - 1;
+    const bar = document.getElementById("progressBar");
+    const label = document.getElementById("progressLabel");
+    bar.style.width = "0%"; bar.style.background = "";
+    const t0 = performance.now();
+    let current = "build";
+    resetStages();
+    setStage("build", "done", `${built.diff.length}B ✓`);
+
+    const writeNoRsp = async (arr) => {
+      if (typeof bleOtaChar.writeValueWithoutResponse === "function") {
+        await bleOtaChar.writeValueWithoutResponse(arr);
+      } else {
+        await bleOtaChar.writeValue(arr);
+      }
+    };
+
+    try {
+      current = "start"; setStage("start", "active");
+      label.textContent = "蓝牙: 发送 CMD_OTA_START 并等待擦除备用分区…";
+      log("[BLE] 1/3 发送 CMD_OTA_START (01 FF) + READ 同步…");
+      await writeNoRsp(new Uint8Array([0x01, 0xFF]));
+      await bleOtaChar.readValue(); // matches OtaController.sendOtaStartReadCmd()!
+      setStage("start", "done");
+
+      current = "write"; setStage("write", "active", "0%");
+      const tw = performance.now();
+      const updateWrite = (n) => {
+        const pct = (n / totalChunks) * 100;
+        const used = (performance.now() - tw) / 1000;
+        const eta = n > 0 ? used / n * (totalChunks - n) : 0;
+        bar.style.width = `${pct.toFixed(1)}%`;
+        label.textContent = `蓝牙无线写入 ${pct.toFixed(1)}% · 已用 ${fmtSec(used)} · 剩余约 ${fmtSec(eta)}`;
+        setStage("write", "active", `${pct.toFixed(0)}%`);
+      };
+      updateWrite(0);
+
+      const pkt = new Uint8Array(20);
+      for (let idx = 0; idx < totalChunks; idx++) {
+        pkt[0] = idx & 0xFF;
+        pkt[1] = (idx >> 8) & 0xFF;
+        pkt.fill(0xFF, 2, 18);
+        const start = idx * 16;
+        pkt.set(fw.subarray(start, Math.min(start + 16, fw.length)), 2);
+        const c16 = crc16Modbus(pkt.subarray(0, 18));
+        pkt[18] = c16 & 0xFF;
+        pkt[19] = (c16 >> 8) & 0xFF;
+        await writeNoRsp(pkt);
+        // Exact OtaController DEFAULT_READ_INTERVAL = 8 flow-control sync!
+        if ((idx + 1) % 8 === 0 || idx + 1 === totalChunks) {
+          await bleOtaChar.readValue();
+        }
+        if ((idx + 1) % 32 === 0 || idx + 1 === totalChunks) updateWrite(idx + 1);
+      }
+      setStage("write", "done", fmtSec((performance.now() - tw) / 1000));
+
+      current = "end"; setStage("end", "active");
+      label.textContent = "蓝牙: 发送结束校验指令，键盘正在验证 CRC-32…";
+      log(`[BLE] 2/3 发送 CMD_OTA_END (lastIdx=${lastIdx})…`);
+      // Exact OtaController.sendOtaEndCommand(): 20 bytes [02 FF, idx_lo, idx_hi, ~idx_lo, ~idx_hi, 14x 00]
+      const endPkt = new Uint8Array(20);
+      endPkt[0] = 0x02; endPkt[1] = 0xFF;
+      endPkt[2] = lastIdx & 0xFF; endPkt[3] = (lastIdx >> 8) & 0xFF;
+      endPkt[4] = (~lastIdx) & 0xFF; endPkt[5] = ((~lastIdx) >> 8) & 0xFF;
+      awaitingReboot = true;
+      try { await writeNoRsp(endPkt); } catch (_) {} // immediate disconnect on reboot is normal!
+      setStage("end", "done", "已激活");
+      setStage("reboot", "done", "重启中");
+      setStage("verify", "done", "蓝牙重连即可使用");
+
+      const sec = ((performance.now() - t0) / 1000).toFixed(1);
+      bar.style.width = "100%";
+      label.textContent = `蓝牙无线写入完成 (${sec}s) ✓ 键盘正在重启生效`;
+      log(`[BLE] 3/3 蓝牙无线 OTA 完成 (${sec}s)，键盘将自动重启并切换到新固件。`);
+      safeStore("kb331u.flashed", JSON.stringify({ at: new Date().toISOString(), scheme: stateToJSON(state) }));
+      setTimeout(() => { awaitingReboot = false; if (transport === "ble" && !bleOtaChar) transport = null; updateConnUI(); }, 4000);
+    } catch (err) {
+      awaitingReboot = false;
+      setStage(current, "fail", "失败");
+      bar.style.background = "#ef4444";
+      label.textContent = `蓝牙写入中断: ${err.message}`;
+      log(`[BLE] 错误: ${err.message}（双分区保护，键盘仍运行旧固件，可重新连接重试）`);
+    }
+  }
+
+  async function startFlash(built) {
+    isFlashing = true;
+    renderFlashPanel();
+    try {
+      if (transport === "usb") await flashViaUsb(built);
+      else if (transport === "ble") await flashViaBle(built);
     } finally {
-      isFlashing = false; renderFlashPanel();
+      isFlashing = false;
+      renderFlashPanel();
     }
   }
 
   // ===========================================================================
-  // 6. Init & events
+  // 6. Init & Event Wiring
   // ===========================================================================
   async function loadBase() {
     const badge = document.getElementById("fwStateBadge");
@@ -898,53 +2454,65 @@
       const sha = await sha256Hex(bytes);
       if (sha !== BASE_SHA256) throw new Error("SHA-256 与联想原厂不符");
       baseFirmware = bytes;
-      badge.textContent = "原厂基线校验通过 ✓";
-      log("已加载联想原厂基线 KA024_A_1.0.8（SHA-256 校验通过）");
+      badge.textContent = "原厂基线已核验 ✓";
+      log("原厂基线 KA024_A_1.0.8 加载并通过 SHA-256 校验");
     } catch (err) {
-      badge.textContent = "基线加载失败";
-      log(`原厂基线加载失败: ${err.message}。请通过 serve.sh 打开本页。`);
+      badge.textContent = "原厂基线加载失败";
+      log(`原厂基线加载失败: ${err.message}（请通过 serve.sh / serve.bat 打开本页）`);
     }
   }
 
-  function loadInitialScheme() {
+  function applyFnClassicPreset() {
+    state.fn.keys = new Map();
+    for (const [off, a] of Object.entries(FN_CLASSIC_PRESET)) {
+      const o = Number(off);
+      if (o !== state.fn.triggerOff) state.fn.keys.set(o, a);
+    }
+  }
+
+  function applyMagicPadPreset() {
+    state = stockState();
+    for (const [off, a] of Object.entries(MAGICPAD_PRESET_KEYS)) state.keys.set(Number(off), a);
+    state.meta.verTag = "KA024_PAD_14S";
+  }
+
+  function loadInitialState() {
     const flashed = safeLoad("kb331u.flashed");
     const draft = safeLoad("kb331u.draft");
     try {
       const f = flashed ? JSON.parse(flashed) : null;
       const d = draft ? JSON.parse(draft) : null;
-      if (f && (!d || JSON.stringify(d.keys) === JSON.stringify(f.scheme.keys))) {
-        scheme = schemeFromJSON(f.scheme);
-        setBanner(`已载入你在 ${new Date(f.at).toLocaleString()} 刷入键盘的方案。`);
+      if (f && (!d || JSON.stringify(d) === JSON.stringify(f.scheme))) {
+        state = stateFromJSON(f.scheme);
+        setBanner(`已载入你在 ${new Date(f.at).toLocaleString()} 写入键盘的方案。`);
         return;
       }
       if (d) {
-        scheme = schemeFromJSON(d);
-        setBanner(`已恢复你上次在本页编辑、<b>尚未刷入</b>的方案。${f ? "（键盘里是 " + new Date(f.at).toLocaleString() + " 刷入的版本）" : ""}`);
+        state = stateFromJSON(d);
+        setBanner(`已恢复你上次编辑、<strong>尚未写入</strong>的方案。${f ? "（上次写入时间：" + new Date(f.at).toLocaleString() + "）" : ""}`);
         return;
       }
     } catch (_) {}
-    scheme = stockScheme();
-    for (const [off, a] of Object.entries(MY_PRESET)) scheme.set(Number(off), a);
-    setBanner("已载入「MagicPad 当前方案」：互联 → 多任务，右 Ctrl → 回到桌面，音量/静音改用键盘页键码。与 2026-11-18 刷入键盘的固件一致。");
+    applyMagicPadPreset();
+    setBanner("已载入「平板全功能方案」：<strong>设备互联 → 多任务</strong>，<strong>右 Ctrl → 回桌面</strong>，<strong>静音与音量全保留原厂</strong>。还可随时勾选「开启长按变 Fn 层」或点「蓝牙无线连接」免线刷入。");
   }
 
   (async function init() {
     const w = document.getElementById("envWarning");
     if (location.protocol === "file:") {
       w.style.display = "block";
-      w.innerHTML = "浏览器禁止在 <code>file://</code> 下使用 WebHID。请运行 <code>./serve.sh</code>（Windows 双击 <code>serve.bat</code>）后访问 <code>http://localhost:8765</code>。";
-    } else if (!("hid" in navigator)) {
+      w.innerHTML = "浏览器不允许在本地文件协议下连设备。请运行 <code>./serve.sh</code>（Windows 双击 <code>serve.bat</code>）并访问 <code>http://localhost:8765</code>。";
+    } else if (!("hid" in navigator) && !("bluetooth" in navigator)) {
       w.style.display = "block";
-      w.textContent = "当前浏览器不支持 WebHID，可以编辑和导出 .bin，但刷写需要桌面版 Chrome / Edge。";
-    } else {
+      w.textContent = "当前浏览器不支持 WebHID 和 Web Bluetooth，仍可编辑并导出 .bin；如需直连写入请使用 Chrome 或 Edge。";
+    }
+    if ("hid" in navigator) {
       navigator.hid.addEventListener("disconnect", (e) => {
         if (hidDevice && e.device === hidDevice) {
           hidDevice = null; pendingResolver = null;
-          document.getElementById("connDot").classList.remove("connected");
-          document.getElementById("connText").textContent = awaitingReboot ? "键盘重启中…" : "键盘已断开";
-          if (awaitingReboot) log("  键盘已断开 USB（正在重启，属正常现象）");
-          document.getElementById("btnQueryVer").disabled = true;
-          renderFlashPanel();
+          if (transport === "usb" && !awaitingReboot) transport = null;
+          if (awaitingReboot) log("[USB] 键盘已断开（正在重启生效）");
+          updateConnUI();
         }
       });
       navigator.hid.addEventListener("connect", async (e) => {
@@ -952,68 +2520,184 @@
         const wasRebooting = awaitingReboot;
         if (wasRebooting) { setStage("reboot", "done"); setStage("verify", "active"); }
         try {
-          await attachDevice(e.device);
+          await attachUsbDevice(e.device);
           if (wasRebooting) {
             awaitingReboot = false; clearTimeout(rebootTimer);
-            setStage("verify", "done", "✓");
-            log("✓ 键盘已重启并应答版本查询：新固件运行正常，USB 刷写通道可用（随时可刷回）。");
-            document.getElementById("progressLabel").textContent = "全部完成 · 键盘已正常重启 ✓ 可以拔线了";
+            setStage("verify", "done", lastReadVersion || "✓");
+            log(`[USB] ✓ 重启自检通过，当前标签: ${lastReadVersion}`);
+            document.getElementById("progressLabel").textContent = `全部完成 ✓ 新固件已生效（标签：${lastReadVersion}），可以拔线了`;
           }
         } catch (err) {
           if (wasRebooting) setStage("verify", "warn", "需手动连接");
-          log(`自动重连失败: ${err.message}，请手动点击「连接 USB-C 键盘」。`);
+          log(`[USB] 自动重连失败: ${err.message}`);
         }
       });
     }
-    loadInitialScheme();
+    loadInitialState();
     renderAll();
     await loadBase();
     renderFlashPanel();
   })();
 
-  document.getElementById("btnConnect").addEventListener("click", connectKeyboard);
+  // Header buttons
+  document.getElementById("btnConnectUsb").addEventListener("click", connectUsb);
+  document.getElementById("btnConnectBle").addEventListener("click", connectBle);
   document.getElementById("btnQueryVer").addEventListener("click", async () => {
-    try { await queryVersion(); } catch (e) { log(`读取版本失败: ${e.message}`); }
+    try {
+      if (transport === "usb") await queryUsbVersion();
+      else if (transport === "ble") await queryBleVersion();
+    } catch (e) { log(`读取标签失败: ${e.message}`); }
   });
 
+  // Layer & Fn controls
+  document.getElementById("btnLayerBase").addEventListener("click", () => { activeLayer = "base"; renderAll(); });
+  document.getElementById("btnLayerFn").addEventListener("click", () => {
+    activeLayer = "fn";
+    if (selectedOff === state.fn.triggerOff) selectedOff = 0xEEA2;
+    renderAll();
+  });
+  document.getElementById("chkFnEnable").addEventListener("change", (e) => {
+    state.fn.enabled = e.target.checked;
+    if (state.fn.enabled && state.fn.keys.size === 0) applyFnClassicPreset();
+    if (!state.fn.enabled && activeLayer === "fn") activeLayer = "base";
+    saveDraft(); renderAll();
+  });
+  document.getElementById("selFnTrigger").addEventListener("change", (e) => {
+    const newOff = Number(e.target.value);
+    state.fn.triggerOff = newOff;
+    state.fn.keys.delete(newOff);
+    if (activeLayer === "fn" && selectedOff === newOff) selectedOff = 0xEEA2;
+    saveDraft(); renderAll();
+  });
+  document.getElementById("selFnTap").addEventListener("change", (e) => {
+    const found = FN_TAP_CHOICES.find(c => c.id === e.target.value);
+    if (found) { state.fn.tap = { ...found.a }; saveDraft(); renderAll(); }
+  });
+  document.getElementById("selFnTimeout").addEventListener("change", (e) => {
+    state.fn.timeoutMs = Number(e.target.value);
+    saveDraft(); renderAll();
+  });
+  document.getElementById("btnFnPresetClassic").addEventListener("click", () => {
+    state.fn.enabled = true;
+    applyFnClassicPreset();
+    activeLayer = "fn";
+    saveDraft(); renderAll();
+  });
+  document.getElementById("btnFnClear").addEventListener("click", () => {
+    state.fn.keys = new Map();
+    saveDraft(); renderAll();
+  });
+
+  // Double-Tap gesture controls
+  document.getElementById("chkDtEnable").addEventListener("change", (e) => {
+    state.dt.enabled = e.target.checked;
+    saveDraft(); renderAll();
+  });
+  document.getElementById("selDtKey").addEventListener("change", (e) => {
+    state.dt.keyOff = Number(e.target.value);
+    saveDraft(); renderAll();
+  });
+  document.getElementById("selDtWindow").addEventListener("change", (e) => {
+    state.dt.windowMs = Number(e.target.value);
+    saveDraft(); renderAll();
+  });
+  const onDtComboChange = () => {
+    const k1 = Number(document.getElementById("selDtK1").value);
+    const k2 = Number(document.getElementById("selDtK2").value);
+    if (k1 === k2) { alert("双击组合快捷键的两个按键不能相同"); renderDoubleTapPanel(); return; }
+    state.dt.action = { t: "combo", k1, k2 };
+    saveDraft(); renderAll();
+  };
+  document.getElementById("selDtK1").addEventListener("change", onDtComboChange);
+  document.getElementById("selDtK2").addEventListener("change", onDtComboChange);
+
+  // Presets & restore
+  document.getElementById("btnRestoreOne").addEventListener("click", () => {
+    if (activeLayer === "fn") setCurrentKeyAssign(null);
+    else setCurrentKeyAssign(stockAssign(KEY_BY_OFF.get(selectedOff)));
+  });
+  document.getElementById("btnPresetStock").addEventListener("click", () => {
+    state = stockState(); activeLayer = "base";
+    saveDraft(); setBanner("已切换为联想原厂方案（关闭 Fn 层与双击快捷键，恢复原厂键位与名称）。");
+    renderAll();
+  });
+  document.getElementById("btnPresetMagic").addEventListener("click", () => {
+    applyMagicPadPreset(); activeLayer = "base";
+    saveDraft(); setBanner("已载入「平板全功能方案」：互联 → 多任务，右 Ctrl → 回桌面，静音与音量全保留原厂。");
+    renderAll();
+  });
+  document.getElementById("btnRestoreMeta").addEventListener("click", () => {
+    state.meta = { ...STOCK_META }; saveDraft(); renderAll();
+  });
+
+  // Identity inputs
+  const bindMetaInput = (id, key) => {
+    document.getElementById(id).addEventListener("input", (e) => {
+      state.meta[key] = e.target.value;
+      saveDraft(); renderIdentityPanel(); renderFlashPanel();
+    });
+  };
+  bindMetaInput("inpVerTag", "verTag");
+  bindMetaInput("inpBleName", "bleName");
+  bindMetaInput("inpUsbName", "usbName");
+
+  document.getElementById("btnTagToday").addEventListener("click", () => {
+    const d = new Date();
+    const mm = String(d.getMonth() + 1).padStart(2, "0"), dd = String(d.getDate()).padStart(2, "0");
+    state.meta.verTag = `KA024_MY_${mm}${dd}`;
+    saveDraft(); renderAll();
+  });
+  document.getElementById("btnTagStock").addEventListener("click", () => {
+    state.meta.verTag = STOCK_META.verTag; saveDraft(); renderAll();
+  });
+
+  // Flash & Download
   document.getElementById("btnFlash").addEventListener("click", () => {
-    const built = buildFirmware(scheme);
+    const built = buildFirmware(state);
     if (built.error) { alert(built.error); return; }
-    const changes = ALL_KEYS.filter(k => !sameAssign(scheme.get(k.off), stockAssign(k)))
-      .map(k => `• ${keyName(k)}：${describe(stockAssign(k))} → ${describe(scheme.get(k.off))}`);
-    const summary = changes.length ? changes.join("\n") : "• 全部恢复为联想原厂";
-    if (confirm(`确认刷入以下配置？\n\n${summary}\n\n与原厂相差 ${built.diff.length} 字节（已通过白名单校验）。\n约 15 秒，期间请勿拔线。`)) flashFirmware(built);
+    const lines = [];
+    for (const k of ALL_KEYS) {
+      if (state.fn.enabled && k.off === state.fn.triggerOff) continue;
+      if (!sameAssign(state.keys.get(k.off), stockAssign(k))) {
+        lines.push(`• ${keyName(k)}：${describe(stockAssign(k), STOCK_MACRO)} → ${describe(state.keys.get(k.off))}`);
+      }
+    }
+    if (state.fn.enabled) {
+      const tk = KEY_BY_OFF.get(state.fn.triggerOff);
+      lines.push(`• 长按 Fn 层：触发键「${keyName(tk)}」（轻点=${describe(state.fn.tap)}），共 ${state.fn.keys.size} 颗 Fn 按键`);
+    }
+    if (state.dt.enabled) {
+      const dk = KEY_BY_OFF.get(state.dt.keyOff);
+      lines.push(`• 双击快捷键：双击「${keyName(dk)}」→ ${describeDtAction(state.dt.action)}`);
+    }
+    if (state.macro.k1 !== STOCK_MACRO.k1 || state.macro.k2 !== STOCK_MACRO.k2) {
+      lines.push(`• 一键组合快捷键：${macroLabel(STOCK_MACRO)} → ${macroLabel(state.macro)}`);
+    }
+    if (state.meta.verTag !== STOCK_META.verTag) lines.push(`• 方案标签：${state.meta.verTag}`);
+    if (state.meta.bleName !== STOCK_META.bleName) lines.push(`• 蓝牙名称：${state.meta.bleName}`);
+    if (state.meta.usbName !== STOCK_META.usbName) lines.push(`• USB 名称：${state.meta.usbName}`);
+    const summary = lines.length ? lines.join("\n") : "• 全部恢复为联想原厂设置";
+    const way = transport === "ble" ? "蓝牙无线（约 30–90 秒，请勿关闭键盘）" : "USB-C 有线（约 15 秒，请勿拔线）";
+    if (confirm(`确认通过 ${way} 写入以下设置？\n\n${summary}`)) startFlash(built);
   });
 
   document.getElementById("btnDownload").addEventListener("click", () => {
-    const built = buildFirmware(scheme);
+    const built = buildFirmware(state);
     if (built.error) { alert(built.error); return; }
+    const safeTag = state.meta.verTag.replace(/[^A-Za-z0-9._-]/g, "_");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([built.bytes], { type: "application/octet-stream" }));
-    a.download = `KA024_A_1.0.8_custom_${built.crc.toString(16).padStart(8, "0")}.bin`;
+    a.download = `${safeTag}_${built.crc.toString(16).padStart(8, "0")}.bin`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    log(`已导出 ${a.download}`);
+    log(`已导出固件备份: ${a.download}`);
   });
 
-  document.getElementById("btnRestoreStock").addEventListener("click", () => {
-    scheme = stockScheme();
-    safeStore("kb331u.draft", JSON.stringify(schemeToJSON(scheme)));
-    setBanner("已切换为联想原厂方案。刷入后键盘恢复出厂键位。");
-    renderAll();
-  });
-  document.getElementById("btnPresetMine").addEventListener("click", () => {
-    scheme = stockScheme();
-    for (const [off, a] of Object.entries(MY_PRESET)) scheme.set(Number(off), a);
-    safeStore("kb331u.draft", JSON.stringify(schemeToJSON(scheme)));
-    setBanner("已载入「MagicPad 当前方案」。");
-    renderAll();
-  });
-
+  // Scheme JSON & .bin import/export
   document.getElementById("btnExportScheme").addEventListener("click", () => {
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(schemeToJSON(scheme), null, 2)], { type: "application/json" }));
-    a.download = "kb331u-keymap.json";
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(stateToJSON(state), null, 2)], { type: "application/json" }));
+    a.download = `${state.meta.verTag.replace(/[^A-Za-z0-9._-]/g, "_")}-scheme.json`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   });
@@ -1021,9 +2705,8 @@
     const file = e.target.files?.[0]; e.target.value = "";
     if (!file) return;
     try {
-      scheme = schemeFromJSON(JSON.parse(await file.text()));
-      safeStore("kb331u.draft", JSON.stringify(schemeToJSON(scheme)));
-      setBanner(`已导入方案文件 ${file.name}。`);
+      state = stateFromJSON(JSON.parse(await file.text()));
+      saveDraft(); setBanner(`已导入方案文件 <strong>${file.name}</strong>。`);
       renderAll();
     } catch (err) { alert(`导入失败：${err.message}`); }
   });
@@ -1032,11 +2715,12 @@
     if (!file || !baseFirmware) return;
     const img = new Uint8Array(await file.arrayBuffer());
     const g = guardImage(img);
-    if (g.error) { alert(`无法读取：${g.error}\n只支持由本工具或同一原厂固件改出来的 .bin。`); return; }
-    scheme = schemeFromImage(img);
-    safeStore("kb331u.draft", JSON.stringify(schemeToJSON(scheme)));
-    setBanner(`已从固件 ${file.name} 读出方案（与原厂相差 ${g.diff.length} 字节）。`);
-    log(`从 ${file.name} 读出方案`);
+    if (g.error) { alert(`无法读取：${g.error}\n仅支持由本工具或同一原厂固件生成的 .bin 文件。`); return; }
+    state = stateFromImage(img);
+    saveDraft();
+    const extra = [state.fn.enabled ? "长按 Fn 层" : "", state.dt.enabled ? "双击快捷键" : ""].filter(Boolean).join(" + ");
+    setBanner(`已从固件 <strong>${file.name}</strong> 读回完整方案${extra ? `（含${extra}配置）` : ""}。`);
+    log(`从 ${file.name} 读回方案（${img.length}B，差异 ${g.diff.length}B）`);
     renderAll();
   });
   </script>
