@@ -235,6 +235,27 @@
     .opt.active { background: var(--accent-soft); border-color: var(--accent); color: #dbeafe; }
     .opt.macro-active { background: var(--purple-soft); border-color: var(--purple); color: #ede9fe; }
     .opt .tag { font-size: 10px; color: var(--success); font-weight: 700; background: var(--success-soft); padding: 1px 5px; border-radius: 4px; }
+    .opt .tag.warn { color: #fcd34d; background: var(--warn-soft); }
+
+    /* ---------- Double-Tap Card ---------- */
+    .dt-card.enabled { border-color: rgba(167,139,250,0.5); }
+    .dt-os-bar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
+      background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.32);
+      border-radius: 10px; padding: 10px 13px; margin-bottom: 12px;
+    }
+    .dt-os-bar label { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #f3e8ff; cursor: pointer; }
+    .dt-os-bar input[type="checkbox"] { accent-color: var(--purple); width: 16px; height: 16px; cursor: pointer; }
+    .dt-preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    @media (max-width: 640px) { .dt-preview-grid { grid-template-columns: 1fr; } }
+    .dt-os-card {
+      background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 10px 12px; font-size: 12px; line-height: 1.55; color: #cbd5e1;
+    }
+    .dt-os-card.active-os { border-color: rgba(167,139,250,0.45); background: rgba(167,139,250,0.07); }
+    .dt-os-card.safe-os { border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.06); }
+    .dt-os-card.warn-os { border-color: rgba(245,158,11,0.45); background: rgba(245,158,11,0.07); }
+    .dt-os-title { font-weight: 700; font-size: 12.5px; color: var(--text); margin-bottom: 3px; }
 
     /* ---------- Macro Builder ---------- */
     .macro-preview-box {
@@ -407,30 +428,27 @@
     <!-- Step 2 & 3 + Step 4 -->
     <div class="grid-2">
       <div>
-        <!-- Step 2: Key Editor -->
-        <section class="card">
+        <!-- Quick Gesture Card: Double-Tap (always visible right below keyboard!) -->
+        <section id="dtCard" class="card dt-card">
           <div class="card-head">
-            <h2 class="step-title"><span class="step-num">2</span><span id="editorTitle">选择这颗键的新功能</span></h2>
-            <button id="btnRestoreOne" class="small" style="display:none;">↺ 恢复这颗键原厂</button>
-          </div>
-          <div id="selBar" class="sel-bar"></div>
-          <div id="tabs" class="tabs"></div>
-          <div id="editorBody"></div>
-        </section>
-
-        <!-- Step 2b: Double-Tap Gesture Card -->
-        <section class="card">
-          <div class="card-head">
-            <h2 class="step-title"><span class="step-num" style="background:var(--purple-soft); color:#d8b4fe; border-color:rgba(167,139,250,0.45);">⚡</span>双击快捷键 <span class="card-sub">（模仿 macOS 双击 Cmd 唤出搜索）</span></h2>
+            <h2 class="step-title"><span class="step-num" style="background:var(--purple-soft); color:#d8b4fe; border-color:rgba(167,139,250,0.45);">⚡</span>双击快捷键 <span class="card-sub">（不占单键 · 支持连 Mac 自动放行不冲突）</span></h2>
             <label class="switch-label">
               <input id="chkDtEnable" type="checkbox" />
               <span>开启双击触发</span>
             </label>
           </div>
           <div id="dtDisabledHint" class="card-sub">
-            例如：在安卓平板上 <strong>连续轻点两下空格左边的 Alt/cmd 键</strong>，自动发出 <strong>Meta/option + S</strong> 唤出搜索；平时按住它配其他键做快捷键依然 0 延迟不受影响。
+            适合模仿 macOS「双击 ⌘ 唤出搜索」：连安卓平板时<strong>连续轻点两下空格左边 Alt/cmd</strong> 自动发 <strong>Meta + S</strong> 唤出搜索；切回 Mac 时键盘会自动识别苹果系统并放行原生双击 ⌘，绝不误触 ⌘+S 保存。
           </div>
           <div id="dtConfigBox" style="display:none;">
+            <div class="dt-os-bar">
+              <label for="chkDtSkipApple">
+                <input id="chkDtSkipApple" type="checkbox" checked />
+                <span>🍎 连 Mac / iPad 时自动放行（保留原生双击 ⌘，不误触 ⌘+S 保存）</span>
+              </label>
+              <span class="card-sub" style="color:#d8b4fe;">键盘芯片自动识别系统</span>
+            </div>
+            <div id="dtPreviewGrid" class="dt-preview-grid"></div>
             <div class="fn-config-grid" style="margin-bottom:12px;">
               <div class="field">
                 <label for="selDtKey">连续轻点两下哪颗键？</label>
@@ -445,23 +463,40 @@
                 </select>
               </div>
               <div class="field">
-                <label>当前双击触发效果</label>
-                <div id="dtActionBadge" class="status-pill" style="border-color:rgba(167,139,250,0.5); color:#ede9fe; width:100%; justify-content:center;"></div>
+                <label for="selDtStep">组合键错峰间隔（防误唤语音助手）</label>
+                <select id="selDtStep">
+                  <option value="40">40 ms（较快）</option>
+                  <option value="60">60 ms（推荐 · MagicPad 稳妥）</option>
+                  <option value="90">90 ms（超稳 · 防慢速蓝牙合并）</option>
+                  <option value="120">120 ms（极稳 · 类似手动按住 Meta）</option>
+                </select>
               </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+              <span class="card-sub" style="margin:0;">当前双击触发效果：</span>
+              <span id="dtActionBadge" class="status-pill" style="border-color:rgba(167,139,250,0.5); color:#ede9fe;"></span>
             </div>
             <div class="opt-group">
               <div class="opt-group-label">常用搜索 / 快捷动作一键套用</div>
               <div id="dtPresetList" class="opt-list"></div>
             </div>
-            <div class="macro-pickers" style="margin-bottom:10px;">
-              <div class="field"><label for="selDtK1">自定义组合：第 1 键（修饰键）</label><select id="selDtK1"></select></div>
+            <div class="macro-pickers" style="margin-bottom:0;">
+              <div class="field"><label for="selDtK1">自定义双键组合：第 1 键（修饰键）</label><select id="selDtK1"></select></div>
               <div class="plus-sign">+</div>
               <div class="field"><label for="selDtK2">第 2 键（目标键）</label><select id="selDtK2"></select></div>
             </div>
-            <div class="card-sub">
-              提示：平时按住该键配合其他键做组合键完全 0 延迟无冲突；若选 <strong>Meta + S</strong>，在 Android 平板/Windows 唤出搜索，切回 macOS 时由于固件会自动将 Meta 映射为 ⌘，双击会发出 ⌘+S（保存），可按常用设备调整。
-            </div>
           </div>
+        </section>
+
+        <!-- Step 2: Key Editor -->
+        <section class="card">
+          <div class="card-head">
+            <h2 class="step-title"><span class="step-num">2</span><span id="editorTitle">选择这颗键的新功能</span></h2>
+            <button id="btnRestoreOne" class="small" style="display:none;">↺ 恢复这颗键原厂</button>
+          </div>
+          <div id="selBar" class="sel-bar"></div>
+          <div id="tabs" class="tabs"></div>
+          <div id="editorBody"></div>
         </section>
 
         <!-- Step 3: Device Names & Scheme Label -->
@@ -592,13 +627,14 @@
   const USB_NAME_MAX = 30;
   const USB_LEN_CODE_OFFS = [0x2132, 0x2136];
 
-  // Audited v2 Hold-Fn + Double-Tap TC32 Patch (476 bytes @ 0xFC00..0xFDDB, simulated 100% pass)
+  // Audited v2.2 Hold-Fn + Apple-aware 4-Phase Staggered Double-Tap TC32 Patch (528 bytes @ 0xFC00..0xFE0F)
   // Hooks: 0x0018 bin_size=0xFF04, 0x017C bss_end=0x843920, 0x55F8 cb=0xFC01,
-  //        0x4E34/0x4E58 BL fn_dispatch(0xFC12), 0x5592 BL fn_tick(0xFD66)
+  //        0x4E34/0x4E58 BL fn_dispatch(0xFC12), 0x5592 BL fn_tick(0xFD74)
+  // Staggered combo sequence: [k1 DOWN] -> step_ms -> [k1+k2 DOWN] -> step_ms -> [k1 DOWN, k2 UP] -> step_ms -> [all UP]
   const FN_TRIGGER_CODE = 0xF9;
   const EXT_PATCH_BASE  = 0xFC00;
-  const EXT_CONFIG_BASE = 0xFE00; // 32B header: [+0]fn_trig,[+1]fn_tap,[+2..3]0x0002,[+4..7]fn_max,[+8..11]pulse,[+12]dt_idx,[+13]dt_k1,[+14]dt_k2,[+16..19]dt_win
-  const EXT_FN_MAP_BASE = 0xFE20; // 136B fn_map mirroring 0xEE78..0xEEFF
+  const EXT_CONFIG_BASE = 0xFE30; // 32B header: [+0]fn_trig,[+1]fn_tap,[+2..3]0x0003,[+4..7]fn_max,[+8..11]pulse,[+12]dt_idx,[+13]dt_k1,[+14]dt_k2,[+15]dt_flags,[+16..19]dt_win,[+20..23]dt_step
+  const EXT_FN_MAP_BASE = 0xFE50; // 136B fn_map @ 0xFE50..0xFED7
   const PULSE_HOLD_TICKS = 20 * 16000; // 20 ms @ 16 MHz reg_system_tick (0x00800740)
   const EXT_HOOKS = [
     { off: 0x0018, bytes: [0x04, 0xFF, 0x00, 0x00] }, // fw_size = 65284 (0xFF04)
@@ -606,39 +642,42 @@
     { off: 0x55F8, bytes: [0x01, 0xFC, 0x00, 0x00] }, // key_cb = fn_entry | 1
     { off: 0x4E34, bytes: [0x0A, 0x90, 0xED, 0x9E] }, // BL fn_dispatch (0xFC12)
     { off: 0x4E58, bytes: [0x0A, 0x90, 0xDB, 0x9E] }, // BL fn_dispatch (0xFC12)
-    { off: 0x5592, bytes: [0x0A, 0x90, 0xE8, 0x9B] }, // BL fn_tick     (0xFD66)
+    { off: 0x5592, bytes: [0x0A, 0x90, 0xEF, 0x9B] }, // BL fn_tick     (0xFD74)
   ];
   const EXT_PATCH_CODE = new Uint8Array([
-    0x10, 0x65, 0x03, 0xF1, 0x1B, 0xE8, 0x5B, 0xE8, 0x6F, 0x0C, 0x23, 0x40, 0xF5, 0x97, 0xFA, 0x98,
-    0x10, 0x6D, 0xF0, 0x65, 0x6C, 0x0C, 0x6D, 0x0D, 0x26, 0x48, 0x07, 0xEC, 0x2A, 0x48, 0x00, 0xAA,
+    0x10, 0x65, 0x03, 0xF1, 0x1B, 0xE8, 0x5B, 0xE8, 0x7C, 0x0C, 0x23, 0x40, 0xF5, 0x97, 0xFA, 0x98,
+    0x10, 0x6D, 0xF0, 0x65, 0x79, 0x0C, 0x7A, 0x0D, 0x26, 0x48, 0x07, 0xEC, 0x2A, 0x48, 0x00, 0xAA,
     0x2F, 0xC0, 0x97, 0x02, 0x2D, 0xC1, 0x00, 0xA2, 0x22, 0x43, 0x01, 0xA9, 0x07, 0xC1, 0x01, 0xA2,
-    0x62, 0x40, 0x00, 0xA2, 0xA2, 0x40, 0x66, 0x0B, 0x1A, 0x58, 0x62, 0x50, 0xF0, 0x6D, 0x00, 0xA2,
+    0x62, 0x40, 0x00, 0xA2, 0xA2, 0x40, 0x73, 0x0B, 0x1A, 0x58, 0x62, 0x50, 0xF0, 0x6D, 0x00, 0xA2,
     0x62, 0x40, 0xA2, 0x48, 0x00, 0xAA, 0xF9, 0xC1, 0x6E, 0x48, 0x00, 0xAE, 0xF6, 0xC0, 0x6A, 0x58,
-    0x00, 0xAA, 0x05, 0xC0, 0x5E, 0x0B, 0x1B, 0x58, 0x60, 0x58, 0x1B, 0xEA, 0x9A, 0x02, 0xED, 0xC3,
+    0x00, 0xAA, 0x05, 0xC0, 0x6B, 0x0B, 0x1B, 0x58, 0x60, 0x58, 0x1B, 0xEA, 0x9A, 0x02, 0xED, 0xC3,
     0xE2, 0x48, 0x00, 0xAA, 0x03, 0xC0, 0x30, 0xEC, 0x02, 0xA1, 0xF5, 0x97, 0x2F, 0x98, 0x30, 0xEC,
-    0x01, 0xA1, 0xF5, 0x97, 0x2B, 0x98, 0x01, 0xA2, 0xE2, 0x40, 0x55, 0x0B, 0x1A, 0x58, 0xA2, 0x50,
-    0xF0, 0x6D, 0x01, 0xA9, 0x4C, 0xC1, 0x2A, 0x4B, 0x96, 0x02, 0x36, 0xC1, 0x62, 0x48, 0x00, 0xAA,
-    0x33, 0xC1, 0x22, 0x4B, 0x02, 0xAA, 0x2A, 0xC1, 0x4D, 0x0B, 0x1B, 0x58, 0x20, 0x59, 0x1B, 0xEA,
-    0x2A, 0x59, 0x9A, 0x02, 0x23, 0xC3, 0x00, 0xA2, 0x22, 0x43, 0xFE, 0xA2, 0x49, 0x0B, 0x9A, 0x15,
-    0x62, 0x4B, 0x00, 0xAA, 0x09, 0xC0, 0xA8, 0x4B, 0x00, 0xA8, 0x02, 0xC0, 0x02, 0xA1, 0xF5, 0x97,
-    0x05, 0x98, 0x68, 0x4B, 0x02, 0xA1, 0xF5, 0x97, 0x01, 0x98, 0x68, 0x4B, 0x00, 0xA8, 0x49, 0xC0,
-    0x01, 0xA1, 0xF4, 0x97, 0xFB, 0x9F, 0xA8, 0x4B, 0x00, 0xA8, 0x02, 0xC0, 0x01, 0xA1, 0xF4, 0x97,
-    0xF5, 0x9F, 0x01, 0xA2, 0x62, 0x43, 0x3A, 0x0B, 0x1A, 0x58, 0x62, 0x51, 0xF0, 0x6D, 0x01, 0xA2,
-    0x22, 0x43, 0x37, 0x0B, 0x1A, 0x58, 0x22, 0x51, 0x01, 0x80, 0x00, 0xA2, 0x22, 0x43, 0x38, 0xEC,
-    0x62, 0x48, 0x00, 0xAA, 0x06, 0xC0, 0x01, 0xA2, 0xA2, 0x40, 0x33, 0x0B, 0x9A, 0x1D, 0x00, 0xAA,
-    0x00, 0xC0, 0x10, 0xEC, 0x2F, 0x0B, 0x98, 0x15, 0x01, 0xA1, 0xF4, 0x97, 0xD7, 0x9F, 0xF0, 0x6D,
-    0x2A, 0x4B, 0x96, 0x02, 0x11, 0xC1, 0x22, 0x4B, 0x01, 0xAA, 0x0E, 0xC1, 0x28, 0x0B, 0x1B, 0x58,
-    0x20, 0x59, 0x1B, 0xEA, 0x2A, 0x59, 0x9A, 0x02, 0x05, 0xC3, 0x02, 0xA2, 0x22, 0x43, 0x24, 0x0B,
-    0x1A, 0x58, 0x22, 0x51, 0x01, 0x80, 0x00, 0xA2, 0x22, 0x43, 0x38, 0xEC, 0x21, 0x0B, 0x9A, 0x1D,
-    0x00, 0xAA, 0x04, 0xC0, 0x00, 0xA1, 0x99, 0x15, 0xFE, 0xAA, 0x03, 0xC0, 0x10, 0xEC, 0x02, 0xA1,
-    0xF4, 0x97, 0xB4, 0x9F, 0xF0, 0x6D, 0x70, 0x65, 0xF5, 0x97, 0xA6, 0x9B, 0x04, 0xEC, 0x16, 0x0D,
-    0x16, 0x0E, 0xE9, 0x48, 0x00, 0xA9, 0x0D, 0xC0, 0x15, 0x0A, 0x12, 0x58, 0xAB, 0x58, 0xD2, 0xEA,
-    0xB0, 0x58, 0x82, 0x02, 0x05, 0xC3, 0x00, 0xA1, 0xE9, 0x40, 0x70, 0x48, 0x02, 0xA1, 0xF4, 0x97,
-    0x9D, 0x9F, 0x01, 0xA4, 0x69, 0x4B, 0x00, 0xA9, 0x13, 0xC0, 0x0D, 0x0A, 0x12, 0x58, 0x6B, 0x59,
-    0xD2, 0xEA, 0xB0, 0x58, 0x82, 0x02, 0x0B, 0xC3, 0x00, 0xA1, 0x69, 0x43, 0xB0, 0x4B, 0x00, 0xA8,
-    0x02, 0xC0, 0x02, 0xA1, 0xF4, 0x97, 0x8A, 0x9F, 0x70, 0x4B, 0x02, 0xA1, 0xF4, 0x97, 0x86, 0x9F,
-    0x01, 0xA4, 0x20, 0xEC, 0x70, 0x6D, 0xC0, 0x46, 0x60, 0x38, 0x84, 0x00, 0x00, 0xFE, 0x00, 0x00,
-    0x40, 0x07, 0x80, 0x00, 0x78, 0x38, 0x84, 0x00, 0x20, 0xFE, 0x00, 0x00,
+    0x01, 0xA1, 0xF5, 0x97, 0x2B, 0x98, 0x01, 0xA2, 0xE2, 0x40, 0x62, 0x0B, 0x1A, 0x58, 0xA2, 0x50,
+    0xF0, 0x6D, 0x01, 0xA9, 0x53, 0xC1, 0x2A, 0x4B, 0x96, 0x02, 0x3D, 0xC1, 0x62, 0x48, 0x00, 0xAA,
+    0x3A, 0xC1, 0xEA, 0x4B, 0x00, 0xAA, 0x03, 0xC0, 0xF6, 0x97, 0x3E, 0x9E, 0x00, 0xA8, 0x33, 0xC1,
+    0x22, 0x4B, 0x02, 0xAA, 0x2A, 0xC1, 0x57, 0x0B, 0x1B, 0x58, 0x20, 0x59, 0x1B, 0xEA, 0x2A, 0x59,
+    0x9A, 0x02, 0x23, 0xC3, 0x00, 0xA2, 0x22, 0x43, 0xFE, 0xA2, 0x53, 0x0B, 0x9A, 0x15, 0x62, 0x4B,
+    0x00, 0xAA, 0x0B, 0xC0, 0x02, 0xAA, 0x03, 0xC1, 0xA8, 0x4B, 0x02, 0xA1, 0xF4, 0x97, 0xFE, 0x9F,
+    0x68, 0x4B, 0x02, 0xA1, 0xF4, 0x97, 0xFA, 0x9F, 0x00, 0xA2, 0x62, 0x43, 0x68, 0x4B, 0x00, 0xA8,
+    0x0B, 0xC0, 0x01, 0xA1, 0xF4, 0x97, 0xF2, 0x9F, 0xA8, 0x4B, 0x04, 0xA2, 0x00, 0xA8, 0x00, 0xC0,
+    0x01, 0xA2, 0x62, 0x43, 0x43, 0x0B, 0x1A, 0x58, 0x62, 0x51, 0xF0, 0x6D, 0x01, 0xA2, 0x22, 0x43,
+    0x40, 0x0B, 0x1A, 0x58, 0x22, 0x51, 0x01, 0x80, 0x00, 0xA2, 0x22, 0x43, 0x38, 0xEC, 0x62, 0x48,
+    0x00, 0xAA, 0x06, 0xC0, 0x01, 0xA2, 0xA2, 0x40, 0x3C, 0x0B, 0x9A, 0x1D, 0x00, 0xAA, 0x00, 0xC0,
+    0x10, 0xEC, 0x39, 0x0B, 0x98, 0x15, 0x01, 0xA1, 0xF4, 0x97, 0xD0, 0x9F, 0xF0, 0x6D, 0x2A, 0x4B,
+    0x96, 0x02, 0x11, 0xC1, 0x22, 0x4B, 0x01, 0xAA, 0x0E, 0xC1, 0x32, 0x0B, 0x1B, 0x58, 0x20, 0x59,
+    0x1B, 0xEA, 0x2A, 0x59, 0x9A, 0x02, 0x05, 0xC3, 0x02, 0xA2, 0x22, 0x43, 0x2D, 0x0B, 0x1A, 0x58,
+    0x22, 0x51, 0x01, 0x80, 0x00, 0xA2, 0x22, 0x43, 0x38, 0xEC, 0x2B, 0x0B, 0x9A, 0x1D, 0x00, 0xAA,
+    0x04, 0xC0, 0x00, 0xA1, 0x99, 0x15, 0xFE, 0xAA, 0x03, 0xC0, 0x10, 0xEC, 0x02, 0xA1, 0xF4, 0x97,
+    0xAD, 0x9F, 0xF0, 0x6D, 0xF0, 0x65, 0x00, 0xA4, 0x20, 0x0D, 0x21, 0x0E, 0xE9, 0x48, 0x00, 0xA9,
+    0x0D, 0xC0, 0x01, 0xA4, 0x1F, 0x0A, 0x12, 0x58, 0xAB, 0x58, 0xD2, 0xEA, 0xB0, 0x58, 0x82, 0x02,
+    0x05, 0xC3, 0x00, 0xA1, 0xE9, 0x40, 0x70, 0x48, 0x02, 0xA1, 0xF4, 0x97, 0x97, 0x9F, 0x6F, 0x4B,
+    0x00, 0xAF, 0x23, 0xC0, 0x01, 0xA4, 0x17, 0x0A, 0x12, 0x58, 0x6B, 0x59, 0xD3, 0xEA, 0x70, 0x59,
+    0x04, 0xAF, 0x00, 0xC1, 0xB0, 0x58, 0x83, 0x02, 0x18, 0xC3, 0x6A, 0x51, 0x01, 0xAF, 0x06, 0xC1,
+    0x02, 0xA1, 0x69, 0x43, 0xB0, 0x4B, 0x01, 0xA1, 0xF4, 0x97, 0x80, 0x9F, 0x0E, 0x80, 0x02, 0xAF,
+    0x06, 0xC1, 0x03, 0xA1, 0x69, 0x43, 0xB0, 0x4B, 0x02, 0xA1, 0xF4, 0x97, 0x77, 0x9F, 0x05, 0x80,
+    0x00, 0xA1, 0x69, 0x43, 0x70, 0x4B, 0x02, 0xA1, 0xF4, 0x97, 0x70, 0x9F, 0xF5, 0x97, 0x64, 0x9B,
+    0x00, 0xA8, 0x01, 0xC1, 0x20, 0xEC, 0xF0, 0x6D, 0x01, 0xA0, 0xF0, 0x6D, 0x60, 0x38, 0x84, 0x00,
+    0x30, 0xFE, 0x00, 0x00, 0x40, 0x07, 0x80, 0x00, 0x78, 0x38, 0x84, 0x00, 0x50, 0xFE, 0x00, 0x00,
   ]);
 
   // Telink BLE OTA GATT UUIDs (verified against firmware GATT handles 44..54 & OtaController.java)
@@ -696,7 +735,7 @@
   // ---------------------------------------------------------------------------
   const KB_GROUPS = [
     { label: "常用修饰键", items: [
-      [0xE0, "左 Ctrl"], [0xE1, "左 Shift"], [0xE2, "左 Alt（Mac 下对应 Option）"], [0xE3, "左 Meta / Win（Mac 下对应 Cmd）"],
+      [0xE0, "左 Ctrl"], [0xE1, "左 Shift"], [0xE2, "左 Alt（键帽 Alt/cmd · Mac 自动切 ⌘）"], [0xE3, "左 Meta / Win（键帽 Meta/opt · Mac 自动切 ⌥）"],
       [0xE4, "右 Ctrl"], [0xE5, "右 Shift"], [0xE6, "右 Alt"],
     ]},
     { label: "编辑与方向导航", items: [
@@ -731,8 +770,8 @@
 
   const CONSUMER_GROUPS = [
     { label: "平板 / 安卓常用", items: [
-      [0x029F, "多任务视图", true], [0x0223, "回到桌面 Home", true], [0x0224, "返回上一页"],
-      [0x00CF, "唤醒语音助手", true], [0x00D8, "语音听写输入", true], [0x0221, "全局搜索"],
+      [0x029F, "多任务视图", "平板实测"], [0x0223, "回到桌面 Home", "平板实测"], [0x0224, "返回上一页"],
+      [0x00CF, "唤醒语音助手", "平板实测"], [0x00D8, "语音听写输入", "平板实测"], [0x0221, "全局搜索", "MagicOS 无效"],
       [0x029D, "切换输入法"], [0x00D9, "表情面板"], [0x019F, "打开系统设置"], [0x0065, "系统截屏"],
     ]},
     { label: "音量与媒体播放（全平台通用）", items: [
@@ -823,14 +862,14 @@
     [0xEE8A, "大写锁定 CapsLock"],
   ];
   const DT_PRESETS = [
-    { name: "🔍 平板搜索 Meta + S（推荐）", a: { t: "combo", k1: 0xE3, k2: 0x16 } },
-    { name: "🔎 全局搜索（Consumer）",      a: { t: "consumer", v: 0x0221 } },
-    { name: "🔍 搜索 ⌘/Win + 空格",         a: { t: "combo", k1: 0xE3, k2: 0x2C } },
-    { name: "🪟 切换应用 Alt + Tab",        a: { t: "combo", k1: 0xE2, k2: 0x2B } },
-    { name: "📱 多任务视图",                a: { t: "consumer", v: 0x029F } },
-    { name: "🏠 回到桌面 Home",             a: { t: "consumer", v: 0x0223 } },
-    { name: "🎙 唤醒语音助手",              a: { t: "consumer", v: 0x00CF } },
-    { name: "🔒 锁屏 Meta + L",            a: { t: "combo", k1: 0xE3, k2: 0x0F } },
+    { name: "🔍 平板搜索 Meta + S（MagicPad 推荐）", a: { t: "combo", k1: 0xE3, k2: 0x16 } },
+    { name: "🔍 搜索 Meta / ⌘ + 空格",              a: { t: "combo", k1: 0xE3, k2: 0x2C } },
+    { name: "🪟 切换应用 Alt + Tab",                  a: { t: "combo", k1: 0xE2, k2: 0x2B } },
+    { name: "📱 多任务视图",                          a: { t: "consumer", v: 0x029F } },
+    { name: "🏠 回到桌面 Home",                       a: { t: "consumer", v: 0x0223 } },
+    { name: "🎙 唤醒语音助手",                        a: { t: "consumer", v: 0x00CF } },
+    { name: "🔒 锁屏 Meta + L",                      a: { t: "combo", k1: 0xE3, k2: 0x0F } },
+    { name: "🔎 全局搜索（仅 Win/部分安卓）",         a: { t: "consumer", v: 0x0221 } },
   ];
 
   // ---------------------------------------------------------------------------
@@ -854,6 +893,8 @@
     keyOff: 0xEECD,                            // 左 Alt/cmd（空格左侧）
     action: { t: "combo", k1: 0xE3, k2: 0x16 }, // Meta/option + S
     windowMs: 320,
+    stepMs: 60,                                // 4 阶段错峰间隔（先按 Meta -> 60ms -> 按 S -> 60ms -> 松 S -> 60ms -> 松 Meta）
+    skipApple: true,                           // 连 Mac / iPad 时自动放行，保留原生双击 ⌘
   });
   const stockState = () => ({
     keys: stockKeys(),
@@ -1106,11 +1147,11 @@
         for (let i = 0; i < h.bytes.length; i++) out[h.off + i] = h.bytes[i];
       }
       out.set(EXT_PATCH_CODE, EXT_PATCH_BASE);
-      // Config header @ 0xFE00..0xFE1F + 136B Fn map @ 0xFE20..0xFEA7
+      // Config header @ 0xFE30..0xFE4F + 136B Fn map @ 0xFE50..0xFED7
       out.fill(0x00, EXT_CONFIG_BASE, EXT_FN_MAP_BASE + MATRIX_LEN);
       out[EXT_CONFIG_BASE] = fnOn ? FN_TRIGGER_CODE : 0x00;
       out[EXT_CONFIG_BASE + 1] = fnOn ? encodeAssign(st.fn.tap, alloc.slotOf) : 0x00;
-      writeU16(out, EXT_CONFIG_BASE + 2, 0x0002); // v2 config format magic
+      writeU16(out, EXT_CONFIG_BASE + 2, 0x0003); // v3 staggered config format magic
       const maxTicks = fnOn ? Math.max(0, Number(st.fn.timeoutMs) || 0) * 16000 : 0;
       writeU32(out, EXT_CONFIG_BASE + 4, maxTicks >>> 0);
       writeU32(out, EXT_CONFIG_BASE + 8, PULSE_HOLD_TICKS);
@@ -1123,9 +1164,11 @@
           out[EXT_CONFIG_BASE + 13] = encodeAssign(st.dt.action, alloc.slotOf);
           out[EXT_CONFIG_BASE + 14] = 0x00;
         }
-        out[EXT_CONFIG_BASE + 15] = 0x00;
+        out[EXT_CONFIG_BASE + 15] = st.dt.skipApple ? 0x01 : 0x00;
         const winTicks = Math.max(50, Number(st.dt.windowMs) || 320) * 16000;
         writeU32(out, EXT_CONFIG_BASE + 16, winTicks >>> 0);
+        const stepMs = Math.max(20, Math.min(250, Number(st.dt.stepMs) || 60));
+        writeU32(out, EXT_CONFIG_BASE + 20, (stepMs * 16000) >>> 0);
       } else {
         out[EXT_CONFIG_BASE + 12] = 0xFF;
       }
@@ -1261,9 +1304,9 @@
       }
     }
 
-    // Extended v2 TC32 patch code & hooks strict byte-for-byte integrity verification
+    // Extended v2.2 TC32 patch code & hooks strict byte-for-byte integrity verification
     if (extOn) {
-      if (!(cfgFnTrig === 0x00 || cfgFnTrig === FN_TRIGGER_CODE) || readU16(img, EXT_CONFIG_BASE + 2) !== 0x0002) {
+      if (!(cfgFnTrig === 0x00 || cfgFnTrig === FN_TRIGGER_CODE) || readU16(img, EXT_CONFIG_BASE + 2) !== 0x0003) {
         return { error: "安全校验失败：扩展补丁配置头异常" };
       }
       if (!fnOn && !dtOn) return { error: "安全校验失败：扩展补丁未开启 Fn 或双击功能" };
@@ -1280,6 +1323,9 @@
       }
       for (let i = EXT_PATCH_BASE + EXT_PATCH_CODE.length; i < EXT_CONFIG_BASE; i++) {
         if (img[i] !== 0xFF) return { error: `安全校验失败：补丁保留区 ${hex4(i)} 非法` };
+      }
+      for (let i = EXT_FN_MAP_BASE + MATRIX_LEN; i < LENOVO_MAGIC_OFF_EXT; i++) {
+        if (img[i] !== 0xFF) return { error: `安全校验失败：补丁尾部填充区 ${hex4(i)} 非法` };
       }
       const tapCode = img[EXT_CONFIG_BASE + 1];
       if (!(tapCode === 0x00 || KB_ALLOWED.has(tapCode) || activePool.includes(tapCode))) {
@@ -1299,7 +1345,8 @@
           return { error: "安全校验失败：双击触发键与 Fn 触发键冲突" };
         }
         const dtK1 = img[EXT_CONFIG_BASE + 13], dtK2 = img[EXT_CONFIG_BASE + 14];
-        if (img[EXT_CONFIG_BASE + 15] !== 0x00) return { error: "安全校验失败：双击配置保留字节异常" };
+        const dtFlags = img[EXT_CONFIG_BASE + 15];
+        if (dtFlags !== 0x00 && dtFlags !== 0x01) return { error: "安全校验失败：双击配置标志位非法" };
         if (dtK2 === 0x00) {
           if (!(KB_ALLOWED.has(dtK1) || activePool.includes(dtK1))) {
             return { error: `安全校验失败：双击单键/快捷码 ${hex2(dtK1)} 非法` };
@@ -1396,7 +1443,9 @@
       dt.keyOff = MATRIX_BASE + dtIdx;
       const dtK1 = img[EXT_CONFIG_BASE + 13], dtK2 = img[EXT_CONFIG_BASE + 14];
       dt.action = dtK2 !== 0x00 ? { t: "combo", k1: dtK1, k2: dtK2 } : decodeCode(dtK1, slotUsage);
+      dt.skipApple = (img[EXT_CONFIG_BASE + 15] & 1) !== 0;
       dt.windowMs = Math.round(readU32(img, EXT_CONFIG_BASE + 16) / 16000);
+      dt.stepMs = Math.round(readU32(img, EXT_CONFIG_BASE + 20) / 16000) || 60;
     }
 
     const macro = { k1: img[MACRO_K1_OFFS[0]], k2: img[MACRO_K2_OFFS[0]] };
@@ -1455,6 +1504,8 @@
         enabled: !!st.dt.enabled,
         keyOff: hex4(st.dt.keyOff),
         windowMs: st.dt.windowMs,
+        stepMs: st.dt.stepMs || 60,
+        skipApple: !!st.dt.skipApple,
         action: st.dt.action.t === "combo"
           ? { t: "combo", k1: hex2(st.dt.action.k1), k2: hex2(st.dt.action.k2) }
           : serializeAssign(st.dt.action),
@@ -1498,6 +1549,8 @@
       const dtOff = parseInt(obj.dt.keyOff, 16);
       if (EDITABLE_OFFS.has(dtOff)) st.dt.keyOff = dtOff;
       if (typeof obj.dt.windowMs === "number" && obj.dt.windowMs >= 50) st.dt.windowMs = obj.dt.windowMs;
+      if (typeof obj.dt.stepMs === "number" && obj.dt.stepMs >= 20 && obj.dt.stepMs <= 250) st.dt.stepMs = obj.dt.stepMs;
+      if (typeof obj.dt.skipApple === "boolean") st.dt.skipApple = obj.dt.skipApple;
       if (obj.dt.action && typeof obj.dt.action === "object") {
         if (obj.dt.action.t === "combo") {
           const k1 = parseInt(obj.dt.action.k1, 16), k2 = parseInt(obj.dt.action.k2, 16);
@@ -1676,7 +1729,12 @@
     const b = document.createElement("button");
     b.className = "opt" + (active ? (macroStyle ? " macro-active" : " active") : "");
     b.textContent = label;
-    if (tag) { const t = document.createElement("span"); t.className = "tag"; t.textContent = tag; b.appendChild(t); }
+    if (tag) {
+      const t = document.createElement("span");
+      t.className = "tag" + (tag.includes("无效") || tag.includes("不支持") ? " warn" : "");
+      t.textContent = tag;
+      b.appendChild(t);
+    }
     b.addEventListener("click", onClick);
     return b;
   }
@@ -1794,8 +1852,8 @@
         gd.innerHTML = `<div class="opt-group-label"></div><div class="opt-list"></div>`;
         gd.querySelector(".opt-group-label").textContent = g.label;
         const list = gd.querySelector(".opt-list");
-        for (const [usage, name, verified] of g.items) {
-          list.appendChild(optButton(name, a && a.t === "consumer" && a.v === usage, () => setCurrentKeyAssign({ t: "consumer", v: usage }), verified ? "平板实测" : ""));
+        for (const [usage, name, badge] of g.items) {
+          list.appendChild(optButton(name, a && a.t === "consumer" && a.v === usage, () => setCurrentKeyAssign({ t: "consumer", v: usage }), badge || ""));
         }
         body.appendChild(gd);
       }
@@ -1865,6 +1923,12 @@
       s2.addEventListener("change", onMacroChange);
       body.appendChild(pickers);
 
+      const mNote = document.createElement("div");
+      mNote.className = "notice";
+      mNote.style.marginTop = "8px";
+      mNote.innerHTML = "<strong>MagicPad / 安卓平板提示：</strong>单键组合快捷键使用原厂瞬发机制（两键同时发包），设为 <code>Meta + S</code> 会因间隔过短而同时唤醒语音助手。若想无副作用唤出平板搜索，请使用上方 <strong>「⚡ 双击快捷键」</strong>（内置 4 步错峰发送：先按住 Meta → 间隔后再按 S → 先松 S → 最后松 Meta）。";
+      body.appendChild(mNote);
+
     } else if (editorTab === "key") {
       const sr = document.createElement("div");
       sr.className = "search-row";
@@ -1912,10 +1976,48 @@
   }
 
   function renderDoubleTapPanel() {
+    document.getElementById("dtCard").classList.toggle("enabled", state.dt.enabled);
     document.getElementById("chkDtEnable").checked = state.dt.enabled;
     document.getElementById("dtDisabledHint").style.display = state.dt.enabled ? "none" : "";
     document.getElementById("dtConfigBox").style.display = state.dt.enabled ? "" : "none";
     if (!state.dt.enabled) return;
+
+    document.getElementById("chkDtSkipApple").checked = !!state.dt.skipApple;
+
+    const dtK = KEY_BY_OFF.get(state.dt.keyOff);
+    const dtKeyText = dtK ? keyName(dtK) : hex4(state.dt.keyOff);
+    const actText = describeDtAction(state.dt.action);
+    const stepMs = state.dt.stepMs || 60;
+    const isCombo = state.dt.action.t === "combo";
+    const k1Short = isCombo ? kbShortName(state.dt.action.k1) : "";
+    const k2Short = isCombo ? kbShortName(state.dt.action.k2) : "";
+    const staggerNote = isCombo
+      ? `（错峰 ${stepMs}ms：先按住 ${k1Short} → 再按 ${k2Short} → 先松 ${k2Short} → 最后松 ${k1Short}，避免误唤语音助手）`
+      : "";
+    const preview = document.getElementById("dtPreviewGrid");
+    if (state.dt.skipApple) {
+      preview.innerHTML = `
+        <div class="dt-os-card active-os">
+          <div class="dt-os-title">📱 连安卓平板 / Windows 时</div>
+          <div>连续双击 <strong>${dtKeyText}</strong> → 自动发出 <strong>${actText}</strong>${staggerNote}；平时按住配其他键（如 Alt+Tab）依然 0 延迟无影响。</div>
+        </div>
+        <div class="dt-os-card safe-os">
+          <div class="dt-os-title">🍎 连 Mac / iPad 时（已自动放行 ✓）</div>
+          <div>键盘自动识别 Apple 系统并跳过映射 → 照常发出两次原生按键，<strong>完整保留 macOS 双击 ⌘ Spotlight</strong>，不会误触 ⌘+S。</div>
+        </div>
+      `;
+    } else {
+      preview.innerHTML = `
+        <div class="dt-os-card active-os">
+          <div class="dt-os-title">📱 连安卓平板 / Windows 时</div>
+          <div>连续双击 <strong>${dtKeyText}</strong> → 自动发出 <strong>${actText}</strong>${staggerNote}；平时按住配其他键依然 0 延迟。</div>
+        </div>
+        <div class="dt-os-card warn-os">
+          <div class="dt-os-title">🍎 连 Mac / iPad 时（同样触发）</div>
+          <div>也会发出 <strong>${actText}</strong>。提示：若组合含 Win/⌘，在 Mac 下会对应 ⌘ 组合键（例如 Meta+S 会变成 ⌘+S 保存）。</div>
+        </div>
+      `;
+    }
 
     const selKey = document.getElementById("selDtKey");
     selKey.innerHTML = "";
@@ -1940,7 +2042,17 @@
     }
     selWin.value = winVal;
 
-    document.getElementById("dtActionBadge").textContent = `⚡ ${describeDtAction(state.dt.action)}`;
+    const selStep = document.getElementById("selDtStep");
+    const stepVal = String(stepMs);
+    if (![...selStep.options].some(o => o.value === stepVal)) {
+      const opt = document.createElement("option");
+      opt.value = stepVal; opt.textContent = `${stepMs} ms`;
+      selStep.appendChild(opt);
+    }
+    selStep.value = stepVal;
+    selStep.disabled = !isCombo;
+
+    document.getElementById("dtActionBadge").textContent = isCombo ? `⚡ ${actText}（${stepMs}ms 分步错峰）` : `⚡ ${actText}`;
 
     const plist = document.getElementById("dtPresetList");
     plist.innerHTML = "";
@@ -2008,8 +2120,9 @@
       }
       if (state.dt.enabled) {
         const dtK = KEY_BY_OFF.get(state.dt.keyOff);
+        const osNote = state.dt.skipApple ? " · 🍎连 Mac/iPad 自动放行" : " · 所有系统生效";
         addSection("双击快捷键", [
-          `连续双击「${keyName(dtK)}」（${(state.dt.windowMs / 1000).toFixed(2)} 秒内）→ ${describeDtAction(state.dt.action)}`,
+          `连续双击「${keyName(dtK)}」（${(state.dt.windowMs / 1000).toFixed(2)} 秒内）→ ${describeDtAction(state.dt.action)}${osNote}`,
         ]);
       }
       if (macroChanged) addSection("一键组合快捷键", [`锁屏 (${macroLabel(STOCK_MACRO)}) → ${macroLabel(state.macro)}`]);
@@ -2593,12 +2706,20 @@
     state.dt.enabled = e.target.checked;
     saveDraft(); renderAll();
   });
+  document.getElementById("chkDtSkipApple").addEventListener("change", (e) => {
+    state.dt.skipApple = e.target.checked;
+    saveDraft(); renderAll();
+  });
   document.getElementById("selDtKey").addEventListener("change", (e) => {
     state.dt.keyOff = Number(e.target.value);
     saveDraft(); renderAll();
   });
   document.getElementById("selDtWindow").addEventListener("change", (e) => {
     state.dt.windowMs = Number(e.target.value);
+    saveDraft(); renderAll();
+  });
+  document.getElementById("selDtStep").addEventListener("change", (e) => {
+    state.dt.stepMs = Number(e.target.value);
     saveDraft(); renderAll();
   });
   const onDtComboChange = () => {
@@ -2668,7 +2789,7 @@
     }
     if (state.dt.enabled) {
       const dk = KEY_BY_OFF.get(state.dt.keyOff);
-      lines.push(`• 双击快捷键：双击「${keyName(dk)}」→ ${describeDtAction(state.dt.action)}`);
+      lines.push(`• 双击快捷键：双击「${keyName(dk)}」→ ${describeDtAction(state.dt.action)}${state.dt.skipApple ? "（连 Mac/iPad 自动放行）" : ""}`);
     }
     if (state.macro.k1 !== STOCK_MACRO.k1 || state.macro.k2 !== STOCK_MACRO.k2) {
       lines.push(`• 一键组合快捷键：${macroLabel(STOCK_MACRO)} → ${macroLabel(state.macro)}`);
